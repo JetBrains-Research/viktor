@@ -1,0 +1,32 @@
+buildscript {
+    ext.kotlin_version = '0.14.+'
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+apply plugin: 'kotlin'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'org.apache.commons:commons-math3:3.5'
+    compile 'org.jetbrains.kotlin:kotlin-stdlib:0.14.+'
+    compile files("$rootDir/lib/yeppp-bundle-1.0.jar")
+    compile files("$rootDir/lib/simd.jar",
+            "$rootDir/lib/simd-sources.jar")
+
+    testCompile 'junit:junit:4.+'
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.5'
+}
