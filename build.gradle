@@ -10,7 +10,12 @@ buildscript {
     }
 }
 
+plugins {
+    id 'com.jfrog.bintray' version '1.2'
+}
+
 apply plugin: 'kotlin'
+apply plugin: 'maven-publish'
 
 repositories {
     mavenCentral()
@@ -27,6 +32,46 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 }
 
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives sourcesJar
+}
+
+publishing {
+    group = groupId
+    version = project.version
+
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+
+            artifact sourcesJar
+        }
+    }
+}
+
+bintray {
+    user = project.hasProperty('bintrayUser') ? project.bintrayUser : System.getenv('BINTRAY_USER')
+    key = project.hasProperty('bintrayKey') ? project.bintrayKey : System.getenv('BINTRAY_KEY')
+    publications = ['mavenJava']
+    pkg {
+        repo = 'maven'
+        name = 'viktor'
+        licenses = ['MIT']
+        version {
+            name = project.version.toString()
+        }
+    }
+}
+
 task wrapper(type: Wrapper) {
     gradleVersion = '2.5'
+}
+
+sourceSets {
+    main.java.srcDirs += 'src/main/kotlin'
 }
