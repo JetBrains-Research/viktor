@@ -6,7 +6,7 @@ import java.util.*
  * A specialization of [StridedMatrix] to 3-D data.
  *
  * @author Sergei Lebedev
- * @since 09/12/14
+ * @since 0.1.0
  */
 open class StridedMatrix3(val depth: Int,
                           val rowsNumber: Int,

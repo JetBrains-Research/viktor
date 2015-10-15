@@ -11,7 +11,7 @@ import org.apache.commons.math3.util.FastMath
  *
  * @author Alexey Dievsky
  * @author Sergei Lebedev
- * @since 26/03/15
+ * @since 0.1.0
  */
 object MoreMath {
     /**
@@ -40,7 +40,7 @@ object MoreMath {
  * See http://cage.ugent.be/~klein/papers/floating-point.pdf for details.
  *
  * @author Alexey Dievsky
- * @since 19/11/14
+ * @since 0.1.0
  */
 class KahanSum private constructor(private var accumulator: Double) {
     private var compensator = 0.0

@@ -4,7 +4,7 @@ package org.jetbrains.bio.strided
  * A strided matrix stored in a flat double array.
  *
  * @author Sergei Lebedev
- * @since 04/12/14
+ * @since 0.1.0
  */
 object StridedMatrix {
     operator fun invoke(numRows: Int, numColumns: Int): StridedMatrix2 {

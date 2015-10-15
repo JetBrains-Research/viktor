@@ -8,7 +8,7 @@ import java.util.stream.Stream
  * A specialization of [StridedMatrix] for 2-D data.
  *
  * @author Sergei Lebedev
- * @since 09/12/14
+ * @since 0.1.0
  */
 open class StridedMatrix2(val rowsNumber: Int,
                           val columnsNumber: Int,

@@ -16,7 +16,7 @@ fun DoubleArray.asStrided() = StridedVector.create(this, 0, size(), 1)
  * Strided floating point containers.
  *
  * @author Sergei Lebedev
- * @since 04/12/14
+ * @since 0.1.0
  */
 open class StridedVector(protected val data: DoubleArray,
                          protected val offset: Int,
@@ -444,7 +444,7 @@ open class StridedVector(protected val data: DoubleArray,
  * A contiguous strided vector.
  *
  * @author Sergei Lebedev
- * @since 26/01/15
+ * @since 0.1.0
  */
 open class DenseVector protected constructor(data: DoubleArray, offset: Int, size: Int) :
         StridedVector(data, offset, size, 1) {
@@ -485,7 +485,7 @@ open class DenseVector protected constructor(data: DoubleArray, offset: Int, siz
  * A contiguous strided vector of size at most [DenseVector.DENSE_SPLIT_SIZE].
  *
  * @author Sergei Lebedev
- * @since 26/01/15
+ * @since 0.1.0
  */
 class SmallDenseVector(data: DoubleArray, offset: Int, size: Int) :
         DenseVector(data, offset, size)
@@ -494,7 +494,7 @@ class SmallDenseVector(data: DoubleArray, offset: Int, size: Int) :
  * A contiguous vector of size at least `[DenseVector.DENSE_SPLIT_SIZE] + 1`.
  *
  * @author Sergei Lebedev
- * @since 26/01/15
+ * @since 0.1.0
  */
 class LargeDenseVector(data: DoubleArray, offset: Int, size: Int) :
         DenseVector(data, offset, size) {
