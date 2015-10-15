@@ -3,30 +3,18 @@ package org.jetbrains.bio.viktor
 import org.apache.commons.math3.util.FastMath
 
 /**
- * Useful mathematical routines absent in [java.util.Math]
- * and [org.apache.commons.math3.util.FastMath].
+ * Evaluates log(exp(a) + exp(b)) using the following trick
  *
- * When adding new functionality please consider reading
- * http://blog.juma.me.uk/2011/02/23/performance-of-fastmath-from-commons-math.
+ *     log(exp(a) + log(exp(b)) = a + log(1 + exp(b - a))
  *
- * @author Alexey Dievsky
- * @author Sergei Lebedev
- * @since 0.1.0
+ * assuming a >= b.
  */
-object MoreMath {
-    /**
-     * Evaluates log(exp(a) + exp(b)) using the following trick
-     *
-     *     log(exp(a) + log(exp(b)) = a + log(1 + exp(b - a))
-     *
-     * assuming a >= b.
-     */
-    @JvmStatic fun logAddExp(a: Double, b: Double): Double {
-        return when {
-            a.isInfinite() && a < 0 -> b
-            b.isInfinite() && b < 0 -> a
-            else -> Math.max(a, b) + StrictMath.log1p(FastMath.exp(-Math.abs(a - b)))
-        }
+fun Double.logAddExp(b: Double): Double {
+    val a = this
+    return when {
+        a.isInfinite() && a < 0 -> b
+        b.isInfinite() && b < 0 -> a
+        else -> Math.max(a, b) + StrictMath.log1p(FastMath.exp(-Math.abs(a - b)))
     }
 }
 
@@ -42,7 +30,7 @@ object MoreMath {
  * @author Alexey Dievsky
  * @since 0.1.0
  */
-class KahanSum private constructor(private var accumulator: Double) {
+class KahanSum @JvmOverloads constructor(private var accumulator: Double = 0.0) {
     private var compensator = 0.0
 
     /**
@@ -68,19 +56,5 @@ class KahanSum private constructor(private var accumulator: Double) {
     /**
      * Returns the sum accumulated so far.
      */
-    fun result(): Double = accumulator + compensator
-
-    companion object {
-        /**
-         * Creates and returns a zero-initiated accumulator which can be
-         * fed doubles and polled for the accumulated sum.
-         */
-        @JvmStatic fun create(): KahanSum = create(0.0)
-
-        /**
-         * Creates and returns an accumulator which can be fed
-         * doubles and polled for the accumulated sum.
-         */
-        @JvmStatic fun create(initial: Double): KahanSum = KahanSum(initial)
-    }
+    fun result() = accumulator + compensator
 }

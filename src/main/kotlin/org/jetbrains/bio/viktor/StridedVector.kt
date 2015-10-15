@@ -219,7 +219,7 @@ open class StridedVector(protected val data: DoubleArray,
     }
 
     open fun sum(): Double {
-        val acc = KahanSum.create()
+        val acc = KahanSum()
         for (pos in 0..size - 1) {
             acc += unsafeGet(pos)
         }
@@ -228,7 +228,7 @@ open class StridedVector(protected val data: DoubleArray,
     }
 
     open fun cumSum() {
-        val acc = KahanSum.create()
+        val acc = KahanSum()
         for (pos in 0..size - 1) {
             acc += unsafeGet(pos)
             unsafeSet(pos, acc.result())
@@ -307,7 +307,7 @@ open class StridedVector(protected val data: DoubleArray,
 
     open fun logSumExp(): Double {
         val offset = max()
-        val sum = KahanSum.create()
+        val sum = KahanSum()
         for (pos in 0..size - 1) {
             sum += FastMath.exp(unsafeGet(pos) - offset)
         }
@@ -325,7 +325,7 @@ open class StridedVector(protected val data: DoubleArray,
         checkSize(other)
         checkSize(dst)
         for (pos in 0..size - 1) {
-            dst.unsafeSet(pos, MoreMath.logAddExp(unsafeGet(pos), other.unsafeGet(pos)))
+            dst.unsafeSet(pos, unsafeGet(pos) logAddExp other.unsafeGet(pos))
         }
     }
 
