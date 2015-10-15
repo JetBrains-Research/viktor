@@ -5,7 +5,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
-public class StridedMatrix2Test {
+class StridedMatrix2Test {
     @Test fun testIndex() {
         val m = StridedMatrix.full(NUM_ROWS, NUM_COLUMNS, -1.0)
         for (r in 0..NUM_ROWS - 1) {
@@ -88,7 +88,7 @@ public class StridedMatrix2Test {
     }
 }
 
-public class StridedMatrix3Test {
+class StridedMatrix3Test {
     @Test fun testIndex() {
         val m = getMatrix()
         m.fill(-1.0)

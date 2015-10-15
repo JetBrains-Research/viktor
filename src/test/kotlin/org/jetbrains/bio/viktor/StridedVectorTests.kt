@@ -11,7 +11,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
-public class StridedVectorTest {
+class StridedVectorTest {
     @Test fun testOf() {
         Assert.assertArrayEquals(doubleArrayOf(1.0),
                                  StridedVector.of(1.0).toArray(), Precision.EPSILON)
@@ -128,7 +128,7 @@ public class StridedVectorTest {
     }
 }
 
-public class LargeDenseVectorTest{
+class LargeDenseVectorTest{
     @Test fun testLogAddExp() {
         val d = NormalDistribution(0.0, 42.0)
         val v1 = d.sample(128).asStrided()
@@ -136,7 +136,7 @@ public class LargeDenseVectorTest{
         val dst = v1.logAddExp(v2)
 
         for (i in 0..dst.size() - 1) {
-            assertTrue(Precision.equals(MoreMath.logAddExp(v1[i], v2[i]),
+            assertTrue(Precision.equals(v1[i] logAddExp v2[i],
                                         dst[i], 5))
         }
     }
