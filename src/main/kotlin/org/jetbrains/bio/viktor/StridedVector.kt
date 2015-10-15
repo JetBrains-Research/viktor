@@ -366,7 +366,7 @@ open class StridedVector(protected val data: DoubleArray,
         }
     }
 
-    fun size(): Int = size
+    fun size() = size
 
     open fun toArray(): DoubleArray {
         val res = DoubleArray(size)
@@ -463,7 +463,7 @@ open class DenseVector protected constructor(data: DoubleArray, offset: Int, siz
         }
     }
 
-    override fun toArray(): DoubleArray = data.copyOfRange(offset, offset + size)
+    override fun toArray() = data.copyOfRange(offset, offset + size)
 
     companion object {
         /**
@@ -499,13 +499,13 @@ class SmallDenseVector(data: DoubleArray, offset: Int, size: Int) :
 class LargeDenseVector(data: DoubleArray, offset: Int, size: Int) :
         DenseVector(data, offset, size) {
 
-    override fun sum(): Double = DoubleStat.sum(data, offset, size)
+    override fun sum() = DoubleStat.sum(data, offset, size)
 
     override fun cumSum() = DoubleStat.prefixSum(data, offset, data, offset, size)
 
-    override fun min(): Double = Core.Min_V64f_S64f(data, offset, size)
+    override fun min() = Core.Min_V64f_S64f(data, offset, size)
 
-    override fun max(): Double = Core.Max_V64f_S64f(data, offset, size)
+    override fun max() = Core.Max_V64f_S64f(data, offset, size)
 
     override fun dot(other: DoubleArray): Double {
         require(other.size() == size) { "non-conformable arrays" }

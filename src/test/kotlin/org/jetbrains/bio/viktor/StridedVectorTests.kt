@@ -4,8 +4,9 @@ import org.apache.commons.math3.distribution.NormalDistribution
 import org.apache.commons.math3.stat.descriptive.summary.Sum
 import org.apache.commons.math3.util.Precision
 import org.jetbrains.bio.jni.SIMDMath
-import org.junit.Assert
+import org.junit.Assert.assertArrayEquals
 import org.junit.Test
+import java.util.*
 import java.util.stream.IntStream
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -13,12 +14,12 @@ import kotlin.test.assertTrue
 
 class StridedVectorTest {
     @Test fun testOf() {
-        Assert.assertArrayEquals(doubleArrayOf(1.0),
-                                 StridedVector.of(1.0).toArray(), Precision.EPSILON)
-        Assert.assertArrayEquals(doubleArrayOf(1.0, 2.0),
-                                 StridedVector.of(1.0, 2.0).toArray(), Precision.EPSILON)
-        Assert.assertArrayEquals(doubleArrayOf(1.0, 2.0, 3.0),
-                                 StridedVector.of(1.0, 2.0, 3.0).toArray(), Precision.EPSILON)
+        assertArrayEquals(doubleArrayOf(1.0),
+                          StridedVector.of(1.0).toArray(), Precision.EPSILON)
+        assertArrayEquals(doubleArrayOf(1.0, 2.0),
+                          StridedVector.of(1.0, 2.0).toArray(), Precision.EPSILON)
+        assertArrayEquals(doubleArrayOf(1.0, 2.0, 3.0),
+                          StridedVector.of(1.0, 2.0, 3.0).toArray(), Precision.EPSILON)
     }
 
     @Test fun testTranspose() {
@@ -49,21 +50,57 @@ class StridedVectorTest {
         }
     }
 
-    @Test fun testReorder() {
-        val values = doubleArrayOf(42.0, 2.0, -1.0, 0.0, 4.0, 2.0).asStrided()
-        val indices = values.sorted()
-        Assert.assertArrayEquals(intArrayOf(2, 3, 1, 5, 4, 0), indices)
+    @Test fun testReverse() {
+        val values = RANDOM.doubles().limit(100).toArray()
+        val v = values.clone().asStrided()
+        v.reverse()
+        assertArrayEquals(values.reversedArray(), v.toArray(), Precision.EPSILON)
+    }
+
+    @Test fun testSort() {
+        val values = RANDOM.doubles().limit(100).toArray()
+        val v = values.clone().asStrided()
+        v.sort()
+        assertArrayEquals(values.sortedArray(), v.toArray(), Precision.EPSILON)
+    }
+
+    @Test fun testSorted() {
+        val v = StridedVector.of(42.0, 2.0, -1.0, 0.0, 4.0, 2.0)
+        val indices = v.sorted()
+        val copy = v.toArray()
+        copy.sort()
+
+        for ((i, j) in indices.withIndex()) {
+            assertEquals(copy[i], v[j])
+        }
+    }
+
+    @Test fun testSortedReverse() {
+        val v = StridedVector.of(42.0, 2.0, -1.0, 0.0, 4.0, 2.0)
+        val indices = v.sorted(reverse = true)
+        val copy = v.toArray()
+        copy.sort()
+
+        for ((i, j) in indices.withIndex()) {
+            assertEquals(copy[copy.size() - 1 - i], v[j])
+        }
+    }
+
+    @Test fun testReorderSortedNaNs() {
+        val values = doubleArrayOf(42.0, 2.0, -1.0, 0.0, 4.0, 2.0)
+        val indices = values.asStrided().sorted()
+        assertArrayEquals(intArrayOf(2, 3, 1, 5, 4, 0), indices)
 
         val v = StridedVector.create(doubleArrayOf(Double.NaN, Double.NaN, // Prefix.
                                                    42.0, Double.NaN, 2.0,
                                                    Double.NaN, -1.0,
                                                    Double.NaN, 0.0,
                                                    Double.NaN, 4.0,
-                                                   Double.NaN, 2.0), 2,
-                                     values.size(), 2)
+                                                   Double.NaN, 2.0),
+                                     offset = 2, size = 2, stride = 2)
         v.reorder(indices)
-        Assert.assertArrayEquals(doubleArrayOf(-1.0, 0.0, 2.0, 2.0, 4.0, 42.0),
-                                 v.toArray(), Precision.EPSILON)
+        assertArrayEquals(doubleArrayOf(-1.0, 0.0, 2.0, 2.0, 4.0, 42.0),
+                          v.toArray(), Precision.EPSILON)
     }
 
     @Test fun testDotFast() {
@@ -104,27 +141,31 @@ class StridedVectorTest {
 
     @Test fun testReshape() {
         val v = getRangeVector(0, 6)
-        Assert.assertArrayEquals(arrayOf(doubleArrayOf(0.0, 1.0, 2.0),
-                                         doubleArrayOf(3.0, 4.0, 5.0)),
+        assertArrayEquals(arrayOf(doubleArrayOf(0.0, 1.0, 2.0),
+                                  doubleArrayOf(3.0, 4.0, 5.0)),
                                  v.reshape(2, 3).toArray())
-        Assert.assertArrayEquals(arrayOf(doubleArrayOf(0.0, 1.0),
-                                         doubleArrayOf(2.0, 3.0),
-                                         doubleArrayOf(4.0, 5.0)),
-                                 v.reshape(3, 2).toArray())
+        assertArrayEquals(arrayOf(doubleArrayOf(0.0, 1.0),
+                                  doubleArrayOf(2.0, 3.0),
+                                  doubleArrayOf(4.0, 5.0)),
+                          v.reshape(3, 2).toArray())
     }
 
     @Test fun testReshapeWithStride() {
         val v = StridedVector.create(doubleArrayOf(0.0, 1.0, 2.0, 3.0,
                                                    4.0, 5.0, 6.0, 7.0),
                                      0, 4, stride = 2)
-        Assert.assertArrayEquals(arrayOf(doubleArrayOf(0.0, 2.0),
-                                         doubleArrayOf(4.0, 6.0)),
-                                 v.reshape(2, 2).toArray())
+        assertArrayEquals(arrayOf(doubleArrayOf(0.0, 2.0),
+                                  doubleArrayOf(4.0, 6.0)),
+                          v.reshape(2, 2).toArray())
     }
 
     private fun getRangeVector(a: Int, b: Int): StridedVector {
         return IntStream.range(a, b).mapToDouble { it.toDouble() }
                 .toArray().asStrided()
+    }
+
+    companion object {
+        private val RANDOM = Random(0)
     }
 }
 
