@@ -41,7 +41,7 @@ open class StridedMatrix3(val depth: Int,
         }
     }
 
-    private fun unsafeGet(d: Int, r: Int, c: Int): Double = data[unsafeIndex(d, r, c)]
+    private fun unsafeGet(d: Int, r: Int, c: Int) = data[unsafeIndex(d, r, c)]
 
     operator fun set(d: Int, r: Int, c: Int, value: Double) {
         try {
