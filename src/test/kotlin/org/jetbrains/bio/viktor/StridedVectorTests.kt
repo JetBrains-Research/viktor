@@ -1,9 +1,9 @@
+package org.jetbrains.bio.viktor
 
 import org.apache.commons.math3.distribution.NormalDistribution
 import org.apache.commons.math3.stat.descriptive.summary.Sum
 import org.apache.commons.math3.util.Precision
 import org.jetbrains.bio.jni.SIMDMath
-import org.jetbrains.bio.strided.*
 import org.junit.Assert
 import org.junit.Test
 import java.util.stream.IntStream

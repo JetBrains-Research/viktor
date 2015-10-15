@@ -1,6 +1,5 @@
-import org.jetbrains.bio.strided.StridedMatrix
-import org.jetbrains.bio.strided.StridedMatrix2
-import org.jetbrains.bio.strided.StridedMatrix3
+package org.jetbrains.bio.viktor
+
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
