@@ -24,6 +24,33 @@ Requirements
 * [Yeppp!] [yeppp] 1.0.0
 * [simdstat] [simdstat]
 
+Installation
+------------
+
+The latest version of `viktor` is available on [Bintray] [bintray]. If you're using
+Gradle just add the following to your `build.gradle`:
+
+```gradle
+repositories {
+    maven {
+        url "https://dl.bintray.com/superbobry/maven"
+    }
+}
+
+dependencies {
+    compile 'org.jetbrains.bio:viktor:0.1.0'
+
+    compile files("$rootDir/lib/yeppp-bundle-1.0.jar")
+    compile files("$rootDir/lib/simd.jar",
+                  "$rootDir/lib/simd-sources.jar")
+}
+
+```
+
+**Note**: Yeppp! and simdstat aren't available via Maven Central or jCenter. You
+will have to download them manually.
+
 [ndarray]: http://docs.scipy.org/doc/numpy/reference/arrays.ndarray.html
 [yeppp]: http://www.yeppp.info
 [simdstat]: https://github.com/JetBrains-Research/simdstat
+[jcenter]: https://bintray.com/bintray/jcenter
