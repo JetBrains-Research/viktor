@@ -10,7 +10,7 @@ import java.util.*
 /**
  * Wrap a given array of elements. The array will not be copied.
  */
-fun DoubleArray.asStrided() = StridedVector.create(this, 0, size(), 1)
+fun DoubleArray.asStrided() = StridedVector.create(this, 0, size, 1)
 
 /**
  * Strided floating point containers.
@@ -40,9 +40,9 @@ open class StridedVector(protected val data: DoubleArray,
          * Create a vector with given elements.
          */
         @JvmStatic fun of(first: Double, vararg rest: Double): StridedVector {
-            val data = DoubleArray(rest.size() + 1)
+            val data = DoubleArray(rest.size + 1)
             data[0] = first
-            System.arraycopy(rest, 0, data, 1, rest.size())
+            System.arraycopy(rest, 0, data, 1, rest.size)
             return data.asStrided()
         }
 
@@ -65,11 +65,11 @@ open class StridedVector(protected val data: DoubleArray,
          * TODO: remove this once we get rid of all Java usages.
          */
         @JvmStatic fun wrap(data: DoubleArray): StridedVector {
-            return create(data, 0, data.size(), 1)
+            return create(data, 0, data.size, 1)
         }
 
         fun create(data: DoubleArray, offset: Int, size: Int, stride: Int): StridedVector {
-            require(offset + size <= data.size()) { "not enough data" }
+            require(offset + size <= data.size) { "not enough data" }
             return if (stride == 1) {
                 DenseVector.create(data, offset, size)
             } else {
@@ -78,7 +78,7 @@ open class StridedVector(protected val data: DoubleArray,
         }
     }
 
-    inline val indices: IntRange get() = 0..size() - 1
+    val indices: IntRange get() = 0..size() - 1
 
     operator fun get(pos: Int): Double {
         try {
@@ -108,9 +108,9 @@ open class StridedVector(protected val data: DoubleArray,
         return StridedVector(data, offset + from, to - from, stride)
     }
 
-    operator fun set(any: _, init: Double): Unit = fill(init)
+    operator fun set(any: _I, init: Double): Unit = fill(init)
 
-    operator fun set(any: _, other: StridedVector): Unit = other.copyTo(this)
+    operator fun set(any: _I, other: StridedVector): Unit = other.copyTo(this)
 
     open fun fill(init: Double) {
         for (pos in 0..size - 1) {
@@ -127,7 +127,7 @@ open class StridedVector(protected val data: DoubleArray,
     }
 
     /** A useful shortcut for column-vector. */
-    inline val T: StridedMatrix2 get() = transpose()
+    val T: StridedMatrix2 get() = transpose()
 
     fun transpose() = reshape(size, 1)
 
@@ -163,7 +163,7 @@ open class StridedVector(protected val data: DoubleArray,
     }
 
     fun reorder(indices: IntArray) {
-        require(size == indices.size())
+        require(size == indices.size)
         val copy = indices.clone()
         for (pos in 0..size - 1) {
             val value = unsafeGet(pos)
@@ -189,7 +189,7 @@ open class StridedVector(protected val data: DoubleArray,
     }
 
     fun dot(other: ShortArray): Double {
-        require(other.size() == size) { "non-conformable arrays" }
+        require(other.size == size) { "non-conformable arrays" }
         var acc = 0.0
         for (pos in 0..size - 1) {
             acc += unsafeGet(pos) * other[pos].toDouble()
@@ -199,7 +199,7 @@ open class StridedVector(protected val data: DoubleArray,
     }
 
     fun dot(other: IntArray): Double {
-        require(other.size() == size) { "non-conformable arrays" }
+        require(other.size == size) { "non-conformable arrays" }
         var acc = 0.0
         for (pos in 0..size - 1) {
             acc += unsafeGet(pos) * other[pos].toDouble()
@@ -208,8 +208,8 @@ open class StridedVector(protected val data: DoubleArray,
         return acc
     }
 
-    open fun dot(other: DoubleArray): Double {
-        require(other.size() == size) { "non-conformable arrays" }
+    open infix fun dot(other: DoubleArray): Double {
+        require(other.size == size) { "non-conformable arrays" }
         var acc = 0.0
         for (pos in 0..size - 1) {
             acc += unsafeGet(pos) * other[pos]
@@ -508,16 +508,16 @@ class LargeDenseVector(data: DoubleArray, offset: Int, size: Int) :
     override fun max() = Core.Max_V64f_S64f(data, offset, size)
 
     override fun dot(other: DoubleArray): Double {
-        require(other.size() == size) { "non-conformable arrays" }
+        require(other.size == size) { "non-conformable arrays" }
         return Core.DotProduct_V64fV64f_S64f(data, offset, other, 0, size)
     }
 
     override fun expInPlace() {
-        info.yeppp.Math.Exp_V64f_V64f(data, 0, data, 0, data.size())
+        info.yeppp.Math.Exp_V64f_V64f(data, 0, data, 0, data.size)
     }
 
     override fun logInPlace() {
-        info.yeppp.Math.Log_V64f_V64f(data, 0, data, 0, data.size())
+        info.yeppp.Math.Log_V64f_V64f(data, 0, data, 0, data.size)
     }
 
     override fun logRescale() = SIMDMath.logRescale(data, offset, size)

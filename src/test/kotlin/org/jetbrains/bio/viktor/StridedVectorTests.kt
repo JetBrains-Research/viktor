@@ -82,7 +82,7 @@ class StridedVectorTest {
         copy.sort()
 
         for ((i, j) in indices.withIndex()) {
-            assertEquals(copy[copy.size() - 1 - i], v[j])
+            assertEquals(copy[copy.size - 1 - i], v[j])
         }
     }
 
@@ -97,7 +97,7 @@ class StridedVectorTest {
                                                    Double.NaN, 0.0,
                                                    Double.NaN, 4.0,
                                                    Double.NaN, 2.0),
-                                     offset = 2, size = values.size(), stride = 2)
+                                     offset = 2, size = values.size, stride = 2)
         v.reorder(indices)
         assertArrayEquals(doubleArrayOf(-1.0, 0.0, 2.0, 2.0, 4.0, 42.0),
                           v.toArray(), Precision.EPSILON)

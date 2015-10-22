@@ -9,7 +9,7 @@ import org.apache.commons.math3.util.FastMath
  *
  * assuming a >= b.
  */
-fun Double.logAddExp(b: Double): Double {
+infix fun Double.logAddExp(b: Double): Double {
     val a = this
     return when {
         a.isInfinite() && a < 0 -> b

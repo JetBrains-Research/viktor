@@ -3,6 +3,16 @@ viktor Changelog
 
 Here you can see the full list of changes between each viktor release.
 
+Version 0.1.1
+-------------
+
+Technical release, released on October 22th, 2015
+
+- Updated to Kotlin 1.0.0-beta.
+- Renamed '_' to '_I' because the latter isn't a valid identifier as
+  of Kotlin M14. This is a temporary solution. I hope we'll find
+  a more human-readable workaround eventually.
+
 Version 0.1.0
 -------------
 

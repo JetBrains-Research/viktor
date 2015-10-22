@@ -13,7 +13,7 @@ Kotlin. Here're some of the higlights:
     ```kotlin
     val m = StridedMatrix(4, 3)
     m[0] = StridedVector.full(3, 42.0)  // row-view.
-    m[_, 0]                             // column-view.
+    m[_I, 0]                            // column-view.
     m[0] = 42.0                         // broadcasting.
     m + m                               // arithmetic operations.
     ```

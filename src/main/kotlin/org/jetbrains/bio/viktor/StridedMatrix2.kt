@@ -27,7 +27,7 @@ open class StridedMatrix2(val rowsNumber: Int,
      * of memory. This allows to use SIMD operations, e.g. when
      * computing the sum of elements.
      */
-    protected inline val isDense: Boolean get() {
+    protected val isDense: Boolean get() {
         return rowStride == columnsNumber && columnStride == 1
     }
 
@@ -80,18 +80,18 @@ open class StridedMatrix2(val rowsNumber: Int,
     /**
      * A less-verbose alias to [.columnView].
      *
-     * Use in conjunction with [_], e.g. `m[_, i]`.
+     * Use in conjunction with [_I], e.g. `m[_I, i]`.
      */
-    operator fun get(any: _, c: Int) = columnView(c)
+    operator fun get(any: _I, c: Int) = columnView(c)
 
-    operator fun set(any: _, c: Int, other: StridedVector) = other.copyTo(columnView(c))
+    operator fun set(any: _I, c: Int, other: StridedVector) = other.copyTo(columnView(c))
 
-    operator fun set(any: _, c: Int, init: Double) = columnView(c).fill(init)
+    operator fun set(any: _I, c: Int, init: Double) = columnView(c).fill(init)
 
-    operator fun set(row: Int, any: _, init: Double) = columnView(row).fill(init)
+    operator fun set(row: Int, any: _I, init: Double) = columnView(row).fill(init)
 
     /** A useful shortcut for transposed matrix. */
-    inline val T: StridedMatrix2 get() = transpose()
+    val T: StridedMatrix2 get() = transpose()
 
     fun transpose() = StridedMatrix2(columnsNumber, rowsNumber, offset, data,
                                      columnStride, rowStride)

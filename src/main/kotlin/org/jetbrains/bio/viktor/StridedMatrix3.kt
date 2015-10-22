@@ -27,7 +27,7 @@ open class StridedMatrix3(val depth: Int,
      * of memory. This allows to use SIMD operations, e.g. when
      * computing the sum of elements.
      */
-    protected inline val isDense: Boolean get() {
+    protected val isDense: Boolean get() {
         return depthStride == rowsNumber * columnsNumber &&
                rowStride == columnsNumber &&
                columnStride == 1
@@ -72,7 +72,7 @@ open class StridedMatrix3(val depth: Int,
         require(depthStride == other.depthStride &&
                 rowStride == other.rowStride &&
                 columnStride == other.columnStride)
-        System.arraycopy(data, 0, other.data, 0, data.size())
+        System.arraycopy(data, 0, other.data, 0, data.size)
     }
 
     fun flatten(): StridedVector {
