@@ -35,7 +35,6 @@ class KahanSum @JvmOverloads constructor(private var accumulator: Double = 0.0) 
 
     /**
      * Supplies a number to be added to the accumulator.
-     * @param value
      */
     fun feed(value: Double): KahanSum {
         val t = accumulator + value

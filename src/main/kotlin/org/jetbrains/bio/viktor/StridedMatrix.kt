@@ -1,7 +1,7 @@
 package org.jetbrains.bio.viktor
 
 /**
- * A strided matrix stored in a flat double array.
+ * A strided matrix stored in a flat [DoubleArray].
  *
  * @author Sergei Lebedev
  * @since 0.1.0
@@ -55,9 +55,12 @@ object StridedMatrix {
     }
 
     /**
-     * Creates a matrix with rows summing to one.
+     * Creates a 2-D matrix with rows summing to one.
      */
     fun stochastic(size: Int) = full(size, size, 1.0 / size)
 
+    /**
+     * Creates a 3-D matrix with [stochastic] submatrices.
+     */
     fun indexedStochastic(depth: Int, size: Int) = full(depth, size, size, 1.0 / size)
 }

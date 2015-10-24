@@ -13,70 +13,40 @@ import java.util.*
 fun DoubleArray.asStrided() = StridedVector.create(this, 0, size, 1)
 
 /**
- * Strided floating point containers.
+ * A strided vector stored in a [DoubleArray].
+ *
+ * Vector is backed by the raw [data] array, which is guaranteed to
+ * contain at least [size] elements starting from the [offset] index.
+ *
+ * The term *strided* means that unlike regular [DoubleArray] the elements
+ * of a vector can be at arbitrary index intervals from each other. For
+ * example
+ *
+ *   data = [0, 1, 2, 3, 4, 5]
+ *   offset = 1
+ *   size = 2
+ *   stride = 3
+ *
+ * corresponds to a vector with elements
+ *
+ *   [1, 4]
+ *
+ * Vectors with `stride` equal to 1 are caled called *dense*. The distinction
+ * is important because some of the operations can be significantly optimized
+ * for dense vectors.
  *
  * @author Sergei Lebedev
  * @since 0.1.0
  */
-open class StridedVector(protected val data: DoubleArray,
-                         protected val offset: Int,
-                         protected val size: Int,
-                         private val stride: Int) {
-    companion object {
-        /**
-         * Create a zero-filled vector of a given `size`.
-         */
-        operator fun invoke(size: Int) = create(DoubleArray(size), 0, size, 1)
-
-        operator inline fun invoke(size: Int, block: (Int) -> Double): StridedVector {
-            val v = this(size)
-            for (i in 0..size - 1) {
-                v[i] = block(i)
-            }
-            return v
-        }
-
-        /**
-         * Create a vector with given elements.
-         */
-        @JvmStatic fun of(first: Double, vararg rest: Double): StridedVector {
-            val data = DoubleArray(rest.size + 1)
-            data[0] = first
-            System.arraycopy(rest, 0, data, 1, rest.size)
-            return data.asStrided()
-        }
-
-        /**
-         * Creates an array with elements summing to one.
-         */
-        @JvmStatic fun stochastic(size: Int): StridedVector {
-            return full(size, 1.0 / size)
-        }
-
-        @JvmStatic fun full(size: Int, init: Double): StridedVector {
-            val v = this(size)
-            v.fill(init)
-            return v
-        }
-
-        /**
-         * Wrap a given array of elements. The array will not be copied.
-         *
-         * TODO: remove this once we get rid of all Java usages.
-         */
-        @JvmStatic fun wrap(data: DoubleArray): StridedVector {
-            return create(data, 0, data.size, 1)
-        }
-
-        fun create(data: DoubleArray, offset: Int, size: Int, stride: Int): StridedVector {
-            require(offset + size <= data.size) { "not enough data" }
-            return if (stride == 1) {
-                DenseVector.create(data, offset, size)
-            } else {
-                StridedVector(data, offset, size, stride)
-            }
-        }
-    }
+open class StridedVector internal constructor(
+        /** Raw data array. */
+        protected val data: DoubleArray,
+        /** Offset of the first vector element in the raw data array. */
+        protected val offset: Int,
+        /** Number of elements in the raw data array to use. */
+        protected val size: Int,
+        /** Indexing step. */
+        private val stride: Int) {
 
     val indices: IntRange get() = 0..size() - 1
 
@@ -126,17 +96,29 @@ open class StridedVector(protected val data: DoubleArray,
         }
     }
 
-    /** A useful shortcut for column-vector. */
+    /** An alias for [transpose]. */
     val T: StridedMatrix2 get() = transpose()
 
+    /**
+     * Constructs a column-vector view of this vector in O(1) time.
+     *
+     * A column vector is a matrix with [size] rows and a single column,
+     * e.g. `[1, 2, 3]^T` is `[[1], [2], [3]]`.
+     */
     fun transpose() = reshape(size, 1)
 
+    /** Returns a copy of the elements in this vector. */
     fun copy(): StridedVector {
         val copy = StridedVector(size)
         copyTo(copy)
         return copy
     }
 
+    /**
+     * Copies the elements in this vector to [other].
+     *
+     * Optimized for dense vectors.
+     */
     open fun copyTo(other: StridedVector) {
         require(size == other.size)
         for (pos in 0..size - 1) {
@@ -144,9 +126,20 @@ open class StridedVector(protected val data: DoubleArray,
         }
     }
 
+    /**
+     * Sorts the elements in this vector in descending order.
+     *
+     * @param reverse if `true` the elements are sorted in `ascending` order.
+     *                Defaults to `false`.
+     */
     fun sort(reverse: Boolean = false) = reorder(sorted(reverse))
 
-    @JvmOverloads fun sorted(reverse: Boolean = false): IntArray {
+    /**
+     * Returns a permutation of indices which makes the vector sorted.
+     *
+     * @param reverse see [.sort] for details.
+     */
+    fun sorted(reverse: Boolean = false): IntArray {
         // XXX we can do this more efficiently, if needed.
         val indexedValues = if (reverse) {
             toArray().withIndex().sortedByDescending { it.value }
@@ -162,6 +155,7 @@ open class StridedVector(protected val data: DoubleArray,
         return indices
     }
 
+    /** Applies a given permutation of indices to the elements in the vector. */
     fun reorder(indices: IntArray) {
         require(size == indices.size)
         val copy = indices.clone()
@@ -182,13 +176,17 @@ open class StridedVector(protected val data: DoubleArray,
         }
     }
 
+    /** Reshapes this vector into a matrix in row-major order. */
     fun reshape(numRows: Int, numColumns: Int): StridedMatrix2 {
         require(numRows * numColumns == size)
         return StridedMatrix2(numRows, numColumns, offset, data,
-                numColumns * stride, stride)
+                              numColumns * stride, stride)
     }
 
-    fun dot(other: ShortArray): Double {
+    /**
+     * Computes a dot product of this vector with an array.
+     */
+    infix fun dot(other: ShortArray): Double {
         require(other.size == size) { "non-conformable arrays" }
         var acc = 0.0
         for (pos in 0..size - 1) {
@@ -198,7 +196,10 @@ open class StridedVector(protected val data: DoubleArray,
         return acc
     }
 
-    fun dot(other: IntArray): Double {
+    /**
+     * Computes a dot product of this vector with an array.
+     */
+    infix fun dot(other: IntArray): Double {
         require(other.size == size) { "non-conformable arrays" }
         var acc = 0.0
         for (pos in 0..size - 1) {
@@ -208,6 +209,11 @@ open class StridedVector(protected val data: DoubleArray,
         return acc
     }
 
+    /**
+     * Computes a dot product of this vector with an array.
+     *
+     * Optimized for dense vectors.
+     */
     open infix fun dot(other: DoubleArray): Double {
         require(other.size == size) { "non-conformable arrays" }
         var acc = 0.0
@@ -218,6 +224,11 @@ open class StridedVector(protected val data: DoubleArray,
         return acc
     }
 
+    /**
+     * Returns the sum of the elements using [KahanSum].
+     *
+     * Optimized for dense vectors.
+     */
     open fun sum(): Double {
         val acc = KahanSum()
         for (pos in 0..size - 1) {
@@ -227,6 +238,11 @@ open class StridedVector(protected val data: DoubleArray,
         return acc.result()
     }
 
+    /**
+     * Computes cumulative sum of the elements.
+     *
+     * The operation is done **in place**.
+     */
     open fun cumSum() {
         val acc = KahanSum()
         for (pos in 0..size - 1) {
@@ -235,8 +251,14 @@ open class StridedVector(protected val data: DoubleArray,
         }
     }
 
+    /**
+     * Returns the minimum element.
+     *
+     * Optimized for dense vectors.
+     */
     open fun min() = unsafeGet(argMin())
 
+    /** Returns the index of the minimum element. */
     fun argMin(): Int {
         require(size > 0) { "no data" }
         var minPos = 0
@@ -252,8 +274,14 @@ open class StridedVector(protected val data: DoubleArray,
         return minPos
     }
 
+    /**
+     * Returns the maximum element.
+     *
+     * Optimized for dense vectors.
+     */
     open fun max() = unsafeGet(argMax())
 
+    /** Returns the index of the maxmimum element. */
     fun argMax(): Int {
         require(size > 0) { "no data" }
         var maxPos = 0
@@ -293,11 +321,23 @@ open class StridedVector(protected val data: DoubleArray,
         }
     }
 
+    /**
+     * Rescales the elements so that the sum is 1.0.
+     *
+     * The operation is done **in place**.
+     */
     fun rescale() {
         val total = sum() + Precision.EPSILON * size.toDouble()
         this *= 1.0 / total
     }
 
+    /**
+     * Rescales the element so that the exponent of the sum is 1.
+     *
+     * Optimized for dense vectors.
+     *
+     * The operation is done **in place**.
+     */
     open fun logRescale() {
         val logTotal = logSumExp()
         for (pos in 0..size - 1) {
@@ -305,6 +345,13 @@ open class StridedVector(protected val data: DoubleArray,
         }
     }
 
+    /**
+     * Computes
+     *
+     *   log(exp(v[0]) + ... + exp(v[size - 1]))
+     *
+     * in a numerically stable way.
+     */
     open fun logSumExp(): Double {
         val offset = max()
         val sum = KahanSum()
@@ -315,7 +362,7 @@ open class StridedVector(protected val data: DoubleArray,
         return Math.log(sum.result()) + offset
     }
 
-    fun logAddExp(other: StridedVector): StridedVector {
+    infix fun logAddExp(other: StridedVector): StridedVector {
         val v = copy()
         v.logAddExp(other, v)
         return v
@@ -438,6 +485,62 @@ open class StridedVector(protected val data: DoubleArray,
     protected fun checkSize(other: StridedVector) {
         require(size == other.size) { "non-conformable arrays" }
     }
+
+    companion object {
+        /**
+         * Create a zero-filled vector of a given `size`.
+         */
+        operator fun invoke(size: Int) = create(DoubleArray(size), 0, size, 1)
+
+        operator inline fun invoke(size: Int, block: (Int) -> Double): StridedVector {
+            val v = this(size)
+            for (i in 0..size - 1) {
+                v[i] = block(i)
+            }
+            return v
+        }
+
+        /**
+         * Creates a vector with given elements.
+         */
+        @JvmStatic fun of(first: Double, vararg rest: Double): StridedVector {
+            val data = DoubleArray(rest.size + 1)
+            data[0] = first
+            System.arraycopy(rest, 0, data, 1, rest.size)
+            return data.asStrided()
+        }
+
+        /** Creates an array with elements summing to one. */
+        @JvmStatic fun stochastic(size: Int): StridedVector {
+            return full(size, 1.0 / size)
+        }
+
+        /** Creates an array filled with a given [init] element. */
+        @JvmStatic fun full(size: Int, init: Double): StridedVector {
+            val v = this(size)
+            v.fill(init)
+            return v
+        }
+
+        /**
+         * Wrap a given array of elements. The array will not be copied.
+         *
+         * This is exposed for the pure-Java callers. Please prefer using
+         * [DoubleArray#asStrided] in Kotlin.
+         */
+        @JvmStatic fun wrap(data: DoubleArray): StridedVector {
+            return create(data, 0, data.size, 1)
+        }
+
+        internal fun create(data: DoubleArray, offset: Int, size: Int, stride: Int): StridedVector {
+            require(offset + size <= data.size) { "not enough data" }
+            return if (stride == 1) {
+                DenseVector.create(data, offset, size)
+            } else {
+                StridedVector(data, offset, size, stride)
+            }
+        }
+    }
 }
 
 /**
@@ -469,9 +572,9 @@ open class DenseVector protected constructor(data: DoubleArray, offset: Int, siz
         /**
          * We only use SIMD operations on vectors larger than the split boundary.
          */
-        val DENSE_SPLIT_SIZE = 16
+        const val DENSE_SPLIT_SIZE = 16
 
-        fun create(data: DoubleArray, offset: Int, size: Int): DenseVector {
+        internal fun create(data: DoubleArray, offset: Int, size: Int): DenseVector {
             return if (size <= DENSE_SPLIT_SIZE) {
                 SmallDenseVector(data, offset, size)
             } else {

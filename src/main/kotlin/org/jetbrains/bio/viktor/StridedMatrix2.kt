@@ -10,17 +10,16 @@ import java.util.stream.Stream
  * @author Sergei Lebedev
  * @since 0.1.0
  */
-open class StridedMatrix2(val rowsNumber: Int,
-                          val columnsNumber: Int,
-                          protected val offset: Int,
-                          protected val data: DoubleArray,
-                          private val rowStride: Int,
-                          private val columnStride: Int) {
+open class StridedMatrix2 internal constructor(
+        val rowsNumber: Int, val columnsNumber: Int,
+        protected val offset: Int,
+        protected val data: DoubleArray,
+        private val rowStride: Int,
+        private val columnStride: Int) {
 
     constructor(numRows: Int, numColumns: Int) :
     // Use row-major order by default.
-    this(numRows, numColumns, 0, DoubleArray(numRows * numColumns), numColumns, 1) {
-    }
+    this(numRows, numColumns, 0, DoubleArray(numRows * numColumns), numColumns, 1) {}
 
     /**
      * Dense matrices are laid out in a single contiguous block
@@ -90,23 +89,34 @@ open class StridedMatrix2(val rowsNumber: Int,
 
     operator fun set(row: Int, any: _I, init: Double) = columnView(row).fill(init)
 
-    /** A useful shortcut for transposed matrix. */
+    /** An alias for [transpose] */
     val T: StridedMatrix2 get() = transpose()
 
+    /**
+     * Constructs matrix transpose in O(1) time.
+     */
     fun transpose() = StridedMatrix2(columnsNumber, rowsNumber, offset, data,
                                      columnStride, rowStride)
 
+    /**
+     * Flattens the matrix into a vector in O(1) time.
+     *
+     * No data copying is performed, thus the operation is only applicable
+     * to dense matrices.
+     */
     fun flatten(): StridedVector {
         check(isDense) { "matrix is not dense" }
         return StridedVector.create(data, offset, rowsNumber * columnsNumber, 1)
     }
 
+    /** Returns a copy of the elements in this matrix. */
     fun copy(): StridedMatrix2 {
         val copy = StridedMatrix2(rowsNumber, columnsNumber)
         copyTo(copy)
         return copy
     }
 
+    /** Copies elements in this matrix to [other]. */
     fun copyTo(other: StridedMatrix2) {
         checkDimensions(other)
         if (rowStride == other.rowStride && columnStride == other.columnStride) {
@@ -119,6 +129,11 @@ open class StridedMatrix2(val rowsNumber: Int,
         }
     }
 
+    /**
+     * Returns a stream of row or column views of the matrix.
+     *
+     * @param axis axis to view along, 0 stands for columns, 1 for rows.
+     */
     fun along(axis: Int): Stream<StridedVector> = when (axis) {
         0 -> IntStream.range(0, columnsNumber).mapToObj { columnView(it) }
         1 -> IntStream.range(0, rowsNumber).mapToObj { rowView(it) }

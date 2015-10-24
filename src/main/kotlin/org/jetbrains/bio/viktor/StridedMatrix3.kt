@@ -3,18 +3,17 @@ package org.jetbrains.bio.viktor
 import java.util.*
 
 /**
- * A specialization of [StridedMatrix] to 3-D data.
+ * A specialization of [StridedMatrix] for 3-D data.
  *
  * @author Sergei Lebedev
  * @since 0.1.0
  */
-open class StridedMatrix3(val depth: Int,
-                          val rowsNumber: Int,
-                          val columnsNumber: Int,
-                          protected val data: DoubleArray,
-                          private val depthStride: Int,
-                          private val rowStride: Int,
-                          private val columnStride: Int) {
+open class StridedMatrix3 internal constructor(
+        val depth: Int, val rowsNumber: Int, val columnsNumber: Int,
+        protected val data: DoubleArray,
+        private val depthStride: Int,
+        private val rowStride: Int,
+        private val columnStride: Int) {
 
     constructor(depth: Int, numRows: Int, numColumns: Int) :
     this(depth, numRows, numColumns,
