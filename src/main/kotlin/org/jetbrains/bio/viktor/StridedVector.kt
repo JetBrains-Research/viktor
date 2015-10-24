@@ -401,6 +401,31 @@ open class StridedVector internal constructor(
         }
     }
 
+    operator fun minus(other: StridedVector): StridedVector {
+        val v = copy()
+        v -= other
+        return v
+    }
+
+    operator open fun minusAssign(other: StridedVector) {
+        checkSize(other)
+        for (pos in 0..size - 1) {
+            unsafeSet(pos, unsafeGet(pos) - other.unsafeGet(pos))
+        }
+    }
+
+    operator fun minus(update: Double): StridedVector {
+        val v = copy()
+        v -= update
+        return v
+    }
+
+    operator open fun minusAssign(update: Double) {
+        for (pos in 0..size - 1) {
+            unsafeSet(pos, unsafeGet(pos) - update)
+        }
+    }
+
     operator fun times(value: Double): StridedVector {
         val v = copy()
         v *= value
@@ -410,6 +435,18 @@ open class StridedVector internal constructor(
     operator open fun timesAssign(value: Double) {
         for (pos in 0..size - 1) {
             unsafeSet(pos, unsafeGet(pos) * value)
+        }
+    }
+
+    operator fun div(value: Double): StridedVector {
+        val v = copy()
+        v /= value
+        return v
+    }
+
+    operator open fun divAssign(value: Double) {
+        for (pos in 0..size - 1) {
+            unsafeSet(pos, unsafeGet(pos) / value)
         }
     }
 
@@ -638,6 +675,10 @@ class LargeDenseVector(data: DoubleArray, offset: Int, size: Int) :
         }
     }
 
+    override fun plusAssign(update: Double) {
+        Core.Add_V64fS64f_V64f(data, offset, update, data, offset, size)
+    }
+
     override fun plusAssign(other: StridedVector) {
         if (other is DenseVector) {
             checkSize(other)
@@ -648,8 +689,18 @@ class LargeDenseVector(data: DoubleArray, offset: Int, size: Int) :
         }
     }
 
-    override fun plusAssign(update: Double) {
-        Core.Add_V64fS64f_V64f(data, offset, update, data, offset, size)
+    override fun minusAssign(update: Double) {
+        Core.Subtract_V64fS64f_V64f(data, offset, update, data, offset, size)
+    }
+
+    override fun minusAssign(other: StridedVector) {
+        if (other is DenseVector) {
+            checkSize(other)
+            Core.Subtract_V64fV64f_V64f(data, offset, other.data, other.offset,
+                                        data, offset, size)
+        } else {
+            super.plusAssign(other)
+        }
     }
 
     override fun timesAssign(value: Double) {
