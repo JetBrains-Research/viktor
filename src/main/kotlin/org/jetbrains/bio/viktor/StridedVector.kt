@@ -143,7 +143,8 @@ open class StridedVector internal constructor(
         val comparator = comparator<IndexedDoubleValue> { x, y -> x.compareTo(y) }
 
         val indexedValues = Array(size, { pos -> IndexedDoubleValue(pos, unsafeGet(pos)) })
-        Arrays.sort(indexedValues, if (reverse) comparator.reversed() else comparator)
+        Arrays.sort(indexedValues,
+                    if (reverse) comparator.reversed() else comparator)
 
         val indices = IntArray(size)
         for (pos in 0 until size) {
