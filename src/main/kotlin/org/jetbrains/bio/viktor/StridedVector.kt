@@ -147,7 +147,7 @@ open class StridedVector internal constructor(
                                0, size)
 
         val indices = IntArray(size)
-        for (pos in 0 until size) {
+        for (pos in 0..size - 1) {
             indices[pos] = indexedValues[pos].index
         }
 
