@@ -140,15 +140,13 @@ open class StridedVector internal constructor(
      * @param reverse see [.sort] for details.
      */
     fun sorted(reverse: Boolean = false): IntArray {
-        // XXX we can do this more efficiently, if needed.
-        val indexedValues = if (reverse) {
-            toArray().withIndex().sortedByDescending { it.value }
-        } else {
-            toArray().withIndex().sortedBy { it.value }
-        }
+        val comparator = comparator<IndexedDoubleValue> { x, y -> x.compareTo(y) }
 
-        val indices = IntArray(size())
-        for (pos in 0..size - 1) {
+        val indexedValues = Array(size, { pos -> IndexedDoubleValue(pos, unsafeGet(pos)) })
+        Arrays.sort(indexedValues, if (reverse) comparator.reversed() else comparator)
+
+        val indices = IntArray(size)
+        for (pos in 0 until size) {
             indices[pos] = indexedValues[pos].index
         }
 
