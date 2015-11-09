@@ -2,7 +2,7 @@ viktor [![Build Status](https://travis-ci.org/JetBrains-Research/viktor.svg?bran
 ======
 
 `viktor` implements a restricted subset of NumPy [ndarray] [ndarray] features in
-Kotlin. Here're some of the higlights:
+Kotlin. Here're some of the highlights:
 
 * Three basic data types: `StridedVector`, `StridedMatrix2` and
   `StridedMatrix3` specialized to `double` values.
