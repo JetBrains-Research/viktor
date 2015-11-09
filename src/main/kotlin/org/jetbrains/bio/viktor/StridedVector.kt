@@ -142,9 +142,8 @@ open class StridedVector internal constructor(
     fun sorted(reverse: Boolean = false): IntArray {
         val comparator = comparator<IndexedDoubleValue> { x, y -> x.compareTo(y) }
 
-        val indexedValues = Array(size, { pos -> IndexedDoubleValue(pos, unsafeGet(pos)) })
-        indexedValues.sortWith(if (reverse) comparator.reversed() else comparator,
-                               0, size)
+        val indexedValues = Array(size) { IndexedDoubleValue(it, unsafeGet(it)) }
+        indexedValues.sortWith(if (reverse) comparator.reversed() else comparator)
 
         val indices = IntArray(size)
         for (pos in 0..size - 1) {
@@ -152,6 +151,19 @@ open class StridedVector internal constructor(
         }
 
         return indices
+    }
+
+    /** An version of [IndexedValue] specialized to [Double]. */
+    private data class IndexedDoubleValue(val index: Int, val value: Double):
+            Comparable<IndexedDoubleValue> {
+        override fun compareTo(other: IndexedDoubleValue): Int {
+            val res = java.lang.Double.compare(value, other.value)
+            return if (res != 0) {
+                res
+            } else {
+                java.lang.Integer.compare(index, other.index)
+            }
+        }
     }
 
     /** Applies a given permutation of indices to the elements in the vector. */
