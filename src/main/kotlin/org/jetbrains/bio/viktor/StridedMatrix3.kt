@@ -153,7 +153,7 @@ open class StridedMatrix3 internal constructor(
         }
 
         for (d in 0..depth - 1) {
-            if (this[depth] != other[depth]) {
+            if (this[d] != other[d]) {
                 return false
             }
         }

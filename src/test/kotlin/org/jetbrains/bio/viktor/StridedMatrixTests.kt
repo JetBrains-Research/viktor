@@ -76,6 +76,12 @@ class StridedMatrix2Test {
         assertTrue(m.along(1).allMatch { it.size() == NUM_COLUMNS })
     }
 
+    @Test fun testEquals() {
+        val m = getMatrix(3, 4)
+        assertEquals(m, m)
+        assertNotEquals(m, m.exp())
+    }
+
     private fun getMatrix(numRows: Int, numColumns: Int): StridedMatrix2 {
         return StridedMatrix(numRows, numColumns) { r, c ->
             (r * numColumns + c).toDouble()
@@ -146,6 +152,12 @@ class StridedMatrix3Test {
                 }
             }
         }
+    }
+
+    @Test fun testEquals() {
+        val m = getMatrix()
+        assertEquals(m, m)
+        assertNotEquals(m, m.exp())
     }
 
     private fun getMatrix(): StridedMatrix3 {
