@@ -1,6 +1,5 @@
 buildscript {
-    // ext.kotlin_version = '1.0.0-beta-+'
-    ext.kotlin_version = '0.1-SNAPSHOT'
+    ext.kotlin_version = '1.0.0-beta-+'
 
     repositories {
         jcenter()
@@ -36,7 +35,7 @@ dependencies {
 
     compile files("$rootDir/lib/yeppp-bundle-1.0.jar")
     compile files("$rootDir/lib/simd.jar",
-            "$rootDir/lib/simd-sources.jar")
+                  "$rootDir/lib/simd-sources.jar")
 
     testCompile 'junit:junit:4.+'
 }
