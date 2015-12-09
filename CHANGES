@@ -6,6 +6,8 @@ Here you can see the full list of changes between each viktor release.
 Version 0.1.2
 -------------
 
+Released on December 9th, 2015
+
 - Overloaded '-' and '/' operations for 'StridedVector'.
 - Removed redundant boxing and copying in 'StridedVector#sorted'.
 - Fixed indexing in 'StridedMatrix3#equals'.
