@@ -236,6 +236,13 @@ open class StridedVector internal constructor(
     }
 
     /**
+     * Computes the mean of the elements.
+     *
+     * Optimized for dense vectors.
+     */
+    open fun mean() = sum() / size()
+
+    /**
      * Returns the sum of the elements using [KahanSum].
      *
      * Optimized for dense vectors.
@@ -244,6 +251,21 @@ open class StridedVector internal constructor(
         val acc = KahanSum()
         for (pos in 0..size - 1) {
             acc += unsafeGet(pos)
+        }
+
+        return acc.result()
+    }
+
+    /**
+     * Returns the sum of the squares of elements.
+     *
+     * Optimized for dense vectors.
+     */
+    open fun sumSq(): Double {
+        val acc = KahanSum()
+        for (pos in 0..size - 1) {
+            val value = unsafeGet(pos)
+            acc += value * value
         }
 
         return acc.result()
@@ -650,7 +672,11 @@ class SmallDenseVector(data: DoubleArray, offset: Int, size: Int) :
 class LargeDenseVector(data: DoubleArray, offset: Int, size: Int) :
         DenseVector(data, offset, size) {
 
+    override fun mean() = DoubleStat.mean(data, offset, size)
+
     override fun sum() = DoubleStat.sum(data, offset, size)
+
+    override fun sumSq() = Core.SumSquares_V64f_S64f(data, offset, size)
 
     override fun cumSum() = DoubleStat.prefixSum(data, offset, data, offset, size)
 

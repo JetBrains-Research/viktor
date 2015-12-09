@@ -7,8 +7,10 @@ Version 0.1.2
 -------------
 
 - Overloaded '-' and '/' operations for 'StridedVector'.
-- Removed redundant boxing and copying in 'StridedVector.sorted'.
+- Removed redundant boxing and copying in 'StridedVector#sorted'.
 - Fixed indexing in 'StridedMatrix3#equals'.
+- Added two new operations 'StridedVector#mean' and 'StridedVector#sumSq',
+  which are also applicable to matrices.
 
 Version 0.1.1
 -------------

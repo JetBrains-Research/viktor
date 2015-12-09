@@ -42,6 +42,11 @@ class StridedVectorTest {
         assertEquals(v.argMax(), v.size() - 1)
     }
 
+    @Test fun sumSq() {
+        assertEquals(4.0, StridedVector.full(4, 1.0).sumSq())
+        assertEquals(16.0, StridedVector.full(4, 2.0).sumSq())
+    }
+
     @Test fun testRollSumFallback() {
         val v = StridedMatrix.full(3, 5, 1.0).columnView(0)
         v.cumSum()

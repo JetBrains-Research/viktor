@@ -100,7 +100,11 @@ open class StridedMatrix3 internal constructor(
 
     fun fill(init: Double): Unit = flatten().fill(init)
 
+    fun mean() = flatten().mean()
+
     fun sum() = flatten().sum()
+
+    fun sumSq() = flatten().sumSq()
 
     fun max() = flatten().max()
 
