@@ -71,7 +71,7 @@ class StridedVectorTest {
 
     @Test fun testSorted() {
         val v = StridedVector.of(42.0, 2.0, -1.0, 0.0, 4.0, 2.0)
-        val indices = v.sorted()
+        val indices = v.argSort()
         val copy = v.toArray()
         copy.sort()
 
@@ -82,7 +82,7 @@ class StridedVectorTest {
 
     @Test fun testSortedReverse() {
         val v = StridedVector.of(42.0, 2.0, -1.0, 0.0, 4.0, 2.0)
-        val indices = v.sorted(reverse = true)
+        val indices = v.argSort(reverse = true)
         val copy = v.toArray()
         copy.sort()
 
@@ -93,7 +93,7 @@ class StridedVectorTest {
 
     @Test fun testReorderSortedNaNs() {
         val values = doubleArrayOf(42.0, 2.0, -1.0, 0.0, 4.0, 2.0)
-        val indices = values.asStrided().sorted()
+        val indices = values.asStrided().argSort()
         assertArrayEquals(intArrayOf(2, 3, 1, 5, 4, 0), indices)
 
         val v = StridedVector.create(doubleArrayOf(Double.NaN, Double.NaN, // Prefix.

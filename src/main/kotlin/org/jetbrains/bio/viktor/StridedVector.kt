@@ -132,14 +132,14 @@ open class StridedVector internal constructor(
      * @param reverse if `true` the elements are sorted in `ascending` order.
      *                Defaults to `false`.
      */
-    fun sort(reverse: Boolean = false) = reorder(sorted(reverse))
+    fun sort(reverse: Boolean = false) = reorder(argSort(reverse))
 
     /**
      * Returns a permutation of indices which makes the vector sorted.
      *
      * @param reverse see [.sort] for details.
      */
-    fun sorted(reverse: Boolean = false): IntArray {
+    fun argSort(reverse: Boolean = false): IntArray {
         val comparator = comparator<IndexedDoubleValue> { x, y -> x.compareTo(y) }
 
         val indexedValues = Array(size) { IndexedDoubleValue(it, unsafeGet(it)) }
