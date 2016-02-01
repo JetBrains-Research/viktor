@@ -33,12 +33,12 @@ Gradle just add the following to your `build.gradle`:
 ```gradle
 repositories {
     maven {
-        url "https://dl.bintray.com/superbobry/maven"
+        url "https://dl.bintray.com/jetbrains-research/maven"
     }
 }
 
 dependencies {
-    compile 'org.jetbrains.bio:viktor:0.1.2'
+    compile 'org.jetbrains.bio:viktor:0.1.3'
 
     compile files("$rootDir/lib/yeppp-bundle-1.0.jar")
     compile files("$rootDir/lib/simd.jar",
