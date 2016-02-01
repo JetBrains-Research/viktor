@@ -80,6 +80,7 @@ bintray {
     pkg {
         repo = 'maven'
         name = 'viktor'
+        userOrg = "jetbrains-research"
         licenses = ['MIT']
         version {
             name = project.version.toString()
