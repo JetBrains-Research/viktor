@@ -140,7 +140,7 @@ open class StridedVector internal constructor(
      * @param reverse see [.sort] for details.
      */
     fun argSort(reverse: Boolean = false): IntArray {
-        val comparator = comparator<IndexedDoubleValue> { x, y -> x.compareTo(y) }
+        val comparator = Comparator<IndexedDoubleValue> { x, y -> x.compareTo(y) }
 
         val indexedValues = Array(size) { IndexedDoubleValue(it, unsafeGet(it)) }
         indexedValues.sortWith(if (reverse) comparator.reversed() else comparator)

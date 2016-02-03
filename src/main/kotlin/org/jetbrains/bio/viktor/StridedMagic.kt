@@ -6,4 +6,4 @@ package org.jetbrains.bio.viktor
  * @since 0.1.1 Renamed to `_I` because all-underscore names are reserved
  *              for internal use in Kotlin.
  */
-public object _I {}
+object _I {}

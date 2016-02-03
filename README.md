@@ -38,7 +38,7 @@ repositories {
 }
 
 dependencies {
-    compile 'org.jetbrains.bio:viktor:0.1.3'
+    compile 'org.jetbrains.bio:viktor:0.1.4'
 
     compile files("$rootDir/lib/yeppp-bundle-1.0.jar")
     compile files("$rootDir/lib/simd.jar",

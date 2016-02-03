@@ -1,17 +1,16 @@
 buildscript {
-    ext.kotlin_version = '1.0.0-beta-+'
+    ext.kotlin_version = '1.0.0-rc-+'
 
     repositories {
         jcenter()
 
         maven {
-            url 'http://oss.sonatype.org/content/repositories/snapshots'
+            url 'https://dl.bintray.com/kotlin/kotlin-eap'
         }
     }
 
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath "org.jetbrains.dokka:dokka-gradle-plugin:0.9.4"
     }
 }
 
@@ -19,7 +18,6 @@ plugins {
     id 'com.jfrog.bintray' version '1.2'
 }
 
-apply plugin: 'org.jetbrains.dokka'
 apply plugin: 'kotlin'
 apply plugin: 'maven-publish'
 
@@ -27,7 +25,7 @@ repositories {
     jcenter()
 
     maven {
-        url 'http://oss.sonatype.org/content/repositories/snapshots'
+        url 'https://dl.bintray.com/kotlin/kotlin-eap'
     }
 }
 
@@ -41,14 +39,6 @@ dependencies {
 
     testCompile "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
     testCompile 'junit:junit:4.+'
-}
-
-dokka {
-    linkMapping {
-        dir = "src/main/kotlin"
-        url = "https://github.com/JetBrains-Research/viktor/blob/master/src/main/kotlin"
-        suffix = "#L"
-    }
 }
 
 task sourcesJar(type: Jar) {
@@ -89,5 +79,5 @@ bintray {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.5'
+    gradleVersion = '2.10'
 }
