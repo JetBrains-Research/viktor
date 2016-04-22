@@ -8,7 +8,7 @@ import org.jetbrains.bio.jni.SIMDMath
 import java.util.*
 
 /**
- * Wrap a given array of elements. The array will not be copied.
+ * Wraps a given array of elements. The array will not be copied.
  */
 fun DoubleArray.asStrided() = StridedVector.create(this, 0, size, 1)
 
@@ -40,13 +40,13 @@ fun DoubleArray.asStrided() = StridedVector.create(this, 0, size, 1)
  */
 open class StridedVector internal constructor(
         /** Raw data array. */
-        protected val data: DoubleArray,
+        val data: DoubleArray,
         /** Offset of the first vector element in the raw data array. */
-        protected val offset: Int,
+        val offset: Int,
         /** Number of elements in the raw data array to use. */
-        protected val size: Int,
+        val size: Int,
         /** Indexing step. */
-        private val stride: Int) {
+        val stride: Int) {
 
     val indices: IntRange get() = 0..size() - 1
 
@@ -58,9 +58,10 @@ open class StridedVector internal constructor(
         }
     }
 
-    protected open fun unsafeIndex(pos: Int): Int = offset + pos * stride
+    protected open fun unsafeIndex(pos: Int) = offset + pos * stride
 
-    private fun unsafeGet(pos: Int): Double = data[unsafeIndex(pos)]
+    @Suppress("nothing_to_inline")
+    private inline fun unsafeGet(pos: Int) = data[unsafeIndex(pos)]
 
     operator fun set(pos: Int, value: Double) {
         try {
@@ -70,7 +71,8 @@ open class StridedVector internal constructor(
         }
     }
 
-    private fun unsafeSet(pos: Int, value: Double) {
+    @Suppress("nothing_to_inline")
+    private  inline fun unsafeSet(pos: Int, value: Double) {
         data[unsafeIndex(pos)] = value
     }
 
@@ -78,9 +80,9 @@ open class StridedVector internal constructor(
         return StridedVector(data, offset + from, to - from, stride)
     }
 
-    operator fun set(any: _I, init: Double): Unit = fill(init)
+    operator fun set(any: _I, init: Double) = fill(init)
 
-    operator fun set(any: _I, other: StridedVector): Unit = other.copyTo(this)
+    operator fun set(any: _I, other: StridedVector) = other.copyTo(this)
 
     open fun fill(init: Double) {
         for (pos in 0..size - 1) {
@@ -140,17 +142,10 @@ open class StridedVector internal constructor(
      * @param reverse see [.sort] for details.
      */
     fun argSort(reverse: Boolean = false): IntArray {
-        val comparator = Comparator<IndexedDoubleValue> { x, y -> x.compareTo(y) }
-
+        val comparator = Comparator(IndexedDoubleValue::compareTo)
         val indexedValues = Array(size) { IndexedDoubleValue(it, unsafeGet(it)) }
         indexedValues.sortWith(if (reverse) comparator.reversed() else comparator)
-
-        val indices = IntArray(size)
-        for (pos in 0..size - 1) {
-            indices[pos] = indexedValues[pos].index
-        }
-
-        return indices
+        return IntArray(size) { indexedValues[it].index }
     }
 
     /** An version of [IndexedValue] specialized to [Double]. */
@@ -240,7 +235,7 @@ open class StridedVector internal constructor(
      *
      * Optimized for dense vectors.
      */
-    open fun mean() = sum() / size()
+    open fun mean() = sum() / size
 
     /**
      * Returns the sum of the elements using [KahanSum].
@@ -529,11 +524,11 @@ open class StridedVector internal constructor(
             return false
         }
 
-        if (size() != other.size()) {
+        if (size != other.size) {
             return false
         }
 
-        for (pos in 0..size() - 1) {
+        for (pos in 0..size - 1) {
             if (!Precision.equals(unsafeGet(pos), other.unsafeGet(pos))) {
                 return false
             }
@@ -544,7 +539,7 @@ open class StridedVector internal constructor(
 
     override fun hashCode(): Int {
         var acc = 1
-        for (pos in 0..size() - 1) {
+        for (pos in 0..size - 1) {
             // XXX calling #hashCode results in boxing, see KT-7571.
             acc = 31 * java.lang.Double.hashCode(unsafeGet(pos))
         }
@@ -596,7 +591,7 @@ open class StridedVector internal constructor(
          * Wrap a given array of elements. The array will not be copied.
          *
          * This is exposed for the pure-Java callers. Please prefer using
-         * [DoubleArray#asStrided] in Kotlin.
+         * [DoubleArray.asStrided] in Kotlin.
          */
         @JvmStatic fun wrap(data: DoubleArray): StridedVector {
             return create(data, 0, data.size, 1)
@@ -706,7 +701,7 @@ class LargeDenseVector(data: DoubleArray, offset: Int, size: Int) :
             checkSize(other)
             checkSize(dst)
             SIMDMath.logAddExp(data, offset, other.data, other.offset,
-                    dst.data, dst.offset, size)
+                               dst.data, dst.offset, size)
         } else {
             super.logAddExp(other, dst)
         }
@@ -720,7 +715,7 @@ class LargeDenseVector(data: DoubleArray, offset: Int, size: Int) :
         if (other is DenseVector) {
             checkSize(other)
             Core.Add_V64fV64f_V64f(data, offset, other.data, other.offset,
-                    data, offset, size)
+                                   data, offset, size)
         } else {
             super.plusAssign(other)
         }

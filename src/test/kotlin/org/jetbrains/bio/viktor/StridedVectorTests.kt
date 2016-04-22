@@ -69,7 +69,7 @@ class StridedVectorTest {
         assertArrayEquals(values.sortedArray(), v.toArray(), Precision.EPSILON)
     }
 
-    @Test fun testSorted() {
+    @Test fun testArgSort() {
         val v = StridedVector.of(42.0, 2.0, -1.0, 0.0, 4.0, 2.0)
         val indices = v.argSort()
         val copy = v.toArray()
