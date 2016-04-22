@@ -6,6 +6,8 @@ Here you can see the full list of changes between each viktor release.
 Version 0.2.0
 -------------
 
+Released on April 22nd 2016
+
 - Changed all 'StridedVector' members are now public.
 - Changed 'StridedVector.size' to be a property instead of a function.
 - Removed 'StridedVector.wrap', please use 'DoubleArray.asStrided' instead.
