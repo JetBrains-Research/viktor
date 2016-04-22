@@ -19,9 +19,9 @@ fun DoubleArray.asStrided() = StridedVector.create(this, 0, size, 1)
  * Vector is backed by the raw [data] array, which is guaranteed to
  * contain at least [size] elements starting from the [offset] index.
  *
- * The term *strided* means that unlike regular [DoubleArray] the elements
- * of a vector can be at arbitrary index intervals from each other. For
- * example
+ * The term *strided* means that unlike regular [DoubleArray] the
+ * elements of a vector can be at arbitrary index intervals from each
+ * other. For example
  *
  *   data = [0, 1, 2, 3, 4, 5]
  *   offset = 1
@@ -32,9 +32,9 @@ fun DoubleArray.asStrided() = StridedVector.create(this, 0, size, 1)
  *
  *   [1, 4]
  *
- * Vectors with `stride` equal to 1 are caled called *dense*. The distinction
- * is important because some of the operations can be significantly optimized
- * for dense vectors.
+ * Vectors with `stride` equal to 1 are caled called *dense*. The
+ * distinction is important because some of the operations can be
+ * significantly optimized for dense vectors.
  *
  * @author Sergei Lebedev
  * @since 0.1.0
@@ -150,7 +150,7 @@ open class StridedVector internal constructor(
     }
 
     /** A version of [IndexedValue] specialized to [Double]. */
-    private data class IndexedDoubleValue(val index: Int, val value: Double):
+    private data class IndexedDoubleValue(val index: Int, val value: Double) :
             Comparable<IndexedDoubleValue> {
         override fun compareTo(other: IndexedDoubleValue): Int {
             val res = java.lang.Double.compare(value, other.value)
