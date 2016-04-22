@@ -9,11 +9,10 @@ import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import org.junit.runners.Parameterized.Parameters
 import java.util.*
-import java.util.stream.IntStream
 import kotlin.test.assertTrue
 
 class QuickSelectTest {
-    @Test fun testPartition() {
+    @Test fun partition() {
         val values = doubleArrayOf(0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0)
                 .asStrided()
         val length = values.size
@@ -31,29 +30,27 @@ class QuickSelectTest {
         }
     }
 
-    @Test fun testArrayQuantile() {
-        val values = IntStream.range(0, 1024).mapToDouble { it.toDouble() }
-                .toArray().asStrided()
+    @Test fun quantileRandom() {
+        val values = Random().doubles(1024).toArray().asStrided()
         for (i in values.indices) {
-            values.shuffle()
             val q = (i.toDouble() + 1) / values.size
             assertEquals(StatUtils.percentile(values.data, q * 100),
                          values.quantile(q), Precision.EPSILON)
         }
     }
 
-    @Test(expected = IllegalArgumentException::class) fun testArrayQuantileEmpty() {
+    @Test(expected = IllegalArgumentException::class) fun quantileEmpty() {
         doubleArrayOf().asStrided().quantile(0.5)
     }
 
-    @Test fun testArrayQuantileSingleton() {
+    @Test fun quantileSingleton() {
         val values = doubleArrayOf(42.0).asStrided()
         assertEquals(42.0, values.quantile(0.0), Precision.EPSILON)
         assertEquals(42.0, values.quantile(0.6), Precision.EPSILON)
         assertEquals(42.0, values.quantile(1.0), Precision.EPSILON)
     }
 
-    @Test fun testArrayQuantileLarge() {
+    @Test fun quantileLarge() {
         val values = Random().doubles(1 shl 16).toArray().asStrided()
         assertEquals(values.max(), values.quantile(1.0), Precision.EPSILON)
     }
