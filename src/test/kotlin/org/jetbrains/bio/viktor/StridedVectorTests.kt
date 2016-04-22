@@ -5,10 +5,10 @@ import org.apache.commons.math3.stat.descriptive.summary.Sum
 import org.apache.commons.math3.util.Precision
 import org.jetbrains.bio.jni.SIMDMath
 import org.junit.Assert.assertArrayEquals
+import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.util.*
 import java.util.stream.IntStream
-import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
@@ -36,21 +36,21 @@ class StridedVectorTest {
 
     @Test fun testArgMinMax() {
         val v = getRangeVector(4, 8)
-        assertEquals(v.min(), 4.0)
+        assertEquals(v.min(), 4.0, Precision.EPSILON)
         assertEquals(v.argMin(), 0)
-        assertEquals(v.max(), 7.0)
-        assertEquals(v.argMax(), v.size() - 1)
+        assertEquals(v.max(), 7.0, Precision.EPSILON)
+        assertEquals(v.argMax(), v.size - 1)
     }
 
     @Test fun sumSq() {
-        assertEquals(4.0, StridedVector.full(4, 1.0).sumSq())
-        assertEquals(16.0, StridedVector.full(4, 2.0).sumSq())
+        assertEquals(4.0, StridedVector.full(4, 1.0).sumSq(), Precision.EPSILON)
+        assertEquals(16.0, StridedVector.full(4, 2.0).sumSq(), Precision.EPSILON)
     }
 
     @Test fun testRollSumFallback() {
         val v = StridedMatrix.full(3, 5, 1.0).columnView(0)
         v.cumSum()
-        for (i in 0..v.size() - 1) {
+        for (i in 0..v.size - 1) {
             assertEquals(i + 1, v[i].toInt())
         }
     }
@@ -76,7 +76,7 @@ class StridedVectorTest {
         copy.sort()
 
         for ((i, j) in indices.withIndex()) {
-            assertEquals(copy[i], v[j])
+            assertEquals(copy[i], v[j], Precision.EPSILON)
         }
     }
 
@@ -87,7 +87,7 @@ class StridedVectorTest {
         copy.sort()
 
         for ((i, j) in indices.withIndex()) {
-            assertEquals(copy[copy.size - 1 - i], v[j])
+            assertEquals(copy[copy.size - 1 - i], v[j], Precision.EPSILON)
         }
     }
 
@@ -109,9 +109,11 @@ class StridedVectorTest {
     }
 
     @Test fun testDotFast() {
-        val v = getRangeVector(4, 8)
-        val weights = doubleArrayOf(0.5, 0.1, 0.3, 0.02)
-        assertEquals(Sum().evaluate(v.toArray(), weights), v dot weights)
+        val v = getRangeVector(4, 128)
+        val weights = Random().doubles(v.size.toLong()).toArray()
+        val expected = Sum().evaluate(v.toArray(), weights)
+        assertEquals(expected, v dot weights, 1e-6)
+        assertEquals(expected, v dot weights.asStrided(), 1e-6)
     }
 
     @Test fun testRescale() {
@@ -123,16 +125,16 @@ class StridedVectorTest {
     @Test fun testAdd() {
         val v = getRangeVector(4, 8)
         val u = v + v
-        for (pos in 0..v.size() - 1) {
-            assertEquals(v[pos] + v[pos], u[pos])
+        for (pos in 0..v.size - 1) {
+            assertEquals(v[pos] + v[pos], u[pos], Precision.EPSILON)
         }
     }
 
     @Test fun testAddUpdate() {
         val v = getRangeVector(4, 8)
         val u = v + 42.0
-        for (pos in 0..v.size() - 1) {
-            assertEquals(v[pos] + 42, u[pos])
+        for (pos in 0..v.size - 1) {
+            assertEquals(v[pos] + 42, u[pos], Precision.EPSILON)
         }
     }
 
@@ -181,7 +183,7 @@ class LargeDenseVectorTest{
         val v2 = d.sample(128).asStrided()
         val dst = v1.logAddExp(v2)
 
-        for (i in 0..dst.size() - 1) {
+        for (i in 0..dst.size - 1) {
             assertTrue(Precision.equals(v1[i] logAddExp v2[i],
                                         dst[i], 5))
         }
@@ -196,7 +198,7 @@ class LargeDenseVectorTest{
     @Test fun testLogSumExp() {
         val data = NormalDistribution(0.0, 42.0).sample(128)
         val v = data.asStrided().copy()
-        assertEquals(SIMDMath.logSumExp(data), v.logSumExp())
+        assertEquals(SIMDMath.logSumExp(data), v.logSumExp(), Precision.EPSILON)
     }
 
     @Test fun testRescale() {
@@ -207,25 +209,25 @@ class LargeDenseVectorTest{
 
     @Test fun testArgMinMax() {
         val v = getLargeDenseVector()
-        assertEquals(v.min(), v.toArray().min()!!)
+        assertEquals(v.min(), v.toArray().min()!!, Precision.EPSILON)
         assertEquals(v.argMin(), 0)
-        assertEquals(v.max(), v.toArray().max()!!)
-        assertEquals(v.argMax(), v.size() - 1)
+        assertEquals(v.max(), v.toArray().max()!!, Precision.EPSILON)
+        assertEquals(v.argMax(), v.size - 1)
     }
 
     @Test fun testAdd() {
         val v = getLargeDenseVector()
         val u = v + v
-        for (pos in 0..v.size() - 1) {
-            assertEquals(v[pos] + v[pos], u[pos])
+        for (pos in 0..v.size - 1) {
+            assertEquals(v[pos] + v[pos], u[pos], Precision.EPSILON)
         }
     }
 
     @Test fun testAddUpdate() {
         val v = getLargeDenseVector()
         val u = v.plus(42.0)
-        for (pos in 0..v.size() - 1) {
-            assertEquals(v[pos] + 42, u[pos])
+        for (pos in 0..v.size - 1) {
+            assertEquals(v[pos] + 42, u[pos], Precision.EPSILON)
         }
     }
 

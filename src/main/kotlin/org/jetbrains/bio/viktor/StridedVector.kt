@@ -48,7 +48,7 @@ open class StridedVector internal constructor(
         /** Indexing step. */
         val stride: Int) {
 
-    val indices: IntRange get() = 0..size() - 1
+    val indices: IntRange get() = 0..size - 1
 
     operator fun get(pos: Int): Double {
         try {
@@ -61,7 +61,7 @@ open class StridedVector internal constructor(
     protected open fun unsafeIndex(pos: Int) = offset + pos * stride
 
     @Suppress("nothing_to_inline")
-    private inline fun unsafeGet(pos: Int) = data[unsafeIndex(pos)]
+    internal inline fun unsafeGet(pos: Int) = data[unsafeIndex(pos)]
 
     operator fun set(pos: Int, value: Double) {
         try {
@@ -72,11 +72,11 @@ open class StridedVector internal constructor(
     }
 
     @Suppress("nothing_to_inline")
-    private  inline fun unsafeSet(pos: Int, value: Double) {
+    internal inline fun unsafeSet(pos: Int, value: Double) {
         data[unsafeIndex(pos)] = value
     }
 
-    fun slice(from: Int, to: Int = size()): StridedVector {
+    fun slice(from: Int, to: Int = size): StridedVector {
         return StridedVector(data, offset + from, to - from, stride)
     }
 
@@ -225,6 +225,21 @@ open class StridedVector internal constructor(
         var acc = 0.0
         for (pos in 0..size - 1) {
             acc += unsafeGet(pos) * other[pos]
+        }
+
+        return acc
+    }
+
+    /**
+     * Computes a dot product between the two vectors.
+     *
+     * Optimized for dense vectors.
+     */
+    open infix fun dot(other: StridedVector): Double {
+        require(other.size == size) { "non-conformable arrays" }
+        var acc = 0.0
+        for (pos in 0..size - 1) {
+            acc += unsafeGet(pos) * other.unsafeGet(pos)
         }
 
         return acc
@@ -478,7 +493,9 @@ open class StridedVector internal constructor(
         }
     }
 
-    fun size() = size
+    fun isEmpty() = size == 0
+
+    fun isNotEmpty() = size > 0
 
     open fun toArray(): DoubleArray {
         val res = DoubleArray(size)
@@ -493,9 +510,9 @@ open class StridedVector internal constructor(
     operator fun iterator(): DoubleIterator = object : DoubleIterator() {
         var i = 0
 
-        override fun hasNext(): Boolean = i < size
+        override fun hasNext() = i < size
 
-        override fun nextDouble(): Double = unsafeGet(i++)
+        override fun nextDouble() = unsafeGet(i++)
     }
 
     fun toString(maxDisplay: Int): String {
@@ -515,7 +532,7 @@ open class StridedVector internal constructor(
         }
     }
 
-    override fun toString(): String = toString(8)
+    override fun toString() = toString(8)
 
     override fun equals(other: Any?): Boolean {
         if (this === other) {
@@ -672,6 +689,15 @@ class LargeDenseVector(data: DoubleArray, offset: Int, size: Int) :
     override fun dot(other: DoubleArray): Double {
         require(other.size == size) { "non-conformable arrays" }
         return Core.DotProduct_V64fV64f_S64f(data, offset, other, 0, size)
+    }
+
+    override fun dot(other: StridedVector): Double {
+        return if (other is LargeDenseVector) {
+            require(other.size == size) { "non-conformable arrays" }
+            Core.DotProduct_V64fV64f_S64f(data, offset, other.data, other.offset, size)
+        } else {
+            super.dot(other)
+        }
     }
 
     override fun expInPlace() {

@@ -72,8 +72,8 @@ class StridedMatrix2Test {
 
     @Test fun testAlong() {
         val m = StridedMatrix(NUM_ROWS, NUM_COLUMNS)
-        assertTrue(m.along(0).allMatch { it.size() == NUM_ROWS })
-        assertTrue(m.along(1).allMatch { it.size() == NUM_COLUMNS })
+        assertTrue(m.along(0).allMatch { it.size == NUM_ROWS })
+        assertTrue(m.along(1).allMatch { it.size == NUM_COLUMNS })
     }
 
     @Test fun testEquals() {
