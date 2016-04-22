@@ -3,6 +3,11 @@ viktor Changelog
 
 Here you can see the full list of changes between each viktor release.
 
+Version 0.2.1
+-------------
+
+- Changed 'StridedVector.quantile' to follow Commons Math implementation.
+
 Version 0.2.0
 -------------
 

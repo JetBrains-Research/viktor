@@ -149,7 +149,7 @@ open class StridedVector internal constructor(
         return IntArray(size) { indexedValues[it].index }
     }
 
-    /** An version of [IndexedValue] specialized to [Double]. */
+    /** A version of [IndexedValue] specialized to [Double]. */
     private data class IndexedDoubleValue(val index: Int, val value: Double):
             Comparable<IndexedDoubleValue> {
         override fun compareTo(other: IndexedDoubleValue): Int {

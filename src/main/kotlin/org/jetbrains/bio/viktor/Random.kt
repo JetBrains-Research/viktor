@@ -9,14 +9,17 @@ private val DEFAULT_RANDOM = MersenneTwister()
  * Randomized linear-time selection algorithm.
  *
  * See https://en.wikipedia.org/wiki/Quickselect.
+ *
+ * @since 0.2.0
  */
-object QuickSelect {
+internal object QuickSelect {
     /**
      * Returns the n-th order statistic of a given array.
      *
      * Invariant:  left <= n <= right
      */
-    tailrec fun select(values: StridedVector, left: Int, right: Int, n: Int,
+    tailrec fun select(values: StridedVector,
+                       left: Int, right: Int, n: Int,
                        randomGenerator: RandomGenerator): Double {
         assert(left <= n && n <= right)
 
@@ -28,7 +31,7 @@ object QuickSelect {
         split = partition(values, left, right, split)
         return when {
             split == n -> values[n]
-            split > n -> select(values, left, split - 1, n, randomGenerator)
+            split > n  -> select(values, left, split - 1, n, randomGenerator)
             else -> select(values, split + 1, right, n, randomGenerator)
         }
     }
@@ -64,22 +67,40 @@ private fun StridedVector.swap(i: Int, j: Int) {
 }
 
 /**
- * Computes [q]-th order statistic over this vector.
+ * Computes the [q]-th order statistic over this vector.
  *
- * Partially sorts the vector **in-place**. Please copy the vector
- * prior to calling the method to avoid mutation.
+ * The implementation follows that of Commons Math. See JavaDoc of
+ * [Percentile] for computational details.
+ *
+ * The vector is modified in-place. Do a [copy] of the vector
+ * to avoid mutation if necessary.
+ *
+ * @since 0.2.0
  */
 fun StridedVector.quantile(q: Double = 0.5,
                            randomGenerator: RandomGenerator = DEFAULT_RANDOM): Double {
     require(isNotEmpty()) { "no data" }
-    val n = Math.ceil(q * (size - 1).toDouble()).toInt()
-    return QuickSelect.select(this, 0, size - 1, n, randomGenerator)
+    val pos = (size + 1) * q
+    val d = pos - Math.floor(pos)
+    return when {
+        pos < 1     -> min()
+        pos >= size -> max()
+        else -> {
+            val lo = QuickSelect.select(
+                    this, 0, size - 1, pos.toInt() - 1, randomGenerator)
+            val hi = QuickSelect.select(
+                    this, 0, size - 1, pos.toInt(), randomGenerator)
+            return lo + d * (hi - lo)
+        }
+    }
 }
 
 /**
  * Randomly permutes the elements of this vector.
  *
  * See https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle.
+ *
+ * @since 0.2.0
  */
 fun StridedVector.shuffle(randomGenerator: RandomGenerator = DEFAULT_RANDOM) {
     if (size <= 1) {
