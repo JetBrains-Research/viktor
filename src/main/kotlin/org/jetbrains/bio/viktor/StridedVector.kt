@@ -587,16 +587,6 @@ open class StridedVector internal constructor(
             return v
         }
 
-        /**
-         * Wrap a given array of elements. The array will not be copied.
-         *
-         * This is exposed for the pure-Java callers. Please prefer using
-         * [DoubleArray.asStrided] in Kotlin.
-         */
-        @JvmStatic fun wrap(data: DoubleArray): StridedVector {
-            return create(data, 0, data.size, 1)
-        }
-
         internal fun create(data: DoubleArray, offset: Int, size: Int, stride: Int): StridedVector {
             require(offset + size <= data.size) { "not enough data" }
             return if (stride == 1) {
