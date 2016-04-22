@@ -7,6 +7,7 @@ Version 0.2.0
 -------------
 
 - Changed all 'StridedVector' members are now public.
+- Changed 'StridedVector.size' to be a property instead of a function.
 - Removed 'StridedVector.wrap', please use 'DoubleArray.asStrided' instead.
 - Implemented 'StridedVector.dot' for the case when the argument is
   also a 'StridedVector'.
