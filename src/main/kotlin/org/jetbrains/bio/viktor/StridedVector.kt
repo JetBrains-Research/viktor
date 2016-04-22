@@ -5,6 +5,7 @@ import org.apache.commons.math3.util.FastMath
 import org.apache.commons.math3.util.Precision
 import org.jetbrains.bio.jni.DoubleStat
 import org.jetbrains.bio.jni.SIMDMath
+import java.text.DecimalFormat
 import java.util.*
 
 /**
@@ -515,14 +516,15 @@ open class StridedVector internal constructor(
         override fun nextDouble() = unsafeGet(i++)
     }
 
-    fun toString(maxDisplay: Int): String {
+    fun toString(maxDisplay: Int,
+                 format: DecimalFormat = DecimalFormat("#.####")): String {
         return if (size <= maxDisplay) {
             Arrays.toString(toArray())
         } else {
             val sb = StringBuilder()
             sb.append('[')
             for (pos in 0..maxDisplay - 1) {
-                sb.append(this[pos])
+                sb.append(format.format(this[pos]))
                 if (pos < maxDisplay - 1) {
                     sb.append(", ")
                 }
@@ -532,7 +534,7 @@ open class StridedVector internal constructor(
         }
     }
 
-    override fun toString() = toString(8)
+    override fun toString() = toString(16)
 
     override fun equals(other: Any?): Boolean {
         if (this === other) {
