@@ -85,6 +85,16 @@ open class StridedVector internal constructor(
 
     operator fun set(any: _I, other: StridedVector) = other.copyTo(this)
 
+    operator fun contains(other: Double): Boolean {
+        for (pos in 0..size - 1) {
+            if (unsafeGet(pos) == other) {
+                return true
+            }
+        }
+
+        return false
+    }
+
     open fun fill(init: Double) {
         for (pos in 0..size - 1) {
             unsafeSet(pos, init)
@@ -420,6 +430,19 @@ open class StridedVector internal constructor(
         }
     }
 
+    operator fun unaryPlus() = this
+
+    open operator fun unaryMinus(): StridedVector {
+        // XXX 'v' is always dense but it might be too smal to benefit
+        //     from SIMD.
+        val v = copy()
+        for (pos in 0..size - 1) {
+            unsafeSet(pos, -unsafeGet(pos))
+        }
+
+        return v
+    }
+
     operator fun plus(other: StridedVector): StridedVector {
         val v = copy()
         v += other
@@ -625,10 +648,10 @@ open class StridedVector internal constructor(
  */
 open class DenseVector protected constructor(data: DoubleArray, offset: Int, size: Int) :
         StridedVector(data, offset, size, 1) {
-    override fun unsafeIndex(pos: Int): Int = offset + pos
+    override fun unsafeIndex(pos: Int) = offset + pos
 
     override fun fill(init: Double) {
-        Arrays.fill(data, offset, offset + size, init)
+        data.fill(init, offset, offset + size)
     }
 
     override fun copyTo(other: StridedVector) {
@@ -723,6 +746,12 @@ class LargeDenseVector(data: DoubleArray, offset: Int, size: Int) :
         } else {
             super.logAddExp(other, dst)
         }
+    }
+
+    override fun unaryMinus(): StridedVector {
+        val v = copy()
+        Core.Negate_IV64f_IV64f(v.data, v.offset, v.size)
+        return v
     }
 
     override fun plusAssign(update: Double) {

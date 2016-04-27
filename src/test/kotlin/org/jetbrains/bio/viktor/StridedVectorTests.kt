@@ -122,6 +122,16 @@ class StridedVectorTest {
         assertTrue(Precision.equals(1.0, v.sum()))
     }
 
+    @Test fun testUnaryPlus() {
+        val v = getRangeVector(4, 8)
+        assertEquals(v, +v)
+    }
+
+    @Test fun testUnaryMinus() {
+        val v = getRangeVector(4, 8)
+        assertEquals(v, -(-v))
+    }
+
     @Test fun testAdd() {
         val v = getRangeVector(4, 8)
         val u = v + v

@@ -3,6 +3,13 @@ viktor Changelog
 
 Here you can see the full list of changes between each viktor release.
 
+Version 0.2.2
+-------------
+
+- Added unary operator overloads.
+- Added extra operator overloads to 'Double', so it is now possible to
+  write (1.0 + v / 2.0).
+
 Version 0.2.1
 -------------
 
