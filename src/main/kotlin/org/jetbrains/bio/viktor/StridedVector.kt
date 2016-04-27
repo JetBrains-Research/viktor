@@ -433,11 +433,11 @@ open class StridedVector internal constructor(
     operator fun unaryPlus() = this
 
     open operator fun unaryMinus(): StridedVector {
-        // XXX 'v' is always dense but it might be too smal to benefit
+        // XXX 'v' is always dense but it might be too small to benefit
         //     from SIMD.
         val v = copy()
         for (pos in 0..size - 1) {
-            unsafeSet(pos, -unsafeGet(pos))
+            v.unsafeSet(pos, -unsafeGet(pos))
         }
 
         return v
@@ -505,6 +505,19 @@ open class StridedVector internal constructor(
         }
     }
 
+    operator fun times(other: StridedVector): StridedVector {
+        val v = copy()
+        v *= other
+        return v
+    }
+
+    operator open fun timesAssign(other: StridedVector) {
+        checkSize(other)
+        for (pos in 0..size - 1) {
+            unsafeSet(pos, unsafeGet(pos) * other.unsafeGet(pos))
+        }
+    }
+
     operator fun div(value: Double): StridedVector {
         val v = copy()
         v /= value
@@ -514,6 +527,19 @@ open class StridedVector internal constructor(
     operator open fun divAssign(value: Double) {
         for (pos in 0..size - 1) {
             unsafeSet(pos, unsafeGet(pos) / value)
+        }
+    }
+
+    operator fun div(other: StridedVector): StridedVector {
+        val v = copy()
+        v /= other
+        return v
+    }
+
+    operator fun divAssign(other: StridedVector) {
+        checkSize(other)
+        for (pos in 0..size - 1) {
+            unsafeSet(pos, unsafeGet(pos) / other.unsafeGet(pos))
         }
     }
 
@@ -784,5 +810,14 @@ class LargeDenseVector(data: DoubleArray, offset: Int, size: Int) :
 
     override fun timesAssign(value: Double) {
         Core.Multiply_IV64fS64f_IV64f(data, offset, value, size)
+    }
+
+    override fun timesAssign(other: StridedVector) {
+        if (other is DenseVector) {
+            Core.Multiply_V64fV64f_V64f(data, offset, other.data, other.offset,
+                                        data, offset, size)
+        } else {
+            super.timesAssign(other)
+        }
     }
 }

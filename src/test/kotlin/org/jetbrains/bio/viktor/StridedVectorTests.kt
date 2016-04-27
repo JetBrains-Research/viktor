@@ -148,6 +148,39 @@ class StridedVectorTest {
         }
     }
 
+    @Test fun testTimes() {
+        val v = getRangeVector(4, 8)
+        val u = v * v
+        for (pos in 0..v.size - 1) {
+            assertEquals(v[pos] * v[pos], u[pos], Precision.EPSILON)
+        }
+    }
+
+    @Test fun testTimesUpdate() {
+        val v = getRangeVector(4, 8)
+        val u = v * 42.0
+        for (pos in 0..v.size - 1) {
+            assertEquals(v[pos] * 42, u[pos], Precision.EPSILON)
+        }
+    }
+
+    @Test fun testDiv() {
+        val v = getRangeVector(4, 8)
+        val u = getRangeVector(8, 12)
+        val z = v / u
+        for (pos in 0..v.size - 1) {
+            assertEquals(v[pos] / u[pos], z[pos], Precision.EPSILON)
+        }
+    }
+
+    @Test fun testDivUpdate() {
+        val v = getRangeVector(4, 8)
+        val u = v / 42.0
+        for (pos in 0..v.size - 1) {
+            assertEquals(v[pos] / 42, u[pos], Precision.EPSILON)
+        }
+    }
+
     @Test fun testEquals() {
         val v = getRangeVector(4, 8)
         assertEquals(v, v)
