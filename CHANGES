@@ -10,6 +10,8 @@ Version 0.2.2
 - Implemented * and / operations for 'StridedVector'.
 - Added extra operator overloads to 'Double', so it is now possible to
   write (1.0 + v / 2.0).
+- Fixed 'StridedVector.toString' in case of 'NaN' and infinities.
+- Changed 'StridedVector.toString' to be more like NumPy for larger vectors.
 
 Version 0.2.1
 -------------

@@ -209,6 +209,27 @@ class StridedVectorTest {
                           v.reshape(2, 2).toArray())
     }
 
+    @Test fun testToString() {
+        assertEquals("[]", StridedVector(0).toString())
+        assertEquals("[42]", StridedVector.of(42.0).toString())
+        assertEquals("[0, 1, 2, 3]", getRangeVector(0, 4).toString())
+    }
+
+    @Test fun testToStringGapped() {
+        val v = getRangeVector(0, 1024)
+
+        assertEquals("[0, ..., 1023]", v.toString(2))
+        assertEquals("[0, ..., 1022, 1023]", v.toString(3))
+        assertEquals("[0, 1, ..., 1022, 1023]", v.toString(4))
+    }
+
+    @Test fun testToStringNanInf() {
+        val v = StridedVector.of(Double.NaN, Double.POSITIVE_INFINITY,
+                                 Double.NEGATIVE_INFINITY, 42.0)
+
+        assertEquals("[nan, inf, -inf, 42]", v.toString())
+    }
+
     private fun getRangeVector(a: Int, b: Int): StridedVector {
         return IntStream.range(a, b).mapToDouble { it.toDouble() }
                 .toArray().asStrided()

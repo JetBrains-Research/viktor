@@ -565,22 +565,47 @@ open class StridedVector internal constructor(
         override fun nextDouble() = unsafeGet(i++)
     }
 
+    /**
+     * A version of [DecimalFormat.format] which doesn't produce ?
+     * for [Double.NaN] and infinities.
+     */
+    private fun DecimalFormat.safeFormat(value: Double) = when {
+        value.isNaN() -> "nan"
+        value == Double.POSITIVE_INFINITY -> "inf"
+        value == Double.NEGATIVE_INFINITY -> "-inf"
+        else -> format(value)
+    }
+
     fun toString(maxDisplay: Int,
                  format: DecimalFormat = DecimalFormat("#.####")): String {
-        return if (size <= maxDisplay) {
-            Arrays.toString(toArray())
-        } else {
-            val sb = StringBuilder()
-            sb.append('[')
-            for (pos in 0..maxDisplay - 1) {
-                sb.append(format.format(this[pos]))
-                if (pos < maxDisplay - 1) {
+        val sb = StringBuilder()
+        sb.append('[')
+
+        if (maxDisplay < size) {
+            for (pos in 0..maxDisplay / 2 - 1) {
+                sb.append(format.safeFormat(this[pos])).append(", ")
+            }
+
+            sb.append("..., ")
+
+            val leftover = maxDisplay - maxDisplay / 2
+            for (pos in size - leftover..size - 1) {
+                sb.append(format.safeFormat(this[pos]))
+                if (pos < size - 1) {
                     sb.append(", ")
                 }
             }
-            sb.append(", ...]")
-            sb.toString()
+        } else {
+            for (pos in 0..size - 1) {
+                sb.append(format.safeFormat(this[pos]))
+                if (pos < size - 1) {
+                    sb.append(", ")
+                }
+            }
         }
+
+        sb.append(']')
+        return sb.toString()
     }
 
     override fun toString() = toString(16)
