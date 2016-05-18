@@ -11,7 +11,9 @@ import java.util.*
 /**
  * Wraps a given array of elements. The array will not be copied.
  */
-fun DoubleArray.asStrided() = StridedVector.create(this, 0, size, 1)
+fun DoubleArray.asStrided(offset: Int = 0, size: Int = this.size): StridedVector {
+    return StridedVector.create(this, offset, size, 1)
+}
 
 /**
  * A strided vector stored in a [DoubleArray].
@@ -119,6 +121,13 @@ open class StridedVector internal constructor(
      * e.g. `[1, 2, 3]^T` is `[[1], [2], [3]]`.
      */
     fun transpose() = reshape(size, 1)
+
+    /**
+     * Appends this vector to another vector.
+     *
+     * @since 0.2.3
+     */
+    fun append(other: StridedVector) = concatenate(this, other)
 
     /** Returns a copy of the elements in this vector. */
     fun copy(): StridedVector {
@@ -680,7 +689,27 @@ open class StridedVector internal constructor(
             return v
         }
 
-        internal fun create(data: DoubleArray, offset: Int, size: Int, stride: Int): StridedVector {
+        /**
+         * Joins a sequence of vectors into a single vector.
+         *
+         * @since 0.2.3
+         */
+        @JvmStatic fun concatenate(first: StridedVector, vararg rest: StridedVector): StridedVector {
+            val size = first.size + rest.sumBy { it.size }
+            val result = StridedVector(size)
+            var offset = 0
+            for (v in arrayOf(first, *rest)) {
+                if (v.isNotEmpty()) {
+                    v.copyTo(result.slice(offset, offset + v.size))
+                    offset += v.size
+                }
+            }
+
+            return result
+        }
+
+        internal fun create(data: DoubleArray, offset: Int = 0,
+                            size: Int = data.size, stride: Int = 1): StridedVector {
             require(offset + size <= data.size) { "not enough data" }
             return if (stride == 1) {
                 DenseVector.create(data, offset, size)

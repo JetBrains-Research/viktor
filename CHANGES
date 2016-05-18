@@ -3,6 +3,12 @@ viktor Changelog
 
 Here you can see the full list of changes between each viktor release.
 
+Version 0.2.3
+-------------
+
+- Added 'StridedVector.append' and 'StridedVector.concatenate' for
+  joining multiple vectors into a single vector.
+
 Version 0.2.2
 -------------
 

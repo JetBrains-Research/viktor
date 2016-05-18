@@ -22,6 +22,22 @@ class StridedVectorTest {
                           StridedVector.of(1.0, 2.0, 3.0).toArray(), Precision.EPSILON)
     }
 
+    @Test fun testConcatenate() {
+        assertEquals(StridedVector.of(1.0, 2.0, 3.0, 4.0, 5.0),
+                     StridedVector.concatenate(StridedVector.of(1.0, 2.0),
+                                               StridedVector.of(3.0),
+                                               StridedVector.of(4.0, 5.0)))
+    }
+
+    @Test fun testAppend() {
+        assertEquals(StridedVector.of(1.0, 2.0),
+                     StridedVector.of(1.0, 2.0).append(StridedVector(0)))
+        assertEquals(StridedVector.of(1.0, 2.0),
+                     StridedVector(0).append(StridedVector.of(1.0, 2.0)))
+        assertEquals(StridedVector.of(1.0, 2.0, 3.0, 4.0, 5.0),
+                     StridedVector.of(1.0, 2.0).append(StridedVector.of(3.0, 4.0, 5.0)))
+    }
+
     @Test fun testTranspose() {
         assertEquals(StridedVector.of(1.0), StridedVector.of(1.0).T.columnView(0))
         assertEquals(StridedVector.of(1.0, 2.0),
