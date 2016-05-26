@@ -11,6 +11,7 @@ Version 0.2.3
 - Changed 'StridedVector.sort', '.argSort' and '.reorder' to be extension
   functions.
 - Exposed 'StridedVector.partition'.
+- Added 'StridedVector.searchSorted' for doing efficient sorted lookups.
 
 Version 0.2.2
 -------------
