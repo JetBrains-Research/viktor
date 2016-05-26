@@ -5,6 +5,8 @@ package org.jetbrains.bio.viktor
  *
  * If [target] already appears in this vector, the returned
  * index is just before the leftmost occurrence of [target].
+ *
+ * @since 0.2.3
  */
 fun StridedVector.searchSorted(target: Double): Int {
     var lo = 0
@@ -21,7 +23,7 @@ fun StridedVector.searchSorted(target: Double): Int {
 }
 
 /** Returns the index of the minimum element. */
-fun StridedVector. argMin(): Int {
+fun StridedVector.argMin(): Int {
     require(size > 0) { "no data" }
     var minPos = 0
     var minValue = java.lang.Double.POSITIVE_INFINITY
