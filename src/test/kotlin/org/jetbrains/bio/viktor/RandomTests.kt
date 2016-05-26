@@ -9,27 +9,8 @@ import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import org.junit.runners.Parameterized.Parameters
 import java.util.*
-import kotlin.test.assertTrue
 
 class QuickSelectTest {
-    @Test fun partition() {
-        val values = doubleArrayOf(0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0)
-                .asStrided()
-        val length = values.size
-        for (p in 0..length - 1) {
-            values.shuffle()
-            val pivot = values[p]
-            val split = QuickSelect.partition(values, 0, length - 1, p)
-            for (i in 0..split - 1) {
-                assertTrue(values[i] < pivot, "<")
-            }
-
-            for (i in split..length - 1) {
-                assertTrue(values[i] >= pivot, ">=")
-            }
-        }
-    }
-
     @Test fun quantileRandom() {
         val values = Random().doubles(1024).toArray().asStrided()
         for (i in values.indices) {

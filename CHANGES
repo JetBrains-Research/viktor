@@ -10,6 +10,7 @@ Version 0.2.3
   joining multiple vectors into a single vector.
 - Changed 'StridedVector.sort', '.argSort' and '.reorder' to be extension
   functions.
+- Exposed 'StridedVector.partition'.
 
 Version 0.2.2
 -------------

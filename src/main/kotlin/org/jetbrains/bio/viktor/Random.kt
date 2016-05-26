@@ -28,42 +28,13 @@ internal object QuickSelect {
         }
 
         var split = left + randomGenerator.nextInt(right - left + 1)
-        split = partition(values, left, right, split)
+        split = values.partition(split, left, right)
         return when {
             split == n -> values[n]
             split > n  -> select(values, left, split - 1, n, randomGenerator)
             else -> select(values, split + 1, right, n, randomGenerator)
         }
     }
-
-    /**
-     * Partitions values around the pivot.
-     *
-     * Invariants: p = partition(values, left, right, p)
-     * for all i <  p: values[i] <  values[p]
-     * for all i >= p: values[p] >= values[p]
-     */
-    fun partition(values: StridedVector, left: Int, right: Int, p: Int): Int {
-        val pivot = values[p]
-        values.swap(p, right)  // move to end.
-
-        var ptr = left
-        for (i in left..right - 1) {
-            if (values[i] < pivot) {
-                values.swap(i, ptr)
-                ptr++
-            }
-        }
-
-        values.swap(right, ptr)
-        return ptr
-    }
-}
-
-private fun StridedVector.swap(i: Int, j: Int) {
-    val tmp = unsafeGet(i)
-    unsafeSet(i, unsafeGet(j))
-    unsafeSet(j, tmp)
 }
 
 /**
