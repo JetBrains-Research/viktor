@@ -6,7 +6,6 @@ import org.apache.commons.math3.util.Precision
 import org.jetbrains.bio.jni.DoubleStat
 import org.jetbrains.bio.jni.SIMDMath
 import java.text.DecimalFormat
-import java.util.*
 
 /**
  * Wraps a given array of elements. The array will not be copied.
@@ -267,44 +266,12 @@ open class StridedVector internal constructor(
      */
     open fun min() = unsafeGet(argMin())
 
-    /** Returns the index of the minimum element. */
-    fun argMin(): Int {
-        require(size > 0) { "no data" }
-        var minPos = 0
-        var minValue = java.lang.Double.POSITIVE_INFINITY
-        for (pos in 0..size - 1) {
-            val value = unsafeGet(pos)
-            if (value < minValue) {
-                minPos = pos
-                minValue = value
-            }
-        }
-
-        return minPos
-    }
-
     /**
      * Returns the maximum element.
      *
      * Optimized for dense vectors.
      */
     open fun max() = unsafeGet(argMax())
-
-    /** Returns the index of the maxmimum element. */
-    fun argMax(): Int {
-        require(size > 0) { "no data" }
-        var maxPos = 0
-        var maxValue = java.lang.Double.NEGATIVE_INFINITY
-        for (pos in 0..size - 1) {
-            val value = unsafeGet(pos)
-            if (value > maxValue) {
-                maxPos = pos
-                maxValue = value
-            }
-        }
-
-        return maxPos
-    }
 
     fun exp(): StridedVector {
         val copy = copy()

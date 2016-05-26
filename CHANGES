@@ -12,6 +12,8 @@ Version 0.2.3
   functions.
 - Exposed 'StridedVector.partition'.
 - Added 'StridedVector.searchSorted' for doing efficient sorted lookups.
+- Changed 'StridedVector.argMin' and '.argMax' to be extension
+  functions.
 
 Version 0.2.2
 -------------
