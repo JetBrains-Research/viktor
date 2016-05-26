@@ -8,6 +8,8 @@ Version 0.2.3
 
 - Added 'StridedVector.append' and 'StridedVector.concatenate' for
   joining multiple vectors into a single vector.
+- Changed 'StridedVector.sort', '.argSort' and '.reorder' to be extension
+  functions.
 
 Version 0.2.2
 -------------
