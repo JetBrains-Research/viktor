@@ -1,6 +1,6 @@
 #pragma once
 
-#include <algorithm>
+#include <numeric>
 
 #include <boost/simd/constant/zero.hpp>
 #include <boost/simd/function/cumsum.hpp>
