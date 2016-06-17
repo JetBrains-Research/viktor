@@ -1,10 +1,11 @@
 package org.jetbrains.bio.viktor
 
-import info.yeppp.Core
 import org.apache.commons.math3.util.FastMath
 import org.apache.commons.math3.util.Precision
-import org.jetbrains.bio.jni.DoubleStat
-import org.jetbrains.bio.jni.SIMDMath
+import org.jetbrains.bio.jni.DoubleMathNative
+import org.jetbrains.bio.jni.DoubleOpsNative
+import org.jetbrains.bio.jni.DoubleStatNative
+import org.jetbrains.bio.jni.Loader
 import java.text.DecimalFormat
 
 /**
@@ -421,9 +422,9 @@ open class StridedVector internal constructor(
         return v
     }
 
-    operator open fun timesAssign(value: Double) {
+    operator open fun timesAssign(update: Double) {
         for (pos in 0..size - 1) {
-            unsafeSet(pos, unsafeGet(pos) * value)
+            unsafeSet(pos, unsafeGet(pos) * update)
         }
     }
 
@@ -665,7 +666,7 @@ open class DenseVector protected constructor(data: DoubleArray, offset: Int, siz
         const val DENSE_SPLIT_SIZE = 16
 
         internal fun create(data: DoubleArray, offset: Int, size: Int): DenseVector {
-            return if (size <= DENSE_SPLIT_SIZE) {
+            return if (size <= DENSE_SPLIT_SIZE || !Loader.useNative) {
                 SmallDenseVector(data, offset, size)
             } else {
                 LargeDenseVector(data, offset, size)
@@ -692,50 +693,55 @@ class SmallDenseVector(data: DoubleArray, offset: Int, size: Int) :
 class LargeDenseVector(data: DoubleArray, offset: Int, size: Int) :
         DenseVector(data, offset, size) {
 
-    override fun mean() = DoubleStat.mean(data, offset, size)
+    override fun mean() = DoubleStatNative.sum(data, offset, size) / size
 
-    override fun sum() = DoubleStat.sum(data, offset, size)
+    override fun sum() = DoubleStatNative.sum(data, offset, size)
 
-    override fun sumSq() = Core.SumSquares_V64f_S64f(data, offset, size)
+    override fun sumSq(): Double {
+        val copy = copy()
+        copy *= copy
+        return copy.sum()
+    }
 
-    override fun cumSum() = DoubleStat.prefixSum(data, offset, data, offset, size)
+    override fun cumSum() = DoubleStatNative.prefixSum(data, offset, data, offset, size)
 
-    override fun min() = Core.Min_V64f_S64f(data, offset, size)
+    override fun min() = DoubleOpsNative.unsafeMin(data, offset, size)
 
-    override fun max() = Core.Max_V64f_S64f(data, offset, size)
+    override fun max() = DoubleOpsNative.unsafeMax(data, offset, size)
 
     override fun dot(other: DoubleArray): Double {
         require(other.size == size) { "non-conformable arrays" }
-        return Core.DotProduct_V64fV64f_S64f(data, offset, other, 0, size)
+        return DoubleMathNative.unsafeDot(data, offset, other, 0, size)
     }
 
     override fun dot(other: StridedVector): Double {
         return if (other is LargeDenseVector) {
             require(other.size == size) { "non-conformable arrays" }
-            Core.DotProduct_V64fV64f_S64f(data, offset, other.data, other.offset, size)
+            DoubleMathNative.unsafeDot(data, offset, other.data, other.offset, size)
         } else {
             super.dot(other)
         }
     }
 
     override fun expInPlace() {
-        info.yeppp.Math.Exp_V64f_V64f(data, 0, data, 0, data.size)
+        DoubleMathNative.criticalExp(data, offset, data, 0, data.size)
     }
 
     override fun logInPlace() {
-        info.yeppp.Math.Log_V64f_V64f(data, 0, data, 0, data.size)
+        DoubleMathNative.criticalLog(data, offset, data, 0, data.size)
     }
 
-    override fun logRescale() = SIMDMath.logRescale(data, offset, size)
+    override fun logRescale() = DoubleMathNative.logRescale(data, offset, size)
 
-    override fun logSumExp() = SIMDMath.logSumExp(data, offset, size)
+    override fun logSumExp() = DoubleMathNative.logSumExp(data, offset, size)
 
     override fun logAddExp(other: StridedVector, dst: StridedVector) {
         if (other is DenseVector && dst is DenseVector) {
             checkSize(other)
             checkSize(dst)
-            SIMDMath.logAddExp(data, offset, other.data, other.offset,
-                               dst.data, dst.offset, size)
+            DoubleMathNative.logAddExp(data, offset,
+                                       other.data, other.offset,
+                                       dst.data, dst.offset, size)
         } else {
             super.logAddExp(other, dst)
         }
@@ -743,46 +749,49 @@ class LargeDenseVector(data: DoubleArray, offset: Int, size: Int) :
 
     override fun unaryMinus(): StridedVector {
         val v = copy()
-        Core.Negate_IV64f_IV64f(v.data, v.offset, v.size)
+        DoubleOpsNative.criticalNegate(data, offset, v.data, v.offset, v.size)
         return v
     }
 
     override fun plusAssign(update: Double) {
-        Core.Add_V64fS64f_V64f(data, offset, update, data, offset, size)
+        DoubleOpsNative.criticalPlusScalar(data, offset, update, data, offset, size)
     }
 
     override fun plusAssign(other: StridedVector) {
         if (other is DenseVector) {
             checkSize(other)
-            Core.Add_V64fV64f_V64f(data, offset, other.data, other.offset,
-                                   data, offset, size)
+            DoubleOpsNative.criticalPlus(data, offset,
+                                         other.data, other.offset,
+                                         data, offset, size)
         } else {
             super.plusAssign(other)
         }
     }
 
     override fun minusAssign(update: Double) {
-        Core.Subtract_V64fS64f_V64f(data, offset, update, data, offset, size)
+        DoubleOpsNative.criticalMinusScalar(data, offset, update, data, offset, size)
     }
 
     override fun minusAssign(other: StridedVector) {
         if (other is DenseVector) {
             checkSize(other)
-            Core.Subtract_V64fV64f_V64f(data, offset, other.data, other.offset,
-                                        data, offset, size)
+            DoubleOpsNative.criticalMinus(data, offset,
+                                          other.data, other.offset,
+                                          data, offset, size)
         } else {
             super.plusAssign(other)
         }
     }
 
-    override fun timesAssign(value: Double) {
-        Core.Multiply_IV64fS64f_IV64f(data, offset, value, size)
+    override fun timesAssign(update: Double) {
+        DoubleOpsNative.criticalTimesScalar(data, offset, update, data, offset, size)
     }
 
     override fun timesAssign(other: StridedVector) {
         if (other is DenseVector) {
-            Core.Multiply_V64fV64f_V64f(data, offset, other.data, other.offset,
-                                        data, offset, size)
+            DoubleOpsNative.criticalTimes(data, offset,
+                                          other.data, other.offset,
+                                          data, offset, size)
         } else {
             super.timesAssign(other)
         }

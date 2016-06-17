@@ -15,9 +15,108 @@ plugins {
     id 'com.jfrog.bintray' version '1.6'
 }
 
+apply plugin: 'cpp'
 apply plugin: 'kotlin'
 apply plugin: 'maven-publish'
 apply plugin: 'org.jetbrains.dokka'
+
+apply from: "$rootDir/gradle/jni-headers.gradle"
+apply from: "$rootDir/gradle/boost-simd.gradle"
+apply from: "$rootDir/gradle/disable-static.gradle"
+
+model {
+    platforms {
+        linux {
+            operatingSystem 'linux'
+        }
+        osx {
+            operatingSystem 'osx'
+        }
+    }
+
+    components {
+        loader(NativeLibrarySpec) {
+            sources {
+                cpp.lib library: 'jniHeaders', linkage: 'api'
+            }
+
+            targetPlatform 'linux'
+            targetPlatform 'osx'
+
+            binaries.withType(SharedLibraryBinarySpec) {
+                def libraryName = System.mapLibraryName('simd.x86_64')
+                sharedLibraryFile = file("$buildDir/libs/$libraryName")
+            }
+        }
+
+        simd(NativeLibrarySpec) {
+            sources {
+                cpp.lib library: 'boostSimd', linkage: 'api'
+                cpp.lib library: 'jniHeaders', linkage: 'api'
+            }
+
+            flavors {
+                sse2
+                avx
+            }
+
+            targetPlatform 'linux'
+            targetPlatform 'osx'
+            targetFlavors 'sse2', 'avx'
+
+            binaries.withType(SharedLibraryBinarySpec) {
+                switch (flavor) {
+                    case flavors.sse2: cppCompiler.args '-msse2'; break
+                    case flavors.avx: cppCompiler.args '-mavx'; break
+                }
+
+                def libraryName = System.mapLibraryName("simd.${flavor.name}.x86_64")
+                sharedLibraryFile = file("$buildDir/libs/$libraryName")
+            }
+        }
+    }
+
+    components {
+        all {
+            binaries.all {
+                cppCompiler.args('-std=c++11', '-fno-rtti', '-fno-exceptions',
+                        '-O3', '-DBOOST_DISABLE_ASSERTS')
+            }
+        }
+    }
+
+    tasks {
+        buildAllVariants(Task) {
+            dependsOn $.binaries.findAll { it.buildable }
+        }
+    }
+}
+
+task jniHeaders(dependsOn: compileJava) {
+    def outputDir = file("$buildDir/include")
+    def jniClasses = [
+            'org.jetbrains.bio.jni.DoubleMathNative',
+            'org.jetbrains.bio.jni.DoubleOpsNative',
+            'org.jetbrains.bio.jni.DoubleStatNative',
+            'org.jetbrains.bio.jni.LoaderKt'
+    ]
+    def jniHeaders = jniClasses.collect {
+        new File(outputDir, it.replace('.', '_') + '.hpp')
+    }
+
+    inputs.files sourceSets.main.output
+    outputs.files jniHeaders
+
+    doLast {
+        outputDir.mkdirs()
+        [jniClasses, jniHeaders].transpose().each(javah)
+    }
+}
+
+tasks.withType(CppCompile) {
+    dependsOn 'jniHeaders'
+    dependsOn 'installBoostSimd'
+}
 
 repositories {
     jcenter()
@@ -26,10 +125,6 @@ repositories {
 dependencies {
     compile 'org.apache.commons:commons-math3:3.6'
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-
-    compile files("$rootDir/lib/yeppp-bundle-1.0.jar")
-    compile files("$rootDir/lib/simd.jar",
-                  "$rootDir/lib/simd-sources.jar")
 
     testCompile "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
     testCompile 'junit:junit:4.+'
@@ -41,6 +136,17 @@ dokka {
         url = "https://github.com/JetBrains-Research/viktor/blob/${project.version}/src/main/kotlin"
         suffix = '#L'
     }
+}
+
+test {
+    dependsOn 'buildAllVariants'
+    systemProperty 'java.library.path', "$buildDir/libs"
+}
+
+jar {
+    dependsOn 'buildAllVariants'
+    from "$buildDir/libs"
+    exclude '*.jar'
 }
 
 task sourcesJar(type: Jar) {

@@ -1,6 +1,6 @@
 package org.jetbrains.bio.viktor
 
-import info.yeppp.Core
+import org.jetbrains.bio.jni.DoubleOpsNative
 
 /**
  * Operator overloads for [Double] and [StridedVector].
@@ -11,7 +11,9 @@ import info.yeppp.Core
 operator fun Double.minus(other: StridedVector): StridedVector {
     val v = other.copy()
     if (v is LargeDenseVector) {
-        Core.Subtract_S64fIV64f_IV64f(this, v.data, v.offset, v.size)
+        DoubleOpsNative.criticalNegate(v.data, v.offset, v.data, v.offset, v.size)
+        DoubleOpsNative.criticalPlusScalar(
+                v.data, v.offset, this, v.data, v.offset, v.size)
     } else {
         for (pos in 0..v.size - 1) {
             v.unsafeSet(pos, this - v.unsafeGet(pos))

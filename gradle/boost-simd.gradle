@@ -1,0 +1,61 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'de.undercouch:gradle-download-task:3.0.0'
+    }
+}
+
+apply plugin: de.undercouch.gradle.tasks.download.DownloadTaskPlugin
+
+model {
+    repositories {
+        libs(PrebuiltLibraries) {
+            boostSimd {
+                // This doesn't work yet. See
+                // https://discuss.gradle.org/t/prebuilt-libraries-two-things-i-would-find-useful
+                // generatedBy installBoostSimd
+
+                headers.srcDir "$buildDir/include"
+            }
+        }
+    }
+}
+
+task downloadBoostSimd(type: de.undercouch.gradle.tasks.download.Download) {
+    src 'https://github.com/NumScale/boost.simd/archive/develop.zip'
+    dest new File(buildDir, 'boost.simd.zip')
+    overwrite false
+}
+
+task unzipBoostSimd(dependsOn: downloadBoostSimd, type: Copy) {
+    from zipTree(downloadBoostSimd.dest)
+    into buildDir
+    outputs.dir new File(buildDir, 'boost.simd-master')
+}
+
+def nullOutputStream = new OutputStream() {
+    @Override
+    public void write(int b) {}
+}
+
+task installBoostSimd(dependsOn: unzipBoostSimd) {
+    def cmakeDir = new File(buildDir, 'boost.simd-develop/build')
+    outputs.dir new File(buildDir, 'include/boost')
+    doLast {
+        cmakeDir.mkdirs()
+
+        exec {
+            workingDir cmakeDir
+            commandLine('cmake', '..', '-DUSE_SELF_BOOST=1',
+                        "-DCMAKE_INSTALL_PREFIX=$buildDir")
+        }
+        exec {
+            workingDir cmakeDir
+            standardOutput = nullOutputStream
+            commandLine 'make', 'update.boost-header-only', 'install'
+        }
+    }
+}

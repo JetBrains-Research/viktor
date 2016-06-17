@@ -3,9 +3,9 @@ package org.jetbrains.bio.viktor
 import org.apache.commons.math3.distribution.NormalDistribution
 import org.apache.commons.math3.stat.descriptive.summary.Sum
 import org.apache.commons.math3.util.Precision
-import org.jetbrains.bio.jni.SIMDMath
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
+import org.junit.Ignore
 import org.junit.Test
 import java.util.*
 import java.util.stream.IntStream
@@ -124,6 +124,7 @@ class StridedVectorTest {
                           v.toArray(), Precision.EPSILON)
     }
 
+    @Ignore("not implemented")
     @Test fun testDotFast() {
         val v = getRangeVector(4, 128)
         val weights = Random().doubles(v.size.toLong()).toArray()
@@ -273,12 +274,6 @@ class LargeDenseVectorTest{
         val v = NormalDistribution(0.0, 42.0).sample(128).asStrided()
         v.logRescale()
         assertTrue(Precision.equals(1.0, Math.exp(v.logSumExp()), 1e-8))
-    }
-
-    @Test fun testLogSumExp() {
-        val data = NormalDistribution(0.0, 42.0).sample(128)
-        val v = data.asStrided().copy()
-        assertEquals(SIMDMath.logSumExp(data), v.logSumExp(), Precision.EPSILON)
     }
 
     @Test fun testRescale() {

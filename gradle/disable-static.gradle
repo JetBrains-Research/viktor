@@ -1,0 +1,9 @@
+model {
+    components {
+        all {
+            binaries.withType(StaticLibraryBinarySpec) {
+                buildable = false
+            }
+        }
+    }
+}

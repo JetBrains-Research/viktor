@@ -1,0 +1,37 @@
+model {
+    repositories {
+        libs(PrebuiltLibraries) {
+            jniHeaders {
+                headers.srcDir "$buildDir/include"
+            }
+        }
+    }
+
+    components {
+        all {
+            binaries.all {
+                def javaHome = org.gradle.internal.jvm.Jvm.current().javaHome
+                def os = targetPlatform.operatingSystem
+                cppCompiler.args "-I$javaHome/include"
+                if (os.linux) {
+                    cppCompiler.args "-I$javaHome/include/linux"
+                } else if (os.macOsX) {
+                    cppCompiler.args "-I$javaHome/include/darwin"
+                }
+            }
+        }
+    }
+}
+
+ext.javah = { jniClass, jniHeader ->
+    exec {
+        executable org.gradle.internal.jvm.Jvm.current()
+                .getExecutable('javah')
+        args '-classpath', sourceSets.main.output.classesDir
+        args '-o', jniHeader
+        args jniClass
+    }
+
+    assert jniHeader.exists()
+    println "Generated $jniHeader"
+}
