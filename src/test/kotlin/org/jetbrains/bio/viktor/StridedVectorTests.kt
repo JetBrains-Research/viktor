@@ -5,7 +5,6 @@ import org.apache.commons.math3.stat.descriptive.summary.Sum
 import org.apache.commons.math3.util.Precision
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
-import org.junit.Ignore
 import org.junit.Test
 import java.util.*
 import java.util.stream.IntStream
@@ -124,7 +123,6 @@ class StridedVectorTest {
                           v.toArray(), Precision.EPSILON)
     }
 
-    @Ignore("not implemented")
     @Test fun testDotFast() {
         val v = getRangeVector(4, 128)
         val weights = Random().doubles(v.size.toLong()).toArray()
