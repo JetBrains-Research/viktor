@@ -1,14 +1,14 @@
 model {
     toolChains {
-        def cxx = System.env.CXX ?: ''
+        def cc = System.env.CC ?: ''
         gcc(Gcc) {
-            if (cxx.startsWith("g++")) {
-                path cxx
+            if (cc.startsWith("gcc")) {
+                path cc
             }
         }
         clang(Clang) {
-            if (cxx.startsWith("clang")) {
-                path cxx
+            if (cc.startsWith("clang")) {
+                path cc
             }
         }
     }
