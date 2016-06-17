@@ -724,11 +724,11 @@ class LargeDenseVector(data: DoubleArray, offset: Int, size: Int) :
     }
 
     override fun expInPlace() {
-        DoubleMathNative.criticalExp(data, offset, data, 0, data.size)
+        DoubleMathNative.unsafeExp(data, offset, data, 0, data.size)
     }
 
     override fun logInPlace() {
-        DoubleMathNative.criticalLog(data, offset, data, 0, data.size)
+        DoubleMathNative.unsafeLog(data, offset, data, 0, data.size)
     }
 
     override fun logRescale() = DoubleMathNative.logRescale(data, offset, size)
@@ -749,18 +749,18 @@ class LargeDenseVector(data: DoubleArray, offset: Int, size: Int) :
 
     override fun unaryMinus(): StridedVector {
         val v = copy()
-        DoubleOpsNative.criticalNegate(data, offset, v.data, v.offset, v.size)
+        DoubleOpsNative.unsafeNegate(data, offset, v.data, v.offset, v.size)
         return v
     }
 
     override fun plusAssign(update: Double) {
-        DoubleOpsNative.criticalPlusScalar(data, offset, update, data, offset, size)
+        DoubleOpsNative.unsafePlusScalar(data, offset, update, data, offset, size)
     }
 
     override fun plusAssign(other: StridedVector) {
         if (other is DenseVector) {
             checkSize(other)
-            DoubleOpsNative.criticalPlus(data, offset,
+            DoubleOpsNative.unsafePlus(data, offset,
                                          other.data, other.offset,
                                          data, offset, size)
         } else {
@@ -769,13 +769,13 @@ class LargeDenseVector(data: DoubleArray, offset: Int, size: Int) :
     }
 
     override fun minusAssign(update: Double) {
-        DoubleOpsNative.criticalMinusScalar(data, offset, update, data, offset, size)
+        DoubleOpsNative.unsafeMinusScalar(data, offset, update, data, offset, size)
     }
 
     override fun minusAssign(other: StridedVector) {
         if (other is DenseVector) {
             checkSize(other)
-            DoubleOpsNative.criticalMinus(data, offset,
+            DoubleOpsNative.unsafeMinus(data, offset,
                                           other.data, other.offset,
                                           data, offset, size)
         } else {
@@ -784,12 +784,12 @@ class LargeDenseVector(data: DoubleArray, offset: Int, size: Int) :
     }
 
     override fun timesAssign(update: Double) {
-        DoubleOpsNative.criticalTimesScalar(data, offset, update, data, offset, size)
+        DoubleOpsNative.unsafeTimesScalar(data, offset, update, data, offset, size)
     }
 
     override fun timesAssign(other: StridedVector) {
         if (other is DenseVector) {
-            DoubleOpsNative.criticalTimes(data, offset,
+            DoubleOpsNative.unsafeTimes(data, offset,
                                           other.data, other.offset,
                                           data, offset, size)
         } else {

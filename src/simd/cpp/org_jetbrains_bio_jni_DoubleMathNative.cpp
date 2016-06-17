@@ -12,10 +12,10 @@
 #define JNI_METHOD(rtype, name)                                         \
     JNIEXPORT rtype JNICALL Java_org_jetbrains_bio_jni_DoubleMathNative_##name
 
-JNI_METHOD(void, criticalExp)(JNIEnv *env, jobject,
-                              jdoubleArray jsrc, jint src_offset,
-                              jdoubleArray jdst, jint dst_offset,
-                              jint length)
+JNI_METHOD(void, unsafeExp)(JNIEnv *env, jobject,
+                            jdoubleArray jsrc, jint src_offset,
+                            jdoubleArray jdst, jint dst_offset,
+                            jint length)
 {
     jdouble *src = reinterpret_cast<jdouble *>(
         env->GetPrimitiveArrayCritical(jsrc, NULL));
@@ -28,10 +28,10 @@ JNI_METHOD(void, criticalExp)(JNIEnv *env, jobject,
 }
 
 
-JNI_METHOD(void, criticalExpm1)(JNIEnv *env, jobject,
-                                jdoubleArray jsrc, jint src_offset,
-                                jdoubleArray jdst, jint dst_offset,
-                                jint length)
+JNI_METHOD(void, unsafeExpm1)(JNIEnv *env, jobject,
+                              jdoubleArray jsrc, jint src_offset,
+                              jdoubleArray jdst, jint dst_offset,
+                              jint length)
 {
     jdouble *src = reinterpret_cast<jdouble *>(
         env->GetPrimitiveArrayCritical(jsrc, NULL));
@@ -44,10 +44,10 @@ JNI_METHOD(void, criticalExpm1)(JNIEnv *env, jobject,
 }
 
 
-JNI_METHOD(void, criticalLog)(JNIEnv *env, jobject,
-                              jdoubleArray jsrc, jint src_offset,
-                              jdoubleArray jdst, jint dst_offset,
-                              jint length)
+JNI_METHOD(void, unsafeLog)(JNIEnv *env, jobject,
+                            jdoubleArray jsrc, jint src_offset,
+                            jdoubleArray jdst, jint dst_offset,
+                            jint length)
 {
     jdouble *src = reinterpret_cast<jdouble *>(
         env->GetPrimitiveArrayCritical(jsrc, NULL));
@@ -59,10 +59,10 @@ JNI_METHOD(void, criticalLog)(JNIEnv *env, jobject,
     env->ReleasePrimitiveArrayCritical(jdst, dst, JNI_ABORT);
 }
 
-JNI_METHOD(void, criticalLog1p)(JNIEnv *env, jobject,
-                                jdoubleArray jsrc, jint src_offset,
-                                jdoubleArray jdst, jint dst_offset,
-                                jint length)
+JNI_METHOD(void, unsafeLog1p)(JNIEnv *env, jobject,
+                              jdoubleArray jsrc, jint src_offset,
+                              jdoubleArray jdst, jint dst_offset,
+                              jint length)
 {
     jdouble *src = reinterpret_cast<jdouble *>(
         env->GetPrimitiveArrayCritical(jsrc, NULL));
@@ -75,9 +75,9 @@ JNI_METHOD(void, criticalLog1p)(JNIEnv *env, jobject,
 }
 
 
-JNI_METHOD(jdouble, criticalLogSumExp)(JNIEnv *env, jobject,
-                                       jdoubleArray jsrc, jint offset,
-                                       jint length)
+JNI_METHOD(jdouble, unsafeLogSumExp)(JNIEnv *env, jobject,
+                                     jdoubleArray jsrc, jint offset,
+                                     jint length)
 {
     jdouble *src = reinterpret_cast<jdouble *>(
         env->GetPrimitiveArrayCritical(jsrc, NULL));
@@ -87,11 +87,11 @@ JNI_METHOD(jdouble, criticalLogSumExp)(JNIEnv *env, jobject,
 }
 
 
-JNI_METHOD(void, criticalLogAddExp)(JNIEnv *env, jobject,
-                                    jdoubleArray jsrc1, jint src_offset1,
-                                    jdoubleArray jsrc2, jint src_offset2,
-                                    jdoubleArray jdst, jint dst_offset,
-                                    jint length)
+JNI_METHOD(void, unsafeLogAddExp)(JNIEnv *env, jobject,
+                                  jdoubleArray jsrc1, jint src_offset1,
+                                  jdoubleArray jsrc2, jint src_offset2,
+                                  jdoubleArray jdst, jint dst_offset,
+                                  jint length)
 {
     jdouble *src1 = reinterpret_cast<jdouble *>(
         env->GetPrimitiveArrayCritical(jsrc1, NULL));
@@ -110,10 +110,10 @@ JNI_METHOD(void, criticalLogAddExp)(JNIEnv *env, jobject,
 }
 
 
-JNI_METHOD(void, criticalLogRescale)(JNIEnv *env, jobject,
-                                     jdoubleArray jsrc, jint src_offset,
-                                     jdoubleArray jdst, jint dst_offset,
-                                     jint length)
+JNI_METHOD(void, unsafeLogRescale)(JNIEnv *env, jobject,
+                                   jdoubleArray jsrc, jint src_offset,
+                                   jdoubleArray jdst, jint dst_offset,
+                                   jint length)
 {
     jdouble *src = reinterpret_cast<jdouble *>(
         env->GetPrimitiveArrayCritical(jsrc, NULL));

@@ -431,5 +431,4 @@ internal object DoubleStatNative {
 
     external fun prefixSum(source: DoubleArray, sourceOffset: Int,
                            dest: DoubleArray, destOffset: Int, length: Int)
-
 }

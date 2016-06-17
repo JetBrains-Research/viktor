@@ -11,8 +11,8 @@ import org.jetbrains.bio.jni.DoubleOpsNative
 operator fun Double.minus(other: StridedVector): StridedVector {
     val v = other.copy()
     if (v is LargeDenseVector) {
-        DoubleOpsNative.criticalNegate(v.data, v.offset, v.data, v.offset, v.size)
-        DoubleOpsNative.criticalPlusScalar(
+        DoubleOpsNative.unsafeNegate(v.data, v.offset, v.data, v.offset, v.size)
+        DoubleOpsNative.unsafePlusScalar(
                 v.data, v.offset, this, v.data, v.offset, v.size)
     } else {
         for (pos in 0..v.size - 1) {

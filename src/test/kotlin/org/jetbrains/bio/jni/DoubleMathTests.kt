@@ -22,7 +22,7 @@ class DoubleMathConsistencyTest(private val size: Int) {
             DoubleMathJava.exp(values, 0, this, 0, size)
         }
         val actual = DoubleArray(size).apply {
-            DoubleMathNative.criticalExp(values, 0, this, 0, size)
+            DoubleMathNative.unsafeExp(values, 0, this, 0, size)
         }
 
         assertArrayEquals(expected, actual, 1e-7)
@@ -33,7 +33,7 @@ class DoubleMathConsistencyTest(private val size: Int) {
             DoubleMathJava.expm1(values, 0, this, 0, size)
         }
         val actual = DoubleArray(size).apply {
-            DoubleMathNative.criticalExpm1(values, 0, this, 0, size)
+            DoubleMathNative.unsafeExpm1(values, 0, this, 0, size)
         }
 
         assertArrayEquals(expected, actual, 1e-10)
@@ -44,7 +44,7 @@ class DoubleMathConsistencyTest(private val size: Int) {
             DoubleMathJava.log(values, 0, this, 0, size)
         }
         val actual = DoubleArray(size).apply {
-            DoubleMathNative.criticalLog(values, 0, this, 0, size)
+            DoubleMathNative.unsafeLog(values, 0, this, 0, size)
         }
 
         assertArrayEquals(expected, actual, 1e-10)
@@ -55,7 +55,7 @@ class DoubleMathConsistencyTest(private val size: Int) {
             DoubleMathJava.log1p(values, 0, this, 0, size)
         }
         val actual = DoubleArray(size).apply {
-            DoubleMathNative.criticalLog1p(values, 0, this, 0, size)
+            DoubleMathNative.unsafeLog1p(values, 0, this, 0, size)
         }
 
         assertArrayEquals(expected, actual, 1e-10)
