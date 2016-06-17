@@ -4,3 +4,11 @@ jdk:
 
 sudo: false
 dist: trusty
+
+addons:
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    packages:
+    - cmake
+    - g++-48
