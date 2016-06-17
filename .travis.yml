@@ -2,8 +2,7 @@ language: java
 jdk:
   - oraclejdk8
 
-sudo: false
-dist: trusty
+sudo: true
 
 addons:
   apt:
@@ -14,11 +13,9 @@ addons:
     - gcc-5
     - g++-5
 
-env:
-  - CC=/usr/bin/gcc-5 CXX=/usr/bin/g++-5
-
-before_install:
-  ./gradlew assemble --info
+install:
+- sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 90
+- sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-5 90
 
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
