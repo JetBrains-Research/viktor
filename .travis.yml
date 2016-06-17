@@ -3,3 +3,4 @@ jdk:
   - oraclejdk8
 
 sudo: false
+dist: trusty
