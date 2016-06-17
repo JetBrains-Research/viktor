@@ -11,6 +11,8 @@
 #include <boost/simd/pack.hpp>
 
 #include "transform_accumulate.hpp"
+#include "source.hpp"
+#include "summing.hpp"
 
 typedef boost::simd::pack<double> pack_double;
 
@@ -52,7 +54,9 @@ double logsumexp(double const *src, size_t length)
 BOOST_SYMBOL_EXPORT
 double dot(double const *src1, double const *src2, size_t length)
 {
-    return 0;  // boost.simd-style!
+    one_dimension_source<weighted_sum_tag> f
+        = one_dimension_source<weighted_sum_tag>(src1, src2, length);
+    return balanced_sum(f);
 }
 
 }  /* ::simdmath */
