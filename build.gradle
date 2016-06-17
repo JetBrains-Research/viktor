@@ -1,5 +1,7 @@
 buildscript {
-    ext.kotlin_version = '1.0.+'
+    ext {
+        kotlin_version = '1.0.+'
+    }
 
     repositories {
         jcenter()
@@ -165,7 +167,7 @@ artifacts {
 }
 
 publishing {
-    group = groupId
+    group = 'org.jetbrains.bio'
     version = project.version
 
     publications {
@@ -184,7 +186,7 @@ bintray {
     pkg {
         repo = 'maven'
         name = 'viktor'
-        userOrg = "jetbrains-research"
+        userOrg = 'jetbrains-research'
         licenses = ['MIT']
         version {
             name = project.version.toString()

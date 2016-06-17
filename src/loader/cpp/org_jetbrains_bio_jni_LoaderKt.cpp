@@ -4,15 +4,8 @@
 
 #include "org_jetbrains_bio_jni_LoaderKt.hpp"
 
-#define JNI_METHOD(rtype, name)                 \
+#define JNI_METHOD(rtype, name)                                         \
     JNIEXPORT rtype JNICALL Java_org_jetbrains_bio_jni_LoaderKt_##name
-
-// %ecx
-#define bit_AVX   (1 << 28)
-#define bit_XSAVE (1 << 26)
-
-// %edx
-#define bit_SSE2  (1 << 26)
 
 static inline int64_t xgetbv(int ctr) {
    uint32_t eax, edx;

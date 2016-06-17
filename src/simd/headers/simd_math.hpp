@@ -1,9 +1,8 @@
 #pragma once
 
-#include <limits>
-
 #include <boost/align/is_aligned.hpp>
 #include <boost/simd/constant/zero.hpp>
+#include <boost/simd/constant/minf.hpp>
 #include <boost/simd/function/aligned_load.hpp>
 #include <boost/simd/function/exp.hpp>
 #include <boost/simd/function/log.hpp>
@@ -29,8 +28,7 @@ double logsumexp(double const *src, size_t length)
     // is ill-behaved, but this shouldn't be a problem for us, since
     // we use SIMD only for large arrays.
     double offset = boost::simd::accumulate(
-        src, src + length,
-        -std::numeric_limits<double>::infinity(),
+        src, src + length, boost::simd::Minf<double>(),
         boost::simd::max);
     pack_double voffset(offset);
 
