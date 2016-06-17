@@ -83,6 +83,10 @@ model {
                 cppCompiler.args('-std=c++11', '-fno-rtti', '-fno-exceptions',
                                  '-O3', '-DBOOST_DISABLE_ASSERTS', '-DNDEBUG',
                                  '-Wno-narrowing')
+
+                if (toolChain in Clang) {
+                    cppCompiler.args '-stdlib=libc++'
+                }
             }
         }
     }

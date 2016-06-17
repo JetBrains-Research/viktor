@@ -15,4 +15,4 @@ addons:
     - g++-5
 
 env:
-  - CC=gcc-5 CXX=g++-5
+  - CC=/usr/bin/gcc-5 CXX=/usr/bin/g++-5
