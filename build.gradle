@@ -20,6 +20,7 @@ apply plugin: 'kotlin'
 apply plugin: 'maven-publish'
 apply plugin: 'org.jetbrains.dokka'
 
+apply from: "$rootDir/gradle/cxx-toolchain.gradle"
 apply from: "$rootDir/gradle/jni-headers.gradle"
 apply from: "$rootDir/gradle/boost-simd.gradle"
 apply from: "$rootDir/gradle/disable-static.gradle"
@@ -80,7 +81,8 @@ model {
         all {
             binaries.all {
                 cppCompiler.args('-std=c++11', '-fno-rtti', '-fno-exceptions',
-                        '-O3', '-DBOOST_DISABLE_ASSERTS', '-DNDEBUG')
+                                 '-O3', '-DBOOST_DISABLE_ASSERTS', '-DNDEBUG',
+                                 '-Wno-narrowing')
             }
         }
     }
@@ -187,5 +189,5 @@ bintray {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.13'
+    gradleVersion = '2.14'
 }

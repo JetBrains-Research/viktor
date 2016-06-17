@@ -1,0 +1,15 @@
+model {
+    toolChains {
+        def cxx = System.env.CXX ?: ''
+        gcc(Gcc) {
+            if (cxx.startsWith("g++")) {
+                path cxx
+            }
+        }
+        clang(Clang) {
+            if (cxx.startsWith("clang")) {
+                path cxx
+            }
+        }
+    }
+}
