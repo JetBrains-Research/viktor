@@ -11,4 +11,8 @@ addons:
     - ubuntu-toolchain-r-test
     packages:
     - cmake
-    - g++-48
+    - gcc-5
+    - g++-5
+
+env:
+  - CC=gcc-5 CXX=g++-5
