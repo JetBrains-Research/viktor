@@ -83,7 +83,7 @@ object DoubleStat {
     fun standardDeviation(values: DoubleArray, offset: Int = 0, length: Int = values.size): Double {
         checkOffsetAndLength(values, offset, length)
         return if (Loader.useNative)
-            NativeSpeedups.standardDeviation(values, offset, length)
+            NativeSpeedups.sd(values, offset, length)
         else
             DoubleStatJava.standardDeviation(values, offset, length)
     }
@@ -107,7 +107,7 @@ object DoubleStat {
     fun weightedStandardDeviationBiased(values: DoubleArray, valuesOffset: Int,
                                         weights: DoubleArray, weightsOffset: Int, length: Int): Double {
         return if (Loader.useNative)
-            NativeSpeedups.weightedSD(values, valuesOffset, weights, weightsOffset, length)
+            NativeSpeedups.weightedSd(values, valuesOffset, weights, weightsOffset, length)
         else
             DoubleStatJava.weightedStandardDeviation(values, valuesOffset, weights, weightsOffset, length)
     }
@@ -157,11 +157,6 @@ object DoubleStat {
         checkLength(source, dest)
         prefixSum(source, 0, dest, 0, source.size)
     }
-
-    /**
-     * Replaces the `values` by their prefix sums, see [.prefixSum].
-     */
-    fun prefixSumInPlace(values: DoubleArray) = prefixSum(values, values)
 }
 
 internal object DoubleStatJava {

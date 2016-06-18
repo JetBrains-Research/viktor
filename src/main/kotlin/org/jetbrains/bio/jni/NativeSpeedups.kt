@@ -74,9 +74,9 @@ object NativeSpeedups {
     external fun weightedMean(values: DoubleArray, valuesOffset: Int,
                               weights: DoubleArray, weightsOffset: Int, length: Int): Double
 
-    external fun standardDeviation(values: DoubleArray, offset: Int, length: Int): Double
+    external fun sd(values: DoubleArray, offset: Int, length: Int): Double
 
-    external fun weightedSD(values: DoubleArray, valuesOffset: Int,
+    external fun weightedSd(values: DoubleArray, valuesOffset: Int,
                             weights: DoubleArray, weightsOffset: Int, length: Int): Double
 
     external fun prefixSum(source: DoubleArray, sourceOffset: Int,

@@ -131,7 +131,7 @@ private:
 };
 
 struct weighted_mean_tag;
-struct standard_deviation_tag;
+struct sd_tag;
 
 template<typename tag>
 struct source_2d;
@@ -179,9 +179,9 @@ private:
 };
 
 template<>
-struct source_2d<standard_deviation_tag>
+struct source_2d<sd_tag>
 {
-    source_2d<standard_deviation_tag>(double const* array,
+    source_2d<sd_tag>(double const* array,
                                                  std::size_t length)
         : array_(array), length_(length), initial_length_(length) {}
 

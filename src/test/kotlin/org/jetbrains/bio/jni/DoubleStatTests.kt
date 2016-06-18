@@ -92,7 +92,7 @@ class SDConsistencyTest(private val size: Int) {
     @Test fun unweighted() {
         val data = Random().doubles(size.toLong()).toArray()
         val expected = DoubleStatJava.standardDeviation(data, 0, size)
-        val actual = NativeSpeedups.standardDeviation(data, 0, size)
+        val actual = NativeSpeedups.sd(data, 0, size)
         assertEquals(expected, actual, (expected + actual) * 1E-12)
     }
 
@@ -100,7 +100,7 @@ class SDConsistencyTest(private val size: Int) {
         val values = RANDOM.doubles(size.toLong()).toArray()
         val weights = RANDOM.doubles(size.toLong()).toArray()
         val expected = DoubleStatJava.weightedStandardDeviation(values, 0, weights, 0, size)
-        val actual = NativeSpeedups.weightedSD(values, 0, weights, 0, size)
+        val actual = NativeSpeedups.weightedSd(values, 0, weights, 0, size)
         assertEquals(expected, actual, expected * 1E-12)
     }
 

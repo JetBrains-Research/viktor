@@ -452,18 +452,18 @@ JNI_METHOD(jdouble, weightedMean)(JNIEnv *env, jobject,
     return res;
 }
 
-JNI_METHOD(jdouble, standardDeviation)(JNIEnv *env, jobject,
-                                       jdoubleArray jvalues, jint offset,
-                                       jint length)
+JNI_METHOD(jdouble, sd)(JNIEnv *env, jobject,
+                        jdoubleArray jvalues, jint offset,
+                        jint length)
 {
     jdouble *values = (jdouble *) env->GetPrimitiveArrayCritical(jvalues, NULL);
-    source_2d<standard_deviation_tag> f(values + offset, length);
+    source_2d<sd_tag> f(values + offset, length);
     double res = twin_balanced_sum(f);
     env->ReleasePrimitiveArrayCritical(jvalues, values, JNI_ABORT);
     return res;
 }
 
-JNI_METHOD(jdouble, weightedSD)(JNIEnv *env, jobject,
+JNI_METHOD(jdouble, weightedSd)(JNIEnv *env, jobject,
                                 jdoubleArray jvalues, jint values_offset,
                                 jdoubleArray jweights, jint weights_offset,
                                 jint length)
