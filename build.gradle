@@ -15,6 +15,7 @@ buildscript {
 
 plugins {
     id 'com.jfrog.bintray' version '1.6'
+    id 'me.champeau.gradle.jmh' version '0.3.1'
 }
 
 apply plugin: 'cpp'
@@ -134,6 +135,8 @@ dependencies {
 
     testCompile "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
     testCompile 'junit:junit:4.+'
+
+    jmh files("$rootDir/libs/yeppp-bundle-1.0.jar")
 }
 
 dokka {
@@ -147,6 +150,18 @@ dokka {
 test {
     dependsOn 'buildAllVariants'
     systemProperty 'java.library.path', "$buildDir/libs"
+}
+
+jmh {
+    includeTests = false
+}
+
+apply plugin: 'idea'
+
+idea {
+    module {
+        scopes.COMPILE.plus += [configurations.jmh]
+    }
 }
 
 jar {
