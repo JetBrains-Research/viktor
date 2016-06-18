@@ -52,8 +52,8 @@ double logsumexp(double const *src, size_t length)
 BOOST_SYMBOL_EXPORT
 double dot(double const *src1, double const *src2, size_t length)
 {
-    one_dimension_source<weighted_sum_tag> f
-        = one_dimension_source<weighted_sum_tag>(src1, src2, length);
+    source_1d<weighted_sum_tag> f
+        = source_1d<weighted_sum_tag>(src1, src2, length);
     return balanced_sum(f);
 }
 

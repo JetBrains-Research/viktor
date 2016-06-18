@@ -9,7 +9,7 @@ JNI_METHOD(jdouble, sum)(JNIEnv *env, jobject,
                          jdoubleArray jvalues, jint offset, jint length)
 {
     jdouble *values = (jdouble *) env->GetPrimitiveArrayCritical(jvalues, NULL);
-    one_dimension_source<sum_tag> f(values + offset, length);
+    source_1d<sum_tag> f(values + offset, length);
     double res = balanced_sum(f);
     env->ReleasePrimitiveArrayCritical(jvalues, values, JNI_ABORT);
     return res;
@@ -22,9 +22,9 @@ JNI_METHOD(jdouble, weightedSum)(JNIEnv *env, jobject,
 {
     jdouble *values = (jdouble *) env->GetPrimitiveArrayCritical(jvalues, NULL);
     jdouble *weights = (jdouble *) env->GetPrimitiveArrayCritical(jweights, NULL);
-    one_dimension_source<weighted_sum_tag> f(values + values_offset,
-                                             weights + weights_offset,
-                                             length);
+    source_1d<weighted_sum_tag> f(values + values_offset,
+                                  weights + weights_offset,
+                                  length);
     double res = balanced_sum(f);
     env->ReleasePrimitiveArrayCritical(jvalues, values, JNI_ABORT);
     env->ReleasePrimitiveArrayCritical(jweights, weights, JNI_ABORT);
@@ -38,9 +38,9 @@ JNI_METHOD(jdouble, weightedMean)(JNIEnv *env, jobject,
 {
     jdouble *values = (jdouble *) env->GetPrimitiveArrayCritical(jvalues, NULL);
     jdouble *weights = (jdouble *) env->GetPrimitiveArrayCritical(jweights, NULL);
-    two_dimension_source<weighted_mean_tag> f(values + values_offset,
-                                              weights + weights_offset,
-                                              length);
+    source_2d<weighted_mean_tag> f(values + values_offset,
+                                   weights + weights_offset,
+                                   length);
     double res = twin_balanced_sum(f);
     env->ReleasePrimitiveArrayCritical(jvalues, values, JNI_ABORT);
     env->ReleasePrimitiveArrayCritical(jweights, weights, JNI_ABORT);
@@ -52,8 +52,7 @@ JNI_METHOD(jdouble, standardDeviation)(JNIEnv *env, jobject,
                                        jint length)
 {
     jdouble *values = (jdouble *) env->GetPrimitiveArrayCritical(jvalues, NULL);
-    two_dimension_source<standard_deviation_tag> f(
-        values + offset, length);
+    source_2d<standard_deviation_tag> f(values + offset, length);
     double res = twin_balanced_sum(f);
     env->ReleasePrimitiveArrayCritical(jvalues, values, JNI_ABORT);
     return res;
@@ -66,9 +65,9 @@ JNI_METHOD(jdouble, weightedSD)(JNIEnv *env, jobject,
 {
     jdouble *values = (jdouble *) env->GetPrimitiveArrayCritical(jvalues, NULL);
     jdouble *weights = (jdouble *) env->GetPrimitiveArrayCritical(jweights, NULL);
-    three_dimension_source<weighted_sd_tag> f(values + values_offset,
-                                              weights + weights_offset,
-                                              length);
+    source_3d<weighted_sd_tag> f(values + values_offset,
+                                 weights + weights_offset,
+                                 length);
     double res = tri_balanced_sum(f);
     env->ReleasePrimitiveArrayCritical(jvalues, values, JNI_ABORT);
     env->ReleasePrimitiveArrayCritical(jweights, weights, JNI_ABORT);
@@ -82,8 +81,7 @@ JNI_METHOD(void, prefixSum)(JNIEnv *env, jobject,
 {
     jdouble *src = (jdouble *) env->GetPrimitiveArrayCritical(jsrc, NULL);
     jdouble *dst = (jdouble *) env->GetPrimitiveArrayCritical(jdst, NULL);
-    one_dimension_source<cum_sum_tag> f(
-        src + src_offset, dst + dst_offset, length);
+    source_1d<cum_sum_tag> f(src + src_offset, dst + dst_offset, length);
     cum_sum(f);
     env->ReleasePrimitiveArrayCritical(jsrc, src, JNI_ABORT);
     env->ReleasePrimitiveArrayCritical(jdst, dst, JNI_ABORT);

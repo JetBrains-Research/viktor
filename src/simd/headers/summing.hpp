@@ -12,7 +12,7 @@
 typedef boost::simd::pack<double> pack_double;
 
 template<typename tag>
-double balanced_sum(one_dimension_source<tag> &f)
+double balanced_sum(source_1d<tag> &f)
 {
     double res = 0.;
     while (f.can_procure(1, res) && !f.is_aligned()) {
@@ -47,7 +47,7 @@ double balanced_sum(one_dimension_source<tag> &f)
 }
 
 template<typename tag>
-double twin_balanced_sum(two_dimension_source<tag>& f)
+double twin_balanced_sum(source_2d<tag>& f)
 {
     double stat1 = 0.;
     double stat2 = 0.;
@@ -92,7 +92,7 @@ double twin_balanced_sum(two_dimension_source<tag>& f)
 }
 
 template<typename tag>
-double tri_balanced_sum(three_dimension_source<tag>& f)
+double tri_balanced_sum(source_3d<tag>& f)
 {
     double stat1 = 0.;
     double stat2 = 0.;
@@ -161,7 +161,7 @@ inline void kahan_update(double &accumulator, double &compensator, double value)
 }
 
 template<typename tag>
-void cum_sum(one_dimension_source<tag> &f)
+void cum_sum(source_1d<tag> &f)
 {
     double accumulator = 0.;
     double compensator = 0.;

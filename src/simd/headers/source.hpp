@@ -16,7 +16,7 @@ struct cum_sum_tag;
 struct weighted_sum_tag;
 
 template<typename tag>
-struct one_dimension_source;
+struct source_1d;
 
 template<typename T>
 size_t static_size() {
@@ -24,9 +24,9 @@ size_t static_size() {
 }
 
 template<>
-struct one_dimension_source<sum_tag>
+struct source_1d<sum_tag>
 {
-    one_dimension_source<sum_tag>(double const *src, std::size_t length)
+    source_1d<sum_tag>(double const *src, std::size_t length)
         : src_(src), length_(length) {}
 
     template<typename T>
@@ -54,9 +54,9 @@ private:
 };
 
 template<>
-struct one_dimension_source<weighted_sum_tag>
+struct source_1d<weighted_sum_tag>
 {
-    one_dimension_source<weighted_sum_tag>(double const *array,
+    source_1d<weighted_sum_tag>(double const *array,
                                            double const *weights,
                                            std::size_t length)
         : src_(array), weights_(weights), length_(length) {}
@@ -89,9 +89,9 @@ private:
 };
 
 template<>
-struct one_dimension_source<cum_sum_tag>
+struct source_1d<cum_sum_tag>
 {
-    one_dimension_source<cum_sum_tag>(double const *src,
+    source_1d<cum_sum_tag>(double const *src,
                                       double *dst,
                                       std::size_t length)
             : src_(src), dst_(dst), length_(length) {}
@@ -134,12 +134,12 @@ struct weighted_mean_tag;
 struct standard_deviation_tag;
 
 template<typename tag>
-struct two_dimension_source;
+struct source_2d;
 
 template<>
-struct two_dimension_source<weighted_mean_tag>
+struct source_2d<weighted_mean_tag>
 {
-    two_dimension_source<weighted_mean_tag>(double const* array,
+    source_2d<weighted_mean_tag>(double const* array,
                                             double const* weights,
                                             std::size_t length)
         : array_(array), weights_(weights), length_(length) {}
@@ -179,9 +179,9 @@ private:
 };
 
 template<>
-struct two_dimension_source<standard_deviation_tag>
+struct source_2d<standard_deviation_tag>
 {
-    two_dimension_source<standard_deviation_tag>(double const* array,
+    source_2d<standard_deviation_tag>(double const* array,
                                                  std::size_t length)
         : array_(array), length_(length), initial_length_(length) {}
 
@@ -220,14 +220,14 @@ private:
 };
 
 template<typename tag>
-struct three_dimension_source;
+struct source_3d;
 
 struct weighted_sd_tag;
 
 template<>
-struct three_dimension_source<weighted_sd_tag>
+struct source_3d<weighted_sd_tag>
 {
-    three_dimension_source<weighted_sd_tag>(double const* array,
+    source_3d<weighted_sd_tag>(double const* array,
                                             double const* weights,
                                             std::size_t length)
         : array_(array), weights_(weights), length_(length) {}
