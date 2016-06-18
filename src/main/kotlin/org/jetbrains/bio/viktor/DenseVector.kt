@@ -1,9 +1,7 @@
 package org.jetbrains.bio.viktor
 
-import org.jetbrains.bio.jni.DoubleMathNative
-import org.jetbrains.bio.jni.DoubleOpsNative
-import org.jetbrains.bio.jni.DoubleStatNative
 import org.jetbrains.bio.jni.Loader
+import org.jetbrains.bio.jni.NativeSpeedups
 
 /**
  * A contiguous strided vector.
@@ -64,9 +62,9 @@ class SmallDenseVector(data: DoubleArray, offset: Int, size: Int) :
 class LargeDenseVector(data: DoubleArray, offset: Int, size: Int) :
         DenseVector(data, offset, size) {
 
-    override fun mean() = DoubleStatNative.sum(data, offset, size) / size
+    override fun mean() = NativeSpeedups.sum(data, offset, size) / size
 
-    override fun sum() = DoubleStatNative.sum(data, offset, size)
+    override fun sum() = NativeSpeedups.sum(data, offset, size)
 
     override fun sumSq(): Double {
         val copy = copy()
@@ -74,45 +72,47 @@ class LargeDenseVector(data: DoubleArray, offset: Int, size: Int) :
         return copy.sum()
     }
 
-    override fun cumSum() = DoubleStatNative.prefixSum(data, offset, data, offset, size)
+    override fun cumSum() = NativeSpeedups.prefixSum(data, offset, data, offset, size)
 
-    override fun min() = DoubleOpsNative.unsafeMin(data, offset, size)
+    override fun min() = NativeSpeedups.unsafeMin(data, offset, size)
 
-    override fun max() = DoubleOpsNative.unsafeMax(data, offset, size)
+    override fun max() = NativeSpeedups.unsafeMax(data, offset, size)
 
     override fun dot(other: DoubleArray): Double {
         require(other.size == size) { "non-conformable arrays" }
-        return DoubleMathNative.unsafeDot(data, offset, other, 0, size)
+        return NativeSpeedups.unsafeDot(data, offset, other, 0, size)
     }
 
     override fun dot(other: StridedVector): Double {
         return if (other is LargeDenseVector) {
             require(other.size == size) { "non-conformable arrays" }
-            DoubleMathNative.unsafeDot(data, offset, other.data, other.offset, size)
+            NativeSpeedups.unsafeDot(data, offset, other.data, other.offset, size)
         } else {
             super.dot(other)
         }
     }
 
     override fun expInPlace() {
-        DoubleMathNative.unsafeExp(data, offset, data, 0, data.size)
+        NativeSpeedups.unsafeExp(data, offset, data, 0, data.size)
     }
 
     override fun logInPlace() {
-        DoubleMathNative.unsafeLog(data, offset, data, 0, data.size)
+        NativeSpeedups.unsafeLog(data, offset, data, 0, data.size)
     }
 
-    override fun logRescale() = DoubleMathNative.logRescale(data, offset, size)
+    override fun logRescale() {
+        NativeSpeedups.unsafeLogRescale(data, offset, data, offset, size)
+    }
 
-    override fun logSumExp() = DoubleMathNative.logSumExp(data, offset, size)
+    override fun logSumExp() = NativeSpeedups.unsafeLogSumExp(data, offset, size)
 
     override fun logAddExp(other: StridedVector, dst: StridedVector) {
         if (other is DenseVector && dst is DenseVector) {
             checkSize(other)
             checkSize(dst)
-            DoubleMathNative.logAddExp(data, offset,
-                                       other.data, other.offset,
-                                       dst.data, dst.offset, size)
+            NativeSpeedups.unsafeLogAddExp(data, offset,
+                                           other.data, other.offset,
+                                           dst.data, dst.offset, size)
         } else {
             super.logAddExp(other, dst)
         }
@@ -120,18 +120,33 @@ class LargeDenseVector(data: DoubleArray, offset: Int, size: Int) :
 
     override fun unaryMinus(): StridedVector {
         val v = copy()
-        DoubleOpsNative.unsafeNegate(data, offset, v.data, v.offset, v.size)
+        NativeSpeedups.unsafeNegate(data, offset, v.data, v.offset, v.size)
         return v
     }
 
     override fun plusAssign(update: Double) {
-        DoubleOpsNative.unsafePlusScalar(data, offset, update, data, offset, size)
+        NativeSpeedups.unsafePlusScalar(data, offset, update, data, offset, size)
     }
 
     override fun plusAssign(other: StridedVector) {
         if (other is DenseVector) {
             checkSize(other)
-            DoubleOpsNative.unsafePlus(data, offset,
+            NativeSpeedups.unsafePlus(data, offset,
+                                      other.data, other.offset,
+                                      data, offset, size)
+        } else {
+            super.plusAssign(other)
+        }
+    }
+
+    override fun minusAssign(update: Double) {
+        NativeSpeedups.unsafeMinusScalar(data, offset, update, data, offset, size)
+    }
+
+    override fun minusAssign(other: StridedVector) {
+        if (other is DenseVector) {
+            checkSize(other)
+            NativeSpeedups.unsafeMinus(data, offset,
                                        other.data, other.offset,
                                        data, offset, size)
         } else {
@@ -139,30 +154,15 @@ class LargeDenseVector(data: DoubleArray, offset: Int, size: Int) :
         }
     }
 
-    override fun minusAssign(update: Double) {
-        DoubleOpsNative.unsafeMinusScalar(data, offset, update, data, offset, size)
-    }
-
-    override fun minusAssign(other: StridedVector) {
-        if (other is DenseVector) {
-            checkSize(other)
-            DoubleOpsNative.unsafeMinus(data, offset,
-                                        other.data, other.offset,
-                                        data, offset, size)
-        } else {
-            super.plusAssign(other)
-        }
-    }
-
     override fun timesAssign(update: Double) {
-        DoubleOpsNative.unsafeTimesScalar(data, offset, update, data, offset, size)
+        NativeSpeedups.unsafeTimesScalar(data, offset, update, data, offset, size)
     }
 
     override fun timesAssign(other: StridedVector) {
         if (other is DenseVector) {
-            DoubleOpsNative.unsafeTimes(data, offset,
-                                        other.data, other.offset,
-                                        data, offset, size)
+            NativeSpeedups.unsafeTimes(data, offset,
+                                       other.data, other.offset,
+                                       data, offset, size)
         } else {
             super.timesAssign(other)
         }

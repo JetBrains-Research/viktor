@@ -17,7 +17,7 @@ object DoubleMath {
         checkOffsetAndLength(src, srcOffset, length)
         checkOffsetAndLength(dst, dstOffset, length)
         if (Loader.useNative) {
-            DoubleMathNative.unsafeExp(src, srcOffset, dst, dstOffset, length)
+            NativeSpeedups.unsafeExp(src, srcOffset, dst, dstOffset, length)
         } else {
             DoubleMathJava.exp(src, srcOffset, dst, dstOffset, length)
         }
@@ -33,7 +33,7 @@ object DoubleMath {
         checkOffsetAndLength(src, srcOffset, length)
         checkOffsetAndLength(dst, dstOffset, length)
         if (Loader.useNative) {
-            DoubleMathNative.unsafeExpm1(src, srcOffset, dst, dstOffset, src.size)
+            NativeSpeedups.unsafeExpm1(src, srcOffset, dst, dstOffset, src.size)
         } else {
             DoubleMathJava.expm1(src, srcOffset, dst, dstOffset, length)
         }
@@ -49,7 +49,7 @@ object DoubleMath {
         checkOffsetAndLength(src, srcOffset, length)
         checkOffsetAndLength(dst, dstOffset, length)
         if (Loader.useNative) {
-            DoubleMathNative.unsafeLog(src, srcOffset, dst, dstOffset, src.size)
+            NativeSpeedups.unsafeLog(src, srcOffset, dst, dstOffset, src.size)
         } else {
             DoubleMathJava.log(src, srcOffset, dst, dstOffset, length)
         }
@@ -65,7 +65,7 @@ object DoubleMath {
         checkOffsetAndLength(src, srcOffset, length)
         checkOffsetAndLength(dst, dstOffset, length)
         if (Loader.useNative) {
-            DoubleMathNative.unsafeLog1p(src, srcOffset, dst, dstOffset, src.size)
+            NativeSpeedups.unsafeLog1p(src, srcOffset, dst, dstOffset, src.size)
         } else {
             DoubleMathJava.log1p(src, srcOffset, dst, dstOffset, length)
         }
@@ -78,7 +78,7 @@ object DoubleMath {
 
     fun logSumExp(src: DoubleArray, srcOffset: Int = 0, length: Int = src.size): Double {
         return if (Loader.useNative)
-            DoubleMathNative.logSumExp(src, srcOffset, length)
+            NativeSpeedups.unsafeLogSumExp(src, srcOffset, length)
         else
             DoubleMathJava.logSumExp(src, srcOffset, length)
     }
@@ -87,8 +87,8 @@ object DoubleMath {
                   src2: DoubleArray, srcOffset2: Int,
                   dst: DoubleArray, dstOffset: Int, length: Int) {
         if (Loader.useNative) {
-            DoubleMathNative.logAddExp(src1, srcOffset1, src2, srcOffset2,
-                                       dst, dstOffset, length)
+            NativeSpeedups.unsafeLogAddExp(src1, srcOffset1, src2, srcOffset2,
+                                           dst, dstOffset, length)
         } else {
             DoubleMathJava.logAddExp(src1, srcOffset1, src2, srcOffset2,
                                      dst, dstOffset, length)
@@ -103,7 +103,7 @@ object DoubleMath {
     fun logRescale(src: DoubleArray, srcOffset: Int,
                    dst: DoubleArray, dstOffset: Int, length: Int) {
         if (Loader.useNative) {
-            DoubleMathNative.logRescale(src, srcOffset, dst, dstOffset, length)
+            NativeSpeedups.unsafeLogRescale(src, srcOffset, dst, dstOffset, length)
         } else {
             checkOffsetAndLength(src, srcOffset, length)
             checkOffsetAndLength(dst, dstOffset, length)
@@ -112,10 +112,6 @@ object DoubleMath {
                 dst[i + dstOffset] = src[i + srcOffset] - logSum
             }
         }
-    }
-
-    fun logRescaleInPlace(src: DoubleArray, srcOffset: Int, length: Int) {
-        logRescale(src, srcOffset, src, srcOffset, length)
     }
 }
 
@@ -200,72 +196,4 @@ internal object DoubleMathJava {
             dst[i + dstOffset] = src[i + srcOffset] - logSum
         }
     }
-}
-
-internal object DoubleMathNative {
-    init {
-        Loader.ensureLoaded()
-    }
-
-    external fun unsafeExp(src: DoubleArray, srcOffset: Int,
-                           dst: DoubleArray, dstOffset: Int,
-                           length: Int)
-
-    external fun unsafeExpm1(src: DoubleArray, srcOffset: Int,
-                             dst: DoubleArray, dstOffset: Int,
-                             length: Int)
-
-    external fun unsafeLog(src: DoubleArray, srcOffset: Int,
-                           dst: DoubleArray, dstOffset: Int,
-                           length: Int)
-
-    external fun unsafeLog1p(src: DoubleArray, srcOffset: Int,
-                             dst: DoubleArray, dstOffset: Int,
-                             length: Int)
-
-    fun logSumExp(src: DoubleArray, srcOffset: Int = 0, length: Int = src.size): Double {
-        checkOffsetAndLength(src, srcOffset, length)
-        return unsafeLogSumExp(src, srcOffset, length)
-    }
-
-    external fun unsafeLogSumExp(src: DoubleArray, srcOffset: Int, length: Int): Double
-
-    fun logAddExp(src1: DoubleArray, src2: DoubleArray, dst: DoubleArray) {
-        logAddExp(src1, 0, src2, 0, dst, 0, dst.size)
-    }
-
-    fun logAddExp(src1: DoubleArray, srcOffset1: Int,
-                  src2: DoubleArray, srcOffset2: Int,
-                  dst: DoubleArray, dstOffset: Int, length: Int) {
-        checkOffsetAndLength(src1, srcOffset1, length)
-        checkOffsetAndLength(src2, srcOffset2, length)
-        checkOffsetAndLength(dst, dstOffset, length)
-        unsafeLogAddExp(src1, srcOffset1, src2, srcOffset2,
-                          dst, dstOffset, length)
-    }
-
-    external fun unsafeLogAddExp(
-            src1: DoubleArray, srcOffset1: Int,
-            src2: DoubleArray, srcOffset2: Int,
-            dst: DoubleArray, dstOffset: Int, length: Int)
-
-    fun logRescale(src: DoubleArray, srcOffset: Int, length: Int) {
-        checkOffsetAndLength(src, srcOffset, length)
-        unsafeLogRescale(src, srcOffset, src, srcOffset, length)
-    }
-
-    fun logRescale(src: DoubleArray, srcOffset: Int,
-                   dst: DoubleArray, dstOffset: Int, length: Int) {
-        checkOffsetAndLength(src, srcOffset, length)
-        checkOffsetAndLength(dst, dstOffset, length)
-        unsafeLogRescale(src, srcOffset, dst, dstOffset, length)
-    }
-
-    external fun unsafeLogRescale(
-            src: DoubleArray, srcOffset: Int,
-            dst: DoubleArray, dstOffset: Int, length: Int)
-
-    external fun unsafeDot(src1: DoubleArray, srcOffset1: Int,
-                           src2: DoubleArray, srcOffset2: Int,
-                           length: Int): Double
 }

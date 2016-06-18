@@ -1,6 +1,6 @@
 package org.jetbrains.bio.viktor
 
-import org.jetbrains.bio.jni.DoubleOpsNative
+import org.jetbrains.bio.jni.NativeSpeedups
 
 /**
  * Operator overloads for [Double] and [StridedVector].
@@ -11,8 +11,8 @@ import org.jetbrains.bio.jni.DoubleOpsNative
 operator fun Double.minus(other: StridedVector): StridedVector {
     val v = other.copy()
     if (v is LargeDenseVector) {
-        DoubleOpsNative.unsafeNegate(v.data, v.offset, v.data, v.offset, v.size)
-        DoubleOpsNative.unsafePlusScalar(
+        NativeSpeedups.unsafeNegate(v.data, v.offset, v.data, v.offset, v.size)
+        NativeSpeedups.unsafePlusScalar(
                 v.data, v.offset, this, v.data, v.offset, v.size)
     } else {
         for (pos in 0..v.size - 1) {

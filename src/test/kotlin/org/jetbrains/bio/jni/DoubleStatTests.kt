@@ -95,7 +95,7 @@ class SDConsistencyTest(private val size: Int) {
     @Test fun unweighted() {
         val data = Random().doubles(size.toLong()).toArray()
         val expected = DoubleStatJava.standardDeviation(data, 0, size)
-        val actual = DoubleStatNative.standardDeviation(data, 0, size)
+        val actual = NativeSpeedups.standardDeviation(data, 0, size)
         assertEquals(expected, actual, (expected + actual) * 1E-12)
     }
 
@@ -103,7 +103,7 @@ class SDConsistencyTest(private val size: Int) {
         val values = RANDOM.doubles(size.toLong()).toArray()
         val weights = RANDOM.doubles(size.toLong()).toArray()
         val expected = DoubleStatJava.weightedStandardDeviation(values, 0, weights, 0, size)
-        val actual = DoubleStatNative.weightedSD(values, 0, weights, 0, size)
+        val actual = NativeSpeedups.weightedSD(values, 0, weights, 0, size)
         assertEquals(expected, actual, expected * 1E-12)
     }
 
@@ -123,7 +123,7 @@ class MeanConsistencyTest(private val size: Int) {
         val values = RANDOM.doubles(size.toLong()).toArray()
         val weights = RANDOM.doubles(size.toLong()).toArray()
         val expected = DoubleStatJava.weightedMean(values, 0, weights, 0, size)
-        val actual = DoubleStatNative.weightedMean(values, 0, weights, 0, size)
+        val actual = NativeSpeedups.weightedMean(values, 0, weights, 0, size)
         assertEquals(expected, actual, expected * 1E-12)
     }
 
@@ -181,7 +181,7 @@ class SumConsistencyTest(private val size: Int) {
     @Test fun unweighted() {
         val values = RANDOM.doubles(size.toLong()).toArray()
         val expected = DoubleStatJava.sum(values, 0, size)
-        val actual = DoubleStatNative.sum(values, 0, size)
+        val actual = NativeSpeedups.sum(values, 0, size)
         assertEquals(expected, actual, expected * 1E-12)
     }
 
@@ -189,7 +189,7 @@ class SumConsistencyTest(private val size: Int) {
         val values = RANDOM.doubles(size.toLong()).toArray()
         val weights = RANDOM.doubles(size.toLong()).toArray()
         val expected = DoubleStatJava.weightedSum(values, 0, weights, 0, size)
-        val actual = DoubleStatNative.weightedSum(values, 0, weights, 0, size)
+        val actual = NativeSpeedups.weightedSum(values, 0, weights, 0, size)
         assertEquals(expected, actual, expected * 1E-12)
     }
 
@@ -256,7 +256,7 @@ class PrefixSumConsistencyTest(private val size: Int) {
     @Test fun unweighted() {
         val values = RANDOM.doubles(size.toLong()).toArray()
         val expected = DoubleArray(size).apply { DoubleStatJava.prefixSum(values, 0, this, 0, size) }
-        val actual = DoubleArray(size).apply { DoubleStatNative.prefixSum(values, 0, this, 0, size) }
+        val actual = DoubleArray(size).apply { NativeSpeedups.prefixSum(values, 0, this, 0, size) }
         assertArrayEquals(expected, actual, 1e-6)
     }
 

@@ -22,7 +22,7 @@ class DoubleMathConsistencyTest(private val size: Int) {
             DoubleMathJava.exp(values, 0, this, 0, size)
         }
         val actual = DoubleArray(size).apply {
-            DoubleMathNative.unsafeExp(values, 0, this, 0, size)
+            NativeSpeedups.unsafeExp(values, 0, this, 0, size)
         }
 
         assertArrayEquals(expected, actual, 1e-7)
@@ -33,7 +33,7 @@ class DoubleMathConsistencyTest(private val size: Int) {
             DoubleMathJava.expm1(values, 0, this, 0, size)
         }
         val actual = DoubleArray(size).apply {
-            DoubleMathNative.unsafeExpm1(values, 0, this, 0, size)
+            NativeSpeedups.unsafeExpm1(values, 0, this, 0, size)
         }
 
         assertArrayEquals(expected, actual, 1e-10)
@@ -44,7 +44,7 @@ class DoubleMathConsistencyTest(private val size: Int) {
             DoubleMathJava.log(values, 0, this, 0, size)
         }
         val actual = DoubleArray(size).apply {
-            DoubleMathNative.unsafeLog(values, 0, this, 0, size)
+            NativeSpeedups.unsafeLog(values, 0, this, 0, size)
         }
 
         assertArrayEquals(expected, actual, 1e-10)
@@ -55,7 +55,7 @@ class DoubleMathConsistencyTest(private val size: Int) {
             DoubleMathJava.log1p(values, 0, this, 0, size)
         }
         val actual = DoubleArray(size).apply {
-            DoubleMathNative.unsafeLog1p(values, 0, this, 0, size)
+            NativeSpeedups.unsafeLog1p(values, 0, this, 0, size)
         }
 
         assertArrayEquals(expected, actual, 1e-10)
@@ -63,7 +63,7 @@ class DoubleMathConsistencyTest(private val size: Int) {
 
     @Test fun logSumExp() {
         val expected = DoubleMathJava.logSumExp(values, 0, size)
-        val actual = DoubleMathNative.logSumExp(values, 0, size)
+        val actual = NativeSpeedups.unsafeLogSumExp(values, 0, size)
         assertEquals(expected, actual, 1e-10)
     }
 
@@ -76,7 +76,7 @@ class DoubleMathConsistencyTest(private val size: Int) {
             DoubleMathJava.logAddExp(values, 0, other, 0, this, 0, size)
         }
         val actual = DoubleArray(size).apply {
-            DoubleMathNative.logAddExp(values, 0, other, 0, this, 0, size)
+            NativeSpeedups.unsafeLogAddExp(values, 0, other, 0, this, 0, size)
         }
 
         assertArrayEquals(expected, actual, 1e-10)

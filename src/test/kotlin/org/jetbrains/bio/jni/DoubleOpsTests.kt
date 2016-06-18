@@ -20,7 +20,7 @@ class DoubleVectorOpsTest(private val size: Int) {
     @Test fun plus() {
         val expected = DoubleArray(size) { values1[it] + values2[it] }
         val actual = DoubleArray(size).apply {
-            DoubleOpsNative.unsafePlus(values1, 0, values2, 0, this, 0, size)
+            NativeSpeedups.unsafePlus(values1, 0, values2, 0, this, 0, size)
         }
 
         assertArrayEquals(expected, actual, Precision.EPSILON)
@@ -29,7 +29,7 @@ class DoubleVectorOpsTest(private val size: Int) {
     @Test fun minus() {
         val expected = DoubleArray(size) { values1[it] - values2[it] }
         val actual = DoubleArray(size).apply {
-            DoubleOpsNative.unsafeMinus(values1, 0, values2, 0, this, 0, size)
+            NativeSpeedups.unsafeMinus(values1, 0, values2, 0, this, 0, size)
         }
 
         assertArrayEquals(expected, actual, Precision.EPSILON)
@@ -38,7 +38,7 @@ class DoubleVectorOpsTest(private val size: Int) {
     @Test fun times() {
         val expected = DoubleArray(size) { values1[it] * values2[it] }
         val actual = DoubleArray(size).apply {
-            DoubleOpsNative.unsafeTimes(values1, 0, values2, 0, this, 0, size)
+            NativeSpeedups.unsafeTimes(values1, 0, values2, 0, this, 0, size)
         }
 
         assertArrayEquals(expected, actual, Precision.EPSILON)
@@ -47,7 +47,7 @@ class DoubleVectorOpsTest(private val size: Int) {
     @Test fun div() {
         val expected = DoubleArray(size) { values1[it] / values2[it] }
         val actual = DoubleArray(size).apply {
-            DoubleOpsNative.unsafeDiv(values1, 0, values2, 0, this, 0, size)
+            NativeSpeedups.unsafeDiv(values1, 0, values2, 0, this, 0, size)
         }
 
         assertArrayEquals(expected, actual, Precision.EPSILON)
@@ -70,7 +70,7 @@ class DoubleScalarOpsTest(private val size: Int) {
     @Test fun plus() {
         val expected = DoubleArray(size) { values[it] + update }
         val actual = DoubleArray(size).apply {
-            DoubleOpsNative.unsafePlusScalar(values, 0, update, this, 0, size)
+            NativeSpeedups.unsafePlusScalar(values, 0, update, this, 0, size)
         }
 
         assertArrayEquals(expected, actual, Precision.EPSILON)
@@ -79,7 +79,7 @@ class DoubleScalarOpsTest(private val size: Int) {
     @Test fun minus() {
         val expected = DoubleArray(size) { values[it] - update }
         val actual = DoubleArray(size).apply {
-            DoubleOpsNative.unsafeMinusScalar(values, 0, update, this, 0, size)
+            NativeSpeedups.unsafeMinusScalar(values, 0, update, this, 0, size)
         }
 
         assertArrayEquals(expected, actual, Precision.EPSILON)
@@ -88,7 +88,7 @@ class DoubleScalarOpsTest(private val size: Int) {
     @Test fun times() {
         val expected = DoubleArray(size) { values[it] * update }
         val actual = DoubleArray(size).apply {
-            DoubleOpsNative.unsafeTimesScalar(values, 0, update, this, 0, size)
+            NativeSpeedups.unsafeTimesScalar(values, 0, update, this, 0, size)
         }
 
         assertArrayEquals(expected, actual, Precision.EPSILON)
@@ -97,7 +97,7 @@ class DoubleScalarOpsTest(private val size: Int) {
     @Test fun div() {
         val expected = DoubleArray(size) { values[it] / update }
         val actual = DoubleArray(size).apply {
-            DoubleOpsNative.unsafeDivScalar(values, 0, update, this, 0, size)
+            NativeSpeedups.unsafeDivScalar(values, 0, update, this, 0, size)
         }
 
         assertArrayEquals(expected, actual, Precision.EPSILON)
