@@ -1,5 +1,6 @@
 #include "org_jetbrains_bio_jni_DoubleStatNative.hpp"
-#include "simd_stat.hpp"
+#include "source.hpp"
+#include "summing.hpp"
 
 #define JNI_METHOD(rtype, name)                 \
     JNIEXPORT rtype JNICALL Java_org_jetbrains_bio_jni_DoubleStatNative_##name
@@ -8,7 +9,8 @@ JNI_METHOD(jdouble, sum)(JNIEnv *env, jobject,
                          jdoubleArray jvalues, jint offset, jint length)
 {
     jdouble *values = (jdouble *) env->GetPrimitiveArrayCritical(jvalues, NULL);
-    double res = simdstat::sum(values + offset, length);
+    one_dimension_source<sum_tag> f(values + offset, length);
+    double res = balanced_sum(f);
     env->ReleasePrimitiveArrayCritical(jvalues, values, JNI_ABORT);
     return res;
 }
@@ -20,8 +22,10 @@ JNI_METHOD(jdouble, weightedSum)(JNIEnv *env, jobject,
 {
     jdouble *values = (jdouble *) env->GetPrimitiveArrayCritical(jvalues, NULL);
     jdouble *weights = (jdouble *) env->GetPrimitiveArrayCritical(jweights, NULL);
-    double res = simdstat::weighted_sum(values + values_offset,
-                                        weights + weights_offset, length);
+    one_dimension_source<weighted_sum_tag> f(values + values_offset,
+                                             weights + weights_offset,
+                                             length);
+    double res = balanced_sum(f);
     env->ReleasePrimitiveArrayCritical(jvalues, values, JNI_ABORT);
     env->ReleasePrimitiveArrayCritical(jweights, weights, JNI_ABORT);
     return res;
@@ -34,8 +38,10 @@ JNI_METHOD(jdouble, weightedMean)(JNIEnv *env, jobject,
 {
     jdouble *values = (jdouble *) env->GetPrimitiveArrayCritical(jvalues, NULL);
     jdouble *weights = (jdouble *) env->GetPrimitiveArrayCritical(jweights, NULL);
-    double res = simdstat::weighted_mean(values + values_offset,
-                                         weights + weights_offset, length);
+    two_dimension_source<weighted_mean_tag> f(values + values_offset,
+                                              weights + weights_offset,
+                                              length);
+    double res = twin_balanced_sum(f);
     env->ReleasePrimitiveArrayCritical(jvalues, values, JNI_ABORT);
     env->ReleasePrimitiveArrayCritical(jweights, weights, JNI_ABORT);
     return res;
@@ -46,7 +52,9 @@ JNI_METHOD(jdouble, standardDeviation)(JNIEnv *env, jobject,
                                        jint length)
 {
     jdouble *values = (jdouble *) env->GetPrimitiveArrayCritical(jvalues, NULL);
-    double res = simdstat::standard_deviation(values + offset, length);
+    two_dimension_source<standard_deviation_tag> f(
+        values + offset, length);
+    double res = twin_balanced_sum(f);
     env->ReleasePrimitiveArrayCritical(jvalues, values, JNI_ABORT);
     return res;
 }
@@ -58,8 +66,10 @@ JNI_METHOD(jdouble, weightedSD)(JNIEnv *env, jobject,
 {
     jdouble *values = (jdouble *) env->GetPrimitiveArrayCritical(jvalues, NULL);
     jdouble *weights = (jdouble *) env->GetPrimitiveArrayCritical(jweights, NULL);
-    double res = simdstat::weighted_sd(values + values_offset,
-                                       weights + weights_offset, length);
+    three_dimension_source<weighted_sd_tag> f(values + values_offset,
+                                              weights + weights_offset,
+                                              length);
+    double res = tri_balanced_sum(f);
     env->ReleasePrimitiveArrayCritical(jvalues, values, JNI_ABORT);
     env->ReleasePrimitiveArrayCritical(jweights, weights, JNI_ABORT);
     return res;
@@ -72,7 +82,9 @@ JNI_METHOD(void, prefixSum)(JNIEnv *env, jobject,
 {
     jdouble *src = (jdouble *) env->GetPrimitiveArrayCritical(jsrc, NULL);
     jdouble *dst = (jdouble *) env->GetPrimitiveArrayCritical(jdst, NULL);
-    simdstat::cum_sum(src + src_offset, dst + dst_offset, length);
+    one_dimension_source<cum_sum_tag> f(
+        src + src_offset, dst + dst_offset, length);
+    cum_sum(f);
     env->ReleasePrimitiveArrayCritical(jsrc, src, JNI_ABORT);
     env->ReleasePrimitiveArrayCritical(jdst, dst, JNI_ABORT);
 }
