@@ -1,6 +1,10 @@
 package org.jetbrains.bio.jni
 
 object NativeSpeedups {
+    init {
+        Loader.ensureLoaded()
+    }
+
     external fun unsafePlus(src1: DoubleArray, srcOffset1: Int,
                             src2: DoubleArray, srcOffset2: Int,
                             dst: DoubleArray, dstOffset: Int, length: Int)

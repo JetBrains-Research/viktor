@@ -8,10 +8,6 @@ package org.jetbrains.bio.jni
  */
 @SuppressWarnings("unused")
 object DoubleMath {
-    init {
-        Loader.ensureLoaded()
-    }
-
     fun exp(src: DoubleArray, srcOffset: Int,
             dst: DoubleArray, dstOffset: Int, length: Int) {
         checkOffsetAndLength(src, srcOffset, length)

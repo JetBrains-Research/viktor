@@ -3,7 +3,6 @@ package org.jetbrains.bio.jni
 import org.apache.commons.math3.random.RandomDataGenerator
 import org.apache.commons.math3.util.Precision
 import org.junit.Assert.assertArrayEquals
-import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
@@ -14,8 +13,6 @@ class DoubleVectorOpsTest(private val size: Int) {
     private val r = RandomDataGenerator()
     private val values1 = DoubleArray(size) { r.nextGamma(1.0, 3.0) }
     private val values2 = DoubleArray(size) { r.nextGamma(1.0, 3.0) }
-
-    @Before fun setUp() = Loader.ensureLoaded()
 
     @Test fun plus() {
         val expected = DoubleArray(size) { values1[it] + values2[it] }
@@ -64,8 +61,6 @@ class DoubleScalarOpsTest(private val size: Int) {
     private val r = RandomDataGenerator()
     private val values = DoubleArray(size) { r.nextGamma(1.0, 3.0) }
     private val update = r.nextGamma(1.0, 3.0)
-
-    @Before fun setUp() = Loader.ensureLoaded()
 
     @Test fun plus() {
         val expected = DoubleArray(size) { values[it] + update }

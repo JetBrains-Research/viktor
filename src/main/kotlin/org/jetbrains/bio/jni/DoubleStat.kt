@@ -1,11 +1,6 @@
 package org.jetbrains.bio.jni
 
 object DoubleStat {
-
-    init {
-        Loader.ensureLoaded()
-    }
-
     /**
      * Returns the (balanced) sum of `values` slice beginning at `offset` with length `length`.
 

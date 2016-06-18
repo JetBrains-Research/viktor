@@ -3,7 +3,6 @@ package org.jetbrains.bio.jni
 import org.apache.commons.math3.random.RandomDataGenerator
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
-import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
@@ -14,8 +13,6 @@ class DoubleMathConsistencyTest(private val size: Int) {
     private val values = RandomDataGenerator().let { r ->
         DoubleArray(size) { r.nextGamma(1.0, 3.0) }
     }
-
-    @Before fun setUp() = Loader.ensureLoaded()
 
     @Test fun exp() {
         val expected = DoubleArray(size).apply {

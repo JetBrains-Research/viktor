@@ -2,7 +2,6 @@ package org.jetbrains.bio.jni
 
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
-import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -90,8 +89,6 @@ class SDProgressionTest(private val from: Double, private val to: Double,
 
 @RunWith(Parameterized::class)
 class SDConsistencyTest(private val size: Int) {
-    @Before fun setUp() = Loader.ensureLoaded()
-
     @Test fun unweighted() {
         val data = Random().doubles(size.toLong()).toArray()
         val expected = DoubleStatJava.standardDeviation(data, 0, size)
@@ -117,8 +114,6 @@ class SDConsistencyTest(private val size: Int) {
 
 @RunWith(Parameterized::class)
 class MeanConsistencyTest(private val size: Int) {
-    @Before fun setUp() = Loader.ensureLoaded()
-
     @Test fun weighted() {
         val values = RANDOM.doubles(size.toLong()).toArray()
         val weights = RANDOM.doubles(size.toLong()).toArray()
@@ -176,8 +171,6 @@ class SumProgressionTest(private val from: Double, private val to: Double,
 
 @RunWith(Parameterized::class)
 class SumConsistencyTest(private val size: Int) {
-    @Before fun setUp() = Loader.ensureLoaded()
-
     @Test fun unweighted() {
         val values = RANDOM.doubles(size.toLong()).toArray()
         val expected = DoubleStatJava.sum(values, 0, size)
@@ -251,8 +244,6 @@ class PrefixSumProgressionTest(private val from: Double, private val to: Double,
 @Ignore
 @RunWith(Parameterized::class)
 class PrefixSumConsistencyTest(private val size: Int) {
-    @Before fun setUp() = Loader.ensureLoaded()
-
     @Test fun unweighted() {
         val values = RANDOM.doubles(size.toLong()).toArray()
         val expected = DoubleArray(size).apply { DoubleStatJava.prefixSum(values, 0, this, 0, size) }
