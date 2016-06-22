@@ -6,8 +6,8 @@ Kotlin. Here're some of the highlights:
 
 * Three basic data types: `StridedVector`, `StridedMatrix2` and
   `StridedMatrix3` specialized to `double` values.
-* Efficient vectorized operations, which are transparently accelerated
-  using SIMD whenever possible.
+* Efficient vectorized operations, which are accelerated using SIMD whenever
+  possible.
 * Semi-sweet syntax.
 
     ```kotlin
@@ -42,15 +42,15 @@ dependencies {
 [bintray]: https://bintray.com/jetbrains-research/maven/viktor/view
 
 The version available on Bintray currently targets only SSE2 and AVX on x64
-Linux. For any other setup `viktor` would transparently fall back to
-pure-Kotlin implementations. If you are interested in SIMD accelerations for
-a different instruction set or operating system feel free to file an issue
-to the [bug tracker] [issues].
+Linux. For any other setup `viktor` would fall back to pure-Kotlin
+implementations. If you are interested in SIMD accelerations for a different
+instruction set or operating system feel free to file an issue to the
+[bug tracker] [issues].
 
 [issues]: https://github.com/JetBrains-Research/viktor/issues
 
-Building
---------
+Building from source
+--------------------
 
 `viktor` relies on [boost.simd] [boost.simd] for implementing SIMD
 accelerations. Therefore, you would need CMake and a C++11 compiler,
