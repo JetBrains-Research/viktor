@@ -53,9 +53,11 @@ Building
 --------
 
 `viktor` relies on [boost.simd] [boost.simd] for implementing SIMD
-accelerations. Therefore you would need CMake and a C++11 compiler
-to build `viktor`. Otherwise the process is as simple as
+accelerations. Therefore, you would need CMake and a C++11 compiler,
+but otherwise the build process is as simple as
 
 ```bash
 $ ./gradlew assemble
 ```
+
+[boost.simd]: https://github.com/NumScale/boost.simd
