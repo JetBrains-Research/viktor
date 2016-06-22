@@ -18,11 +18,7 @@ Kotlin. Here're some of the highlights:
     m + m                               // arithmetic operations.
     ```
 
-Requirements
-------------
-
-* [Yeppp!] [yeppp] 1.0.0
-* [simdstat] [simdstat]
+[ndarray]: http://docs.scipy.org/doc/numpy/reference/arrays.ndarray.html
 
 Installation
 ------------
@@ -38,19 +34,28 @@ repositories {
 }
 
 dependencies {
-    compile 'org.jetbrains.bio:viktor:0.2.2'
-
-    compile files("$rootDir/lib/yeppp-bundle-1.0.jar")
-    compile files("$rootDir/lib/simd.jar",
-                  "$rootDir/lib/simd-sources.jar")
+    compile 'org.jetbrains.bio:viktor:0.3.0'
 }
 
 ```
 
-**Note**: Yeppp! and simdstat aren't available via Maven Central or jCenter. You
-will have to download them manually.
+[bintray]: https://bintray.com/jetbrains-research/maven/viktor/view
 
-[ndarray]: http://docs.scipy.org/doc/numpy/reference/arrays.ndarray.html
-[yeppp]: http://www.yeppp.info
-[simdstat]: https://github.com/JetBrains-Research/simdstat
-[jcenter]: https://bintray.com/bintray/jcenter
+The version available on Bintray currently targets only SSE2 and AVX on x64
+Linux. For any other setup `viktor` would transparently fall back to
+pure-Kotlin implementations. If you are interested in SIMD accelerations for
+a different instruction set or operating system feel free to file an issue
+to the [bug tracker] [issues].
+
+[issues]: https://github.com/JetBrains-Research/viktor/issues
+
+Building
+--------
+
+`viktor` relies on [boost.simd] [boost.simd] for implementing SIMD
+accelerations. Therefore you would need CMake and a C++11 compiler
+to build `viktor`. Otherwise the process is as simple as
+
+```bash
+$ ./gradlew assemble
+```
