@@ -1,17 +1,26 @@
 package org.jetbrains.bio.viktor
 
-import org.apache.commons.math3.stat.descriptive.summary.Sum
+import org.apache.commons.math3.util.FastMath
 import org.apache.commons.math3.util.Precision
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Test
-import java.util.*
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
+import org.junit.runners.Parameterized.Parameters
+import java.util.stream.DoubleStream
 import java.util.stream.IntStream
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
-class StridedVectorTest {
-    @Test fun testOf() {
+class StridedVectorCreationTest {
+    @Test fun createSpecialization() {
+        assertTrue(StridedVector.create(doubleArrayOf(1.0), stride = 10) !is DenseVector)
+        assertTrue(StridedVector.create(doubleArrayOf(1.0)) is DenseVector)
+        assertTrue(StridedVector.create(doubleArrayOf(1.0, 2.0), offset = 1, size = 1) is DenseVector)
+    }
+
+    @Test fun of() {
         assertArrayEquals(doubleArrayOf(1.0),
                           StridedVector.of(1.0).toArray(), Precision.EPSILON)
         assertArrayEquals(doubleArrayOf(1.0, 2.0),
@@ -20,14 +29,44 @@ class StridedVectorTest {
                           StridedVector.of(1.0, 2.0, 3.0).toArray(), Precision.EPSILON)
     }
 
-    @Test fun testConcatenate() {
+    @Test fun asStrided() {
+        assertEquals(StridedVector.of(1.0), doubleArrayOf(1.0).asStrided())
+        assertEquals(StridedVector.of(3.0),
+                     doubleArrayOf(1.0, 2.0, 3.0).asStrided(offset = 2, size = 1))
+    }
+
+    @Test fun asStridedView() {
+        val values = doubleArrayOf(1.0, 2.0, 3.0)
+        val v = values.asStrided(offset = 2, size = 1)
+        v[0] = 42.0
+        assertArrayEquals(doubleArrayOf(1.0, 2.0, 42.0), values, Precision.EPSILON)
+    }
+
+    @Test fun invoke() {
+        assertEquals(StridedVector.of(1.0, 2.0, 3.0),
+                     StridedVector(3) { it + 1.0 })
+    }
+
+    @Test fun stochastic() {
+        val v = StridedVector.stochastic(2)
+        assertEquals(2, v.size)
+        assertEquals(StridedVector.of(.5, .5), v)
+    }
+
+    @Test fun full() {
+        val v = StridedVector.full(2, 42.0)
+        assertEquals(2, v.size)
+        assertEquals(StridedVector.of(42.0, 42.0), v)
+    }
+
+    @Test fun concatenate() {
         assertEquals(StridedVector.of(1.0, 2.0, 3.0, 4.0, 5.0),
                      StridedVector.concatenate(StridedVector.of(1.0, 2.0),
                                                StridedVector.of(3.0),
                                                StridedVector.of(4.0, 5.0)))
     }
 
-    @Test fun testAppend() {
+    @Test fun append() {
         assertEquals(StridedVector.of(1.0, 2.0),
                      StridedVector.of(1.0, 2.0).append(StridedVector(0)))
         assertEquals(StridedVector.of(1.0, 2.0),
@@ -36,7 +75,17 @@ class StridedVectorTest {
                      StridedVector.of(1.0, 2.0).append(StridedVector.of(3.0, 4.0, 5.0)))
     }
 
-    @Test fun testTranspose() {
+    @Test fun copy() {
+        val v = StridedVector.of(1.0, 2.0, 3.0)
+        val copy = v.copy()
+        assertEquals(v, copy)
+        v[0] = 42.0
+        assertEquals(1.0, copy[0], Precision.EPSILON)
+    }
+}
+
+class StridedVectorSlicing {
+    @Test fun transpose() {
         assertEquals(StridedVector.of(1.0), StridedVector.of(1.0).T.columnView(0))
         assertEquals(StridedVector.of(1.0, 2.0),
                      StridedVector.of(1.0, 2.0).T.columnView(0))
@@ -48,173 +97,146 @@ class StridedVectorTest {
                      m.columnView(1).T.columnView(0))
     }
 
-    @Test fun testArgMinMax() {
-        val v = getRangeVector(4, 8)
-        assertEquals(v.min(), 4.0, Precision.EPSILON)
-        assertEquals(v.argMin(), 0)
-        assertEquals(v.max(), 7.0, Precision.EPSILON)
-        assertEquals(v.argMax(), v.size - 1)
+    @Test fun slice() {
+        val v = StridedVector.of(1.0, 2.0, 3.0)
+        val slice = v.slice(1, 2)
+        assertEquals(1, slice.size)
+        assertEquals(StridedVector.of(2.0), slice)
+
+        slice[0] = 42.0
+        assertEquals(StridedVector.of(1.0, 42.0, 3.0), v)
     }
 
-    @Test fun sumSq() {
-        assertEquals(4.0, StridedVector.full(4, 1.0).sumSq(), Precision.EPSILON)
-        assertEquals(16.0, StridedVector.full(4, 2.0).sumSq(), Precision.EPSILON)
+    @Test(expected = IndexOutOfBoundsException::class) fun sliceOutOfBounds() {
+        StridedVector(0).slice(0, 42)
     }
+}
 
-    @Test fun testRollSumFallback() {
-        val v = StridedMatrix.full(3, 5, 1.0).columnView(0)
-        v.cumSum()
-        for (i in 0..v.size - 1) {
-            assertEquals(i + 1, v[i].toInt())
+@RunWith(Parameterized::class)
+class StridedVectorGetSet(private val values: DoubleArray,
+                          private val offset: Int,
+                          private val size: Int,
+                          private val stride: Int) {
+
+    private val v = StridedVector.create(values, offset, size, stride)
+
+    @Test fun get() {
+        for (i in v.indices) {
+            assertEquals(values[offset + i * stride], v[i], Precision.EPSILON)
         }
     }
 
-    @Test fun testReverse() {
-        val values = RANDOM.doubles().limit(100).toArray()
-        val v = values.clone().asStrided()
-        v.reverse()
-        assertArrayEquals(values.reversedArray(), v.toArray(), Precision.EPSILON)
+    @Test(expected = IndexOutOfBoundsException::class) fun getOutOfBounds() {
+        v[100500]
     }
 
-    @Test fun testSort() {
-        val values = RANDOM.doubles().limit(100).toArray()
-        val v = values.clone().asStrided()
-        v.sort()
-        assertArrayEquals(values.sortedArray(), v.toArray(), Precision.EPSILON)
-    }
+    @Test fun set() {
+        for (i in v.indices) {
+            val copy = v.copy()
+            copy[i] = 42.0
+            assertEquals(42.0, copy[i], Precision.EPSILON)
 
-    @Test fun testArgSort() {
-        val v = StridedVector.of(42.0, 2.0, -1.0, 0.0, 4.0, 2.0)
-        val indices = v.argSort()
-        val copy = v.toArray()
-        copy.sort()
+            // Ensure all other elements are unchanged.
+            for (j in v.indices) {
+                if (j == i) {
+                    continue
+                }
 
-        for ((i, j) in indices.withIndex()) {
-            assertEquals(copy[i], v[j], Precision.EPSILON)
+                assertEquals("$i/$j", v[j], copy[j], Precision.EPSILON)
+            }
         }
     }
 
-    @Test fun testSortedReverse() {
-        val v = StridedVector.of(42.0, 2.0, -1.0, 0.0, 4.0, 2.0)
-        val indices = v.argSort(reverse = true)
-        val copy = v.toArray()
-        copy.sort()
+    @Test(expected = IndexOutOfBoundsException::class) fun setOutOfBounds() {
+        v[100500] = 42.0
+    }
 
-        for ((i, j) in indices.withIndex()) {
-            assertEquals(copy[copy.size - 1 - i], v[j], Precision.EPSILON)
+    @Test fun setMagicScalar() {
+        val copy = v.copy()
+        copy[_I] = 42.0
+
+        assertEquals(StridedVector.full(copy.size, 42.0), copy)
+    }
+
+    @Test fun setMagicVector() {
+        val other = StridedVector.full(v.size, 42.0)
+        val copy = v.copy()
+        copy[_I] = other
+
+        assertEquals(other, copy)
+    }
+
+    companion object {
+        @Parameters(name = "StridedVector({1}, {2}, {3})")
+        @JvmStatic fun `data`() = listOf(
+                // Normal case.
+                arrayOf(doubleArrayOf(1.0, 2.0, 3.0), 0, 3, 1),
+                // Offset and stride.
+                arrayOf(doubleArrayOf(1.0, 2.0, 3.0), 1, 1, 3),
+                // Empty array.
+                arrayOf(doubleArrayOf(1.0, 2.0, 3.0), 3, 0, 1))
+    }
+}
+
+private val CASES = listOf(
+        // Gapped.
+        (1..3).toStrided(),
+        // Dense small.
+        doubleArrayOf(1.0, 2.0, 3.0).asStrided(),
+        // Dense large.
+        DoubleArray(DenseVector.DENSE_SPLIT_SIZE + 1) { it.toDouble() }.asStrided())
+
+@RunWith(Parameterized::class)
+class StridedVectorOpsTest(private val v: StridedVector) {
+    @Test fun contains() {
+        for (i in v) {
+            assertTrue(i.toDouble() in v)
         }
     }
 
-    @Test fun testReorderSortedNaNs() {
-        val values = doubleArrayOf(42.0, 2.0, -1.0, 0.0, 4.0, 2.0)
-        val indices = values.asStrided().argSort()
-        assertArrayEquals(intArrayOf(2, 3, 1, 5, 4, 0), indices)
-
-        val v = StridedVector.create(doubleArrayOf(Double.NaN, Double.NaN, // Prefix.
-                                                   42.0, Double.NaN, 2.0,
-                                                   Double.NaN, -1.0,
-                                                   Double.NaN, 0.0,
-                                                   Double.NaN, 4.0,
-                                                   Double.NaN, 2.0),
-                                     offset = 2, size = values.size, stride = 2)
-        v.reorder(indices)
-        assertArrayEquals(doubleArrayOf(-1.0, 0.0, 2.0, 2.0, 4.0, 42.0),
-                          v.toArray(), Precision.EPSILON)
-    }
-
-    @Test fun testDotFast() {
-        val v = getRangeVector(4, 128)
-        val weights = Random().doubles(v.size.toLong()).toArray()
-        val expected = Sum().evaluate(v.toArray(), weights)
-        assertEquals(expected, v dot weights, 1e-6)
-        assertEquals(expected, v dot weights.asStrided(), 1e-6)
-    }
-
-    @Test fun testRescale() {
-        val v = getRangeVector(4, 8)
-        v.rescale()
-        assertTrue(Precision.equals(1.0, v.sum()))
-    }
-
-    @Test fun testUnaryPlus() {
-        val v = getRangeVector(4, 8)
-        assertEquals(v, +v)
-    }
-
-    @Test fun testUnaryMinus() {
-        val v = getRangeVector(4, 8)
-        assertEquals(v, -(-v))
-    }
-
-    @Test fun testAdd() {
-        val v = getRangeVector(4, 8)
-        val u = v + v
-        for (pos in 0..v.size - 1) {
-            assertEquals(v[pos] + v[pos], u[pos], Precision.EPSILON)
-        }
-    }
-
-    @Test fun testAddUpdate() {
-        val v = getRangeVector(4, 8)
-        val u = v + 42.0
-        for (pos in 0..v.size - 1) {
-            assertEquals(v[pos] + 42, u[pos], Precision.EPSILON)
-        }
-    }
-
-    @Test fun testTimes() {
-        val v = getRangeVector(4, 8)
-        val u = v * v
-        for (pos in 0..v.size - 1) {
-            assertEquals(v[pos] * v[pos], u[pos], Precision.EPSILON)
-        }
-    }
-
-    @Test fun testTimesUpdate() {
-        val v = getRangeVector(4, 8)
-        val u = v * 42.0
-        for (pos in 0..v.size - 1) {
-            assertEquals(v[pos] * 42, u[pos], Precision.EPSILON)
-        }
-    }
-
-    @Test fun testDiv() {
-        val v = getRangeVector(4, 8)
-        val u = getRangeVector(8, 12)
-        val z = v / u
-        for (pos in 0..v.size - 1) {
-            assertEquals(v[pos] / u[pos], z[pos], Precision.EPSILON)
-        }
-    }
-
-    @Test fun testDivUpdate() {
-        val v = getRangeVector(4, 8)
-        val u = v / 42.0
-        for (pos in 0..v.size - 1) {
-            assertEquals(v[pos] / 42, u[pos], Precision.EPSILON)
-        }
-    }
-
-    @Test fun testEquals() {
-        val v = getRangeVector(4, 8)
+    @Test fun equals() {
         assertEquals(v, v)
-        assertNotEquals(v, getRangeVector(5, 8))
-        assertNotEquals(v, getRangeVector(5, 9))
-        assertNotEquals(v, StridedVector.of(42.0))
+        assertEquals(v, v.toArray().asStrided())
+        assertNotEquals(v, (2..4).toStrided())
+        assertNotEquals(v, (1..30).toStrided())
     }
 
-    @Test fun testReshape() {
-        val v = getRangeVector(0, 6)
+    @Test fun _toString() {
+        assertEquals("[]", StridedVector(0).toString())
+        assertEquals("[42]", StridedVector.of(42.0).toString())
+        assertEquals("[0, 1, 2, 3]", (0..3).toStrided().toString())
+    }
+
+    @Test fun toStringLarge() {
+        val v = (0..1023).toStrided()
+        assertEquals("[0, ..., 1023]", v.toString(2))
+        assertEquals("[0, ..., 1022, 1023]", v.toString(3))
+        assertEquals("[0, 1, ..., 1022, 1023]", v.toString(4))
+    }
+
+    @Test fun toStringNanInf() {
+        val v = StridedVector.of(Double.NaN, Double.POSITIVE_INFINITY,
+                                 Double.NEGATIVE_INFINITY, 42.0)
+        assertEquals("[nan, inf, -inf, 42]", v.toString())
+    }
+
+    @Test fun fill() {
+        v.fill(42.0)
+        assertEquals(StridedVector.full(v.size, 42.0), v)
+    }
+
+    @Test fun reshape() {
+        val v = (0..5).toStrided()
         assertArrayEquals(arrayOf(doubleArrayOf(0.0, 1.0, 2.0),
                                   doubleArrayOf(3.0, 4.0, 5.0)),
-                                 v.reshape(2, 3).toArray())
+                          v.reshape(2, 3).toArray())
         assertArrayEquals(arrayOf(doubleArrayOf(0.0, 1.0),
                                   doubleArrayOf(2.0, 3.0),
                                   doubleArrayOf(4.0, 5.0)),
                           v.reshape(3, 2).toArray())
     }
 
-    @Test fun testReshapeWithStride() {
+    @Test fun reshapeWithStride() {
         val v = StridedVector.create(doubleArrayOf(0.0, 1.0, 2.0, 3.0,
                                                    4.0, 5.0, 6.0, 7.0),
                                      0, 4, stride = 2)
@@ -223,33 +245,184 @@ class StridedVectorTest {
                           v.reshape(2, 2).toArray())
     }
 
-    @Test fun testToString() {
-        assertEquals("[]", StridedVector(0).toString())
-        assertEquals("[42]", StridedVector.of(42.0).toString())
-        assertEquals("[0, 1, 2, 3]", getRangeVector(0, 4).toString())
+    @Test fun reverse() {
+        val copy = v.copy()
+        copy.reverse()
+        copy.reverse()
+        assertEquals(v, copy)
     }
 
-    @Test fun testToStringGapped() {
-        val v = getRangeVector(0, 1024)
-
-        assertEquals("[0, ..., 1023]", v.toString(2))
-        assertEquals("[0, ..., 1022, 1023]", v.toString(3))
-        assertEquals("[0, 1, ..., 1022, 1023]", v.toString(4))
+    @Test fun dot() {
+        assertEquals(v.sumSq(), v.dot(v), Precision.EPSILON)
+        assertEquals(v.sumSq(), v.copy().dot(v), Precision.EPSILON)
     }
 
-    @Test fun testToStringNanInf() {
-        val v = StridedVector.of(Double.NaN, Double.POSITIVE_INFINITY,
-                                 Double.NEGATIVE_INFINITY, 42.0)
-
-        assertEquals("[nan, inf, -inf, 42]", v.toString())
+    @Test fun mean() {
+        assertEquals(v.indices.sumByDouble { v[it] } / v.size, v.mean(),
+                     Precision.EPSILON)
     }
 
-    private fun getRangeVector(a: Int, b: Int): StridedVector {
-        return IntStream.range(a, b).mapToDouble { it.toDouble() }
-                .toArray().asStrided()
+    @Test fun sum() {
+        assertEquals(v.indices.sumByDouble { v[it] }, v.sum(),
+                     Precision.EPSILON)
+    }
+
+    @Test fun sumSq() {
+        assertEquals(v.indices.sumByDouble { v[it] * v[it] }, v.sumSq(),
+                     Precision.EPSILON)
+    }
+
+    @Test fun cumSum() {
+        val copy = v.copy()
+        copy.cumSum()
+
+        var acc = 0.0
+        for (i in v.indices) {
+            acc += v[i]
+            assertEquals(acc, copy[i], Precision.EPSILON)
+        }
+    }
+
+    @Test fun argMinMax() {
+        val values = v.toArray()
+        val min = values.min()!!
+        assertEquals(min, v.min(), Precision.EPSILON)
+        assertEquals(values.indexOf(min), v.argMin())
+
+        val max = values.max()!!
+        assertEquals(v.max(), max, Precision.EPSILON)
+        assertEquals(values.indexOf(max), v.argMax())
     }
 
     companion object {
-        private val RANDOM = Random(0)
+        @Parameters(name = "{0}")
+        @JvmStatic fun `data`() = CASES
     }
+}
+
+@RunWith(Parameterized::class)
+class StridedVectorMathTest(private val v: StridedVector) {
+    @Test fun exp() {
+        val expV = (v / v.max()).exp()
+        for (i in v.indices) {
+            assertEquals(FastMath.exp(v[i] / v.max()), expV[i], 1e-8)
+        }
+    }
+
+    @Test fun log() {
+        val logV = v.log()
+        for (i in v.indices) {
+            assertEquals(FastMath.log(v[i]), logV[i], 1e-8)
+        }
+    }
+
+    @Test fun rescale() {
+        val scaled = v.copy()
+        scaled.rescale()
+        assertEquals(1.0, scaled.sum(), 1e-8)
+    }
+
+    @Test fun logRescale() {
+        val scaled = v.copy()
+        scaled.logRescale()
+        assertEquals(1.0, FastMath.exp(scaled.logSumExp()), 1e-8)
+    }
+
+    @Test fun logAddExp() {
+        val vLaeV = v logAddExp v
+        for (i in v.indices) {
+            assertEquals(v[i] logAddExp v[i], vLaeV[i], 1e-8)
+        }
+    }
+
+    @Test fun logSumExp() {
+        assertEquals(v.indices.sumByDouble { FastMath.exp(v[it]) },
+                     FastMath.exp(v.logSumExp()), 1e-6)
+    }
+
+    companion object {
+        @Parameters(name = "{0}")
+        @JvmStatic fun `data`() = CASES
+    }
+}
+
+@RunWith(Parameterized::class)
+class StridedVectorArithTest(private val v: StridedVector) {
+    @Test fun unaryPlus() = assertEquals(v, +v)
+
+    @Test fun unaryMinus() = assertEquals(v, -(-v))
+
+    @Test fun plus() {
+        val u = v + v
+        for (pos in 0..v.size - 1) {
+            assertEquals(v[pos] + v[pos], u[pos], Precision.EPSILON)
+        }
+    }
+
+    @Test fun plusScalar() {
+        val u = v + 42.0
+        for (pos in 0..v.size - 1) {
+            assertEquals(v[pos] + 42, u[pos], Precision.EPSILON)
+        }
+    }
+
+    @Test fun minus() {
+        val u = v - StridedVector.full(v.size, 42.0)
+        for (pos in 0..v.size - 1) {
+            assertEquals(v[pos] - 42.0, u[pos], Precision.EPSILON)
+        }
+    }
+
+    @Test fun minusScalar() {
+        val u = v - 42.0
+        for (pos in 0..v.size - 1) {
+            assertEquals(v[pos] - 42.0, u[pos], Precision.EPSILON)
+        }
+    }
+
+    @Test fun times() {
+        val u = v * v
+        for (pos in 0..v.size - 1) {
+            assertEquals(v[pos] * v[pos], u[pos], Precision.EPSILON)
+        }
+    }
+
+    @Test fun timesScalar() {
+        val u = v * 42.0
+        for (pos in 0..v.size - 1) {
+            assertEquals(v[pos] * 42, u[pos], Precision.EPSILON)
+        }
+    }
+
+    @Test fun div() {
+        val u = v / StridedVector.full(v.size, 42.0)
+        for (pos in 0..v.size - 1) {
+            assertEquals(v[pos] / 42.0, u[pos], Precision.EPSILON)
+        }
+    }
+
+    @Test fun divScalar() {
+        val u = v / 42.0
+        for (pos in 0..v.size - 1) {
+            assertEquals(v[pos] / 42.0, u[pos], Precision.EPSILON)
+        }
+    }
+
+    companion object {
+        @Parameters(name = "{0}")
+        @JvmStatic fun `data`() = CASES
+    }
+}
+
+private fun IntRange.toStrided(): StridedVector {
+    // The NaN gaps are there for two reasons:
+    //
+    // 1. to ensure 'offset' and 'stride' are used correctly,
+    // 2. to force the use of fallback implementation.
+    val values = IntStream.range(start, endInclusive + 1)
+            .mapToDouble { it.toDouble() }
+            .flatMap { DoubleStream.of(Double.NaN, it) }
+            .toArray()
+    return StridedVector.create(values, offset = 1,
+                                size = endInclusive + 1 - start, stride = 2)
 }

@@ -78,11 +78,6 @@ class LargeDenseVector(data: DoubleArray, offset: Int, size: Int) :
 
     override fun max() = NativeSpeedups.unsafeMax(data, offset, size)
 
-    override fun dot(other: DoubleArray): Double {
-        require(other.size == size) { "non-conformable arrays" }
-        return NativeSpeedups.unsafeDot(data, offset, other, 0, size)
-    }
-
     override fun dot(other: StridedVector): Double {
         return if (other is LargeDenseVector) {
             require(other.size == size) { "non-conformable arrays" }

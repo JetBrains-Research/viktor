@@ -75,7 +75,17 @@ open class StridedVector internal constructor(
         data[unsafeIndex(pos)] = value
     }
 
+    /**
+     * Creates a sliced view of this vector in O(1) time.
+     *
+     * @param from the first index of the slice (inclusive).
+     * @param to the last index of the slice (exclusive).
+     */
     fun slice(from: Int, to: Int = size): StridedVector {
+        if (from < 0 || to < from || to > size) {
+            throw IndexOutOfBoundsException()  // TODO: detailed error.
+        }
+
         return StridedVector(data, offset + from, to - from, stride)
     }
 
@@ -182,15 +192,7 @@ open class StridedVector internal constructor(
      *
      * Optimized for dense vectors.
      */
-    open infix fun dot(other: DoubleArray): Double {
-        require(other.size == size) { "non-conformable arrays" }
-        var acc = 0.0
-        for (pos in 0..size - 1) {
-            acc += unsafeGet(pos) * other[pos]
-        }
-
-        return acc
-    }
+    open infix fun dot(other: DoubleArray) = dot(other.asStrided())
 
     /**
      * Computes a dot product between the two vectors.
