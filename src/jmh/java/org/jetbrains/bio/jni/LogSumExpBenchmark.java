@@ -75,6 +75,6 @@ public class LogSumExpBenchmark {
 
     @Benchmark
     public void vectorLSE(final Blackhole bh) {
-        bh.consume(DoubleMath.INSTANCE.logSumExp(src, 0, arraySize));
+        bh.consume(NativeSpeedups.INSTANCE.unsafeLogSumExp(src, 0, arraySize));
     }
 }

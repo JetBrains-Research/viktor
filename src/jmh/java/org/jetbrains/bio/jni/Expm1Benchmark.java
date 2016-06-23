@@ -53,7 +53,7 @@ public class Expm1Benchmark {
 
     @Benchmark
     public void vector(final Blackhole bh) {
-        DoubleMath.INSTANCE.expm1(src, dst);
+        NativeSpeedups.INSTANCE.unsafeExpm1(src, 0, dst, 0, arraySize);
         bh.consume(dst);
     }
 

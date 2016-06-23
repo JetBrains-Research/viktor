@@ -48,7 +48,7 @@ public class LogBenchmark {
 
     @Benchmark
     public void vectorBoostSimd(final Blackhole bh) {
-        DoubleMath.INSTANCE.log(src, dst);
+        NativeSpeedups.INSTANCE.unsafeLog(src, 0, dst, 0, arraySize);
         bh.consume(dst);
     }
 
