@@ -300,6 +300,27 @@ class StridedVectorOpsTest(private val v: StridedVector) {
     }
 }
 
+class StridedVectorAgainstRTest {
+    @Test fun whole() {
+        val v = VALUES.asStrided()
+        assertEquals(18.37403, v.sum(), 1E-5)
+        assertEquals(18.37403, v.sum(), 1E-5)
+        assertEquals(1.837403, v.mean(), 1E-6)
+    }
+
+    @Test fun slices() {
+        val v = VALUES.asStrided(offset = 3, size = 4)
+        assertEquals(8.292786, v.sum(), 1E-6)
+        assertEquals(2.073197, v.mean(), 1E-6)
+    }
+
+    companion object {
+        private val VALUES = doubleArrayOf(1.5409738, 2.6926526, 0.8159389, 2.5009070,
+                                           3.2777667, 1.5157005, 0.9984120, 2.3274278,
+                                           1.7286019, 0.9756442)
+    }
+}
+
 @RunWith(Parameterized::class)
 class StridedVectorMathTest(private val v: StridedVector) {
     @Test fun exp() {

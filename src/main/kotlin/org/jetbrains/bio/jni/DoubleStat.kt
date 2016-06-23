@@ -170,7 +170,6 @@ internal object DoubleStatJava {
 
         val stack = DoubleArray(62)
         var p = 0
-        run {
             var i = 0
             while (i < effectiveArraySize) {
                 var v = values[offset + i] + values[offset + i + 1]
@@ -186,11 +185,12 @@ internal object DoubleStatJava {
                 stack[p++] = v
                 i += 4
             }
-        }
+
 
         var vsum = 0.0
-        for (i in p downTo 1) {
-            vsum += stack[i - 1]
+        while (p > 0) {
+            vsum += stack[p - 1]
+            p--
         }
 
         return vsum + unaligned_part
