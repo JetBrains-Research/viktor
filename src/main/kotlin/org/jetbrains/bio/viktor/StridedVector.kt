@@ -278,9 +278,31 @@ open class StridedVector internal constructor(
         return copy
     }
 
+    /**
+     * Computes the exponent of each element of this vector.
+     *
+     * Optimized for dense vectors.
+     */
     open fun expInPlace() {
         for (pos in 0..size - 1) {
             unsafeSet(pos, FastMath.exp(unsafeGet(pos)))
+        }
+    }
+
+    fun expm1(): StridedVector {
+        val copy = copy()
+        copy.expm1InPlace()
+        return copy
+    }
+
+    /**
+     * Computes exp(x) - 1 for each element of this vector.
+     *
+     * Optimized for dense vectors.
+     */
+    open fun expm1InPlace() {
+        for (pos in 0..size - 1) {
+            unsafeSet(pos, FastMath.expm1(unsafeGet(pos)))
         }
     }
 
@@ -290,9 +312,31 @@ open class StridedVector internal constructor(
         return copy
     }
 
+    /**
+     * Computes the natural log of each element of this vector.
+     *
+     * Optimized for dense vectors.
+     */
     open fun logInPlace() {
         for (pos in 0..size - 1) {
             unsafeSet(pos, Math.log(unsafeGet(pos)))
+        }
+    }
+
+    fun log1p(): StridedVector {
+        val copy = copy()
+        copy.log1pInPlace()
+        return copy
+    }
+
+    /**
+     * Computes log(1 + x) for each element of this vector.
+     *
+     * Optimized for dense vectors.
+     */
+    open fun log1pInPlace() {
+        for (pos in 0..size - 1) {
+            unsafeSet(pos, Math.log1p(unsafeGet(pos)))
         }
     }
 
@@ -303,7 +347,7 @@ open class StridedVector internal constructor(
      */
     fun rescale() {
         val total = sum() + Precision.EPSILON * size.toDouble()
-        this *= 1.0 / total
+        this /= total
     }
 
     /**
@@ -314,10 +358,7 @@ open class StridedVector internal constructor(
      * The operation is done **in place**.
      */
     open fun logRescale() {
-        val logTotal = logSumExp()
-        for (pos in 0..size - 1) {
-            unsafeSet(pos, unsafeGet(pos) - logTotal)
-        }
+        this -= logSumExp()
     }
 
     /**

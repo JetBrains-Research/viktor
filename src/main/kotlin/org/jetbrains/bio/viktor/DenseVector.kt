@@ -91,8 +91,16 @@ class LargeDenseVector(data: DoubleArray, offset: Int, size: Int) :
         NativeSpeedups.unsafeExp(data, offset, data, 0, data.size)
     }
 
+    override fun expm1InPlace() {
+        NativeSpeedups.unsafeExpm1(data, offset, data, 0, data.size)
+    }
+
     override fun logInPlace() {
         NativeSpeedups.unsafeLog(data, offset, data, 0, data.size)
+    }
+
+    override fun log1pInPlace() {
+        NativeSpeedups.unsafeLog1p(data, offset, data, 0, data.size)
     }
 
     override fun logRescale() {

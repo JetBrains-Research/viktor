@@ -309,10 +309,24 @@ class StridedVectorMathTest(private val v: StridedVector) {
         }
     }
 
+    @Test fun expm1() {
+        val expm1V = (v / v.max()).expm1()
+        for (i in v.indices) {
+            assertEquals(FastMath.expm1(v[i] / v.max()), expm1V[i], 1e-8)
+        }
+    }
+
     @Test fun log() {
         val logV = v.log()
         for (i in v.indices) {
             assertEquals(FastMath.log(v[i]), logV[i], 1e-8)
+        }
+    }
+
+    @Test fun log1p() {
+        val log1pV = v.log1p()
+        for (i in v.indices) {
+            assertEquals(FastMath.log1p(v[i]), log1pV[i], 1e-8)
         }
     }
 
