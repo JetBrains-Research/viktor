@@ -74,7 +74,7 @@ class LargeDenseVector(data: DoubleArray, offset: Int, size: Int) :
         return copy.sum()
     }
 
-    override fun cumSum() = NativeSpeedups.prefixSum(data, offset, data, offset, size)
+    override fun cumSum() = NativeSpeedups.cumSum(data, offset, data, offset, size)
 
     override fun min() = NativeSpeedups.unsafeMin(data, offset, size)
 

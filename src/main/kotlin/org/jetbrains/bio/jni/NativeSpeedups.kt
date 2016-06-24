@@ -76,6 +76,6 @@ object NativeSpeedups {
 
     external fun sd(values: DoubleArray, offset: Int, length: Int): Double
 
-    external fun prefixSum(source: DoubleArray, sourceOffset: Int,
-                           dest: DoubleArray, destOffset: Int, length: Int)
+    external fun cumSum(source: DoubleArray, sourceOffset: Int,
+                        dest: DoubleArray, destOffset: Int, length: Int)
 }

@@ -463,7 +463,7 @@ JNI_METHOD(jdouble, sd)(JNIEnv *env, jobject,
     return res;
 }
 
-JNI_METHOD(void, prefixSum)(JNIEnv *env, jobject,
+JNI_METHOD(void, cumSum)(JNIEnv *env, jobject,
                             jdoubleArray jsrc, jint src_offset,
                             jdoubleArray jdst, jint dst_offset,
                             jint length)
