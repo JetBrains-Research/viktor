@@ -104,8 +104,6 @@ open class StridedMatrix3 internal constructor(
 
     fun sum() = flatten().sum()
 
-    fun sumSq() = flatten().sumSq()
-
     fun max() = flatten().max()
 
     fun argMax() = flatten().argMax()

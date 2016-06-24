@@ -7,6 +7,7 @@ Version 0.3.0
 -------------
 
 - Dropped dependency on Yeppp! and embedded a re-worked simdstat.
+- Removed 'StridedVector.sumSq'
 
 Version 0.2.3
 -------------

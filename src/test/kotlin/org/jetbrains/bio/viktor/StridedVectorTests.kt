@@ -254,8 +254,7 @@ class StridedVectorOpsTest(private val v: StridedVector) {
     }
 
     @Test fun dot() {
-        assertEquals(v.sumSq(), v.dot(v), Precision.EPSILON)
-        assertEquals(v.sumSq(), v.copy().dot(v), Precision.EPSILON)
+        assertEquals(v.indices.sumByDouble { v[it] * v[it] }, v.dot(v), Precision.EPSILON)
     }
 
     @Test fun mean() {
@@ -270,11 +269,6 @@ class StridedVectorOpsTest(private val v: StridedVector) {
 
     @Test fun sum() {
         assertEquals(v.indices.sumByDouble { v[it] }, v.sum(),
-                     Precision.EPSILON)
-    }
-
-    @Test fun sumSq() {
-        assertEquals(v.indices.sumByDouble { v[it] * v[it] }, v.sumSq(),
                      Precision.EPSILON)
     }
 

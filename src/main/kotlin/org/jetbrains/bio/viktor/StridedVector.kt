@@ -217,7 +217,7 @@ open class StridedVector internal constructor(
      */
     open fun sd(): Double {
         val s = sum()
-        val s2 = sumSq()
+        val s2 = dot(this)
         return Math.sqrt((s2 - s * s / size) / (size - 1))
     }
 
