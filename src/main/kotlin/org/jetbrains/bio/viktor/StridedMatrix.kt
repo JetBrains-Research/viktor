@@ -19,6 +19,7 @@ object StridedMatrix {
                 m[r, c] = block(r, c)
             }
         }
+
         return m
     }
 
@@ -42,25 +43,21 @@ object StridedMatrix {
 
     @JvmStatic fun full(numRows: Int, numColumns: Int,
                         init: Double): StridedMatrix2 {
-        val m = StridedMatrix2(numRows, numColumns)
-        m.fill(init)
-        return m
+        return StridedMatrix2(numRows, numColumns).apply { fill(init) }
     }
 
     @JvmStatic fun full(numRows: Int, numColumns: Int, depth: Int,
                         init: Double): StridedMatrix3 {
-        val m = StridedMatrix3(numRows, numColumns, depth)
-        m.fill(init)
-        return m
+        return StridedMatrix3(numRows, numColumns, depth).apply { fill(init) }
     }
 
     /**
      * Creates a 2-D matrix with rows summing to one.
      */
-    fun stochastic(size: Int) = full(size, size, 1.0 / size)
+    @JvmStatic fun stochastic(size: Int) = full(size, size, 1.0 / size)
 
     /**
      * Creates a 3-D matrix with [stochastic] submatrices.
      */
-    fun indexedStochastic(depth: Int, size: Int) = full(depth, size, size, 1.0 / size)
+    @JvmStatic fun indexedStochastic(depth: Int, size: Int) = full(depth, size, size, 1.0 / size)
 }

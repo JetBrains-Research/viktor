@@ -10,10 +10,8 @@ import java.util.*
  */
 class StridedMatrix3 internal constructor(
         val depth: Int, val rowsNumber: Int, val columnsNumber: Int,
-        private val data: DoubleArray,
-        private val depthStride: Int,
-        private val rowStride: Int,
-        private val columnStride: Int) {
+        val data: DoubleArray,
+        val depthStride: Int, val rowStride: Int, val columnStride: Int) {
 
     constructor(depth: Int, numRows: Int, numColumns: Int) :
     this(depth, numRows, numColumns,
@@ -90,8 +88,8 @@ class StridedMatrix3 internal constructor(
 
     fun view(d: Int): StridedMatrix2 {
         require(d >= 0 && d < depth) { "d must be in [0, $depth)" }
-        return StridedMatrix2(rowsNumber, columnsNumber, d * depthStride,
-                              data, rowStride, columnStride)
+        return StridedMatrix2(rowsNumber, columnsNumber, data,
+                              d * depthStride, rowStride, columnStride)
     }
 
     // XXX this can be done with a single allocation.

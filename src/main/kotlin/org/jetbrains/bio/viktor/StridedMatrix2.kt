@@ -10,16 +10,15 @@ import java.util.stream.Stream
  * @author Sergei Lebedev
  * @since 0.1.0
  */
-open class StridedMatrix2 internal constructor(
+class StridedMatrix2 internal constructor(
         val rowsNumber: Int, val columnsNumber: Int,
-        protected val offset: Int,
-        protected val data: DoubleArray,
-        private val rowStride: Int,
-        private val columnStride: Int) {
+        val data: DoubleArray, val offset: Int,
+        val rowStride: Int,
+        val columnStride: Int) {
 
     constructor(numRows: Int, numColumns: Int) :
     // Use row-major order by default.
-    this(numRows, numColumns, 0, DoubleArray(numRows * numColumns), numColumns, 1) {}
+    this(numRows, numColumns, DoubleArray(numRows * numColumns), 0, numColumns, 1) {}
 
     /**
      * Dense matrices are laid out in a single contiguous block
@@ -28,7 +27,7 @@ open class StridedMatrix2 internal constructor(
      * This allows to use SIMD operations, e.g. when computing the
      * sum of elements.
      */
-    protected val isDense: Boolean get() {
+    private val isDense: Boolean get() {
         return rowStride == columnsNumber && columnStride == 1
     }
 
@@ -100,7 +99,7 @@ open class StridedMatrix2 internal constructor(
     val T: StridedMatrix2 get() = transpose()
 
     /** Constructs matrix transpose in O(1) time. */
-    fun transpose() = StridedMatrix2(columnsNumber, rowsNumber, offset, data,
+    fun transpose() = StridedMatrix2(columnsNumber, rowsNumber, data, offset,
                                      columnStride, rowStride)
 
     /**
