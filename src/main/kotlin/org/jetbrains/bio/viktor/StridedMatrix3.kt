@@ -13,7 +13,7 @@ class StridedMatrix3 internal constructor(
         val data: DoubleArray,
         val depthStride: Int, val rowStride: Int, val columnStride: Int)
 :
-        ToStridedVector<StridedMatrix3> {
+        FlatMatrixOps<StridedMatrix3> {
 
     constructor(depth: Int, numRows: Int, numColumns: Int) :
     this(depth, numRows, numColumns,

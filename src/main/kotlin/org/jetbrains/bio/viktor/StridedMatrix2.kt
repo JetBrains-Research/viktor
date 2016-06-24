@@ -14,7 +14,7 @@ class StridedMatrix2 internal constructor(
         val rowsNumber: Int, val columnsNumber: Int,
         val data: DoubleArray, val offset: Int,
         val rowStride: Int,
-        val columnStride: Int) : ToStridedVector<StridedMatrix2> {
+        val columnStride: Int) : FlatMatrixOps<StridedMatrix2> {
 
     constructor(numRows: Int, numColumns: Int) :
     // Use row-major order by default.
