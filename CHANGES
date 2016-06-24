@@ -12,6 +12,7 @@ Version 0.3.0
   'StridedVector.sum' and 'dot'.
 - Added 'StridedVector.sd' for computing unbiased standard deviation.
 - Added SIMD speedups for / and /= operations.
+- Added 'StridedVector.log1p' and 'expm1'.
 
 Version 0.2.3
 -------------

@@ -23,8 +23,10 @@ open class StridedMatrix2 internal constructor(
 
     /**
      * Dense matrices are laid out in a single contiguous block
-     * of memory. This allows to use SIMD operations, e.g. when
-     * computing the sum of elements.
+     * of memory.
+     *
+     * This allows to use SIMD operations, e.g. when computing the
+     * sum of elements.
      */
     protected val isDense: Boolean get() {
         return rowStride == columnsNumber && columnStride == 1
@@ -52,20 +54,25 @@ open class StridedMatrix2 internal constructor(
         data[unsafeIndex(r, c)] = value
     }
 
-    private fun unsafeIndex(r: Int, c: Int) = offset + r * rowStride + c * columnStride
+    @Suppress("nothing_to_inline")
+    private inline fun unsafeIndex(r: Int, c: Int) = offset + r * rowStride + c * columnStride
 
+    /** Returns a view of the [r]-th row of this matrix. */
     fun rowView(r: Int): StridedVector {
         require(r >= 0 && r < rowsNumber) { "r must be in [0, $rowsNumber)" }
         return StridedVector.create(data, offset + rowStride * r, columnsNumber, columnStride)
     }
 
+    /**
+     * Returns a view of the [c]-th column of this matrix.
+     */
     fun columnView(c: Int): StridedVector {
         require(c >= 0 && c < columnsNumber) { "c must be in [0, $columnsNumber)" }
         return StridedVector.create(data, offset + columnStride * c, rowsNumber, rowStride)
     }
 
     /**
-     * A less-verbose alias to [.rowView].
+     * A less-verbose alias to [rowView].
      *
      * Please do NOT abuse this shortcut by double-indexing, i.e. don't
      * do `m[i][j]`, write `m[i, j]` instead.
@@ -77,7 +84,7 @@ open class StridedMatrix2 internal constructor(
     operator fun set(r: Int, init: Double) = rowView(r).fill(init)
 
     /**
-     * A less-verbose alias to [.columnView].
+     * A less-verbose alias to [columnView].
      *
      * Use in conjunction with [_I], e.g. `m[_I, i]`.
      */
@@ -89,12 +96,10 @@ open class StridedMatrix2 internal constructor(
 
     operator fun set(row: Int, any: _I, init: Double) = columnView(row).fill(init)
 
-    /** An alias for [transpose] */
+    /** An alias for [transpose]. */
     val T: StridedMatrix2 get() = transpose()
 
-    /**
-     * Constructs matrix transpose in O(1) time.
-     */
+    /** Constructs matrix transpose in O(1) time. */
     fun transpose() = StridedMatrix2(columnsNumber, rowsNumber, offset, data,
                                      columnStride, rowStride)
 
@@ -116,7 +121,7 @@ open class StridedMatrix2 internal constructor(
         return copy
     }
 
-    /** Copies elements in this matrix to [other]. */
+    /** Copies elements in this matrix to [other] matrix. */
     fun copyTo(other: StridedMatrix2) {
         checkDimensions(other)
         if (rowStride == other.rowStride && columnStride == other.columnStride) {
@@ -132,7 +137,7 @@ open class StridedMatrix2 internal constructor(
     /**
      * Returns a stream of row or column views of the matrix.
      *
-     * @param axis axis to view along, 0 stands for columns, 1 for rows.
+     * @param axis axis to go along, 0 stands for columns, 1 for rows.
      */
     fun along(axis: Int): Stream<StridedVector> = when (axis) {
         0 -> IntStream.range(0, columnsNumber).mapToObj { columnView(it) }
@@ -160,19 +165,19 @@ open class StridedMatrix2 internal constructor(
 
     fun expInPlace() = flatten().expInPlace()
 
-    fun exp(): StridedMatrix2 {
-        val m = copy()
-        m.expInPlace()
-        return m
-    }
+    fun exp() = copy().apply { expm1InPlace() }
+
+    fun expm1InPlace() = flatten().expInPlace()
+
+    fun expm1() = copy().apply { expm1InPlace() }
 
     fun logInPlace() = flatten().logInPlace()
 
-    fun log(): StridedMatrix2 {
-        val m = copy()
-        m.logInPlace()
-        return m
-    }
+    fun log() = copy().apply { logInPlace() }
+
+    fun log1pInPlace() = flatten().logInPlace()
+
+    fun log1p() = copy().apply { log1pInPlace() }
 
     fun logAddExp(other: StridedMatrix2, dst: StridedMatrix2) {
         checkDimensions(other)
@@ -185,7 +190,7 @@ open class StridedMatrix2 internal constructor(
         return (flatten() + other.flatten()).reshape(rowsNumber, columnsNumber)
     }
 
-    fun toArray(): Array<DoubleArray> = Array(rowsNumber) { rowView(it).toArray() }
+    fun toArray() = Array(rowsNumber) { rowView(it).toArray() }
 
     private fun toString(maxDisplay: Int): String {
         if (Math.max(rowsNumber, columnsNumber) <= maxDisplay) {
@@ -241,6 +246,7 @@ open class StridedMatrix2 internal constructor(
 
     private fun checkDimensions(other: StridedMatrix2) {
         check(this === other ||
-              (rowsNumber == other.rowsNumber && columnsNumber == other.columnsNumber)) { "non-conformable matrices" }
+              (rowsNumber == other.rowsNumber &&
+               columnsNumber == other.columnsNumber)) { "non-conformable matrices" }
     }
 }

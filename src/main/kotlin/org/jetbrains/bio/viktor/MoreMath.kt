@@ -19,11 +19,7 @@ infix fun Double.logAddExp(b: Double): Double {
 }
 
 /**
- * This is a simple class which sums the numbers passed to it via the
- * [.feed] method and returns the accumulated sum with the [.get] call.
- * To decrease the precision loss when summing lots of numbers, the
- * class employs a modified Kahan-Babuska summation method described
- * in the Klein et al. paper.
+ * Kahan-Babuska summation.
  *
  * See http://cage.ugent.be/~klein/papers/floating-point.pdf for details.
  *
@@ -33,9 +29,7 @@ infix fun Double.logAddExp(b: Double): Double {
 class KahanSum @JvmOverloads constructor(private var accumulator: Double = 0.0) {
     private var compensator = 0.0
 
-    /**
-     * Supplies a number to be added to the accumulator.
-     */
+    /** Supplies a number to be added to the accumulator. */
     fun feed(value: Double): KahanSum {
         val t = accumulator + value
         if (Math.abs(accumulator) >= Math.abs(value)) {
@@ -52,8 +46,6 @@ class KahanSum @JvmOverloads constructor(private var accumulator: Double = 0.0) 
         feed(value)  // Sweet, so sweet!
     }
 
-    /**
-     * Returns the sum accumulated so far.
-     */
+    /** Returns the sum accumulated so far. */
     fun result() = accumulator + compensator
 }

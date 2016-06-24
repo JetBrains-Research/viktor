@@ -8,9 +8,9 @@ import java.util.*
  * @author Sergei Lebedev
  * @since 0.1.0
  */
-open class StridedMatrix3 internal constructor(
+class StridedMatrix3 internal constructor(
         val depth: Int, val rowsNumber: Int, val columnsNumber: Int,
-        protected val data: DoubleArray,
+        private val data: DoubleArray,
         private val depthStride: Int,
         private val rowStride: Int,
         private val columnStride: Int) {
@@ -23,10 +23,12 @@ open class StridedMatrix3 internal constructor(
 
     /**
      * Dense matrices are laid out in a single contiguous block
-     * of memory. This allows to use SIMD operations, e.g. when
-     * computing the sum of elements.
+     * of memory.
+     *
+     * This allows to use SIMD operations, e.g. when computing the
+     * sum of elements.
      */
-    protected val isDense: Boolean get() {
+    private val isDense: Boolean get() {
         return depthStride == rowsNumber * columnsNumber &&
                rowStride == columnsNumber &&
                columnStride == 1
@@ -54,7 +56,8 @@ open class StridedMatrix3 internal constructor(
         data[unsafeIndex(d, r, c)] = value
     }
 
-    private fun unsafeIndex(d: Int, r: Int, c: Int): Int {
+    @Suppress("nothing_to_inline")
+    private inline fun unsafeIndex(d: Int, r: Int, c: Int): Int {
         return d * depthStride + r * rowStride + c * columnStride
     }
 
@@ -79,7 +82,7 @@ open class StridedMatrix3 internal constructor(
         return data.asStrided()
     }
 
-    operator fun get(d: Int): StridedMatrix2 = view(d)
+    operator fun get(d: Int) = view(d)
 
     operator fun set(d: Int, other: StridedMatrix2) = other.copyTo(view(d))
 
@@ -118,19 +121,19 @@ open class StridedMatrix3 internal constructor(
 
     fun expInPlace() = flatten().expInPlace()
 
-    fun exp(): StridedMatrix3 {
-        val m = copy()
-        m.expInPlace()
-        return m
-    }
+    fun exp() = copy().apply { expm1InPlace() }
+
+    fun expm1InPlace() = flatten().expInPlace()
+
+    fun expm1() = copy().apply { expm1InPlace() }
 
     fun logInPlace() = flatten().logInPlace()
 
-    fun log(): StridedMatrix3 {
-        val m = copy()
-        m.logInPlace()
-        return m
-    }
+    fun log() = copy().apply { logInPlace() }
+
+    fun log1pInPlace() = flatten().logInPlace()
+
+    fun log1p() = copy().apply { log1pInPlace() }
 
     fun logAddExp(other: StridedMatrix3, dst: StridedMatrix3) {
         checkDimensions(other)
