@@ -463,22 +463,6 @@ JNI_METHOD(jdouble, sd)(JNIEnv *env, jobject,
     return res;
 }
 
-JNI_METHOD(jdouble, weightedSd)(JNIEnv *env, jobject,
-                                jdoubleArray jvalues, jint values_offset,
-                                jdoubleArray jweights, jint weights_offset,
-                                jint length)
-{
-    jdouble *values = (jdouble *) env->GetPrimitiveArrayCritical(jvalues, NULL);
-    jdouble *weights = (jdouble *) env->GetPrimitiveArrayCritical(jweights, NULL);
-    source_3d<weighted_sd_tag> f(values + values_offset,
-                                 weights + weights_offset,
-                                 length);
-    double res = tri_balanced_sum(f);
-    env->ReleasePrimitiveArrayCritical(jvalues, values, JNI_ABORT);
-    env->ReleasePrimitiveArrayCritical(jweights, weights, JNI_ABORT);
-    return res;
-}
-
 JNI_METHOD(void, prefixSum)(JNIEnv *env, jobject,
                             jdoubleArray jsrc, jint src_offset,
                             jdoubleArray jdst, jint dst_offset,

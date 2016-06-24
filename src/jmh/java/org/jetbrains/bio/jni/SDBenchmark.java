@@ -1,5 +1,6 @@
 package org.jetbrains.bio.jni;
 
+import org.jetbrains.bio.viktor.StridedVectorKt;
 import org.openjdk.jmh.annotations.*;
 
 import java.util.Random;
@@ -37,7 +38,7 @@ public class SDBenchmark {
 
 	@Benchmark
 	public double javaSD() {
-		return DoubleStatJava.INSTANCE.standardDeviation(values, 0, arraySize);
+		return StridedVectorKt.asStrided(values, 0, arraySize).sd();
 	}
 
 	@Benchmark

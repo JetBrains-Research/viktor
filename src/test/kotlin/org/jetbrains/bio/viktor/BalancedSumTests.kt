@@ -1,6 +1,5 @@
 package org.jetbrains.bio.viktor
 
-import org.apache.commons.math3.util.Precision
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -18,7 +17,7 @@ class BalancedSumTest(private val size: Int) {
             expected.feed(value)
         }
 
-        assertEquals(expected.result(), v.balancedSum(), Precision.EPSILON)
+        assertEquals(expected.result(), v.balancedSum(), 1e-8)
     }
 
     companion object {

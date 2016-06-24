@@ -91,73 +91,17 @@ double twin_balanced_sum(source_2d<tag>& f)
     return f.result(stat1, stat2);
 }
 
-template<typename tag>
-double tri_balanced_sum(source_3d<tag>& f)
-{
-    double stat1 = 0.;
-    double stat2 = 0.;
-    double stat3 = 0.;
-    while (f.can_procure(1, stat1) && !f.is_aligned()) {
-        f.procure(stat1, stat2, stat3);
-    }
-
-    pack_double stack1[62];
-    pack_double stack2[62];
-    pack_double stack3[62];
-    size_t p = 0;
-    for (size_t iteration = 0; f.can_procure(4, stack1[0]); ++iteration) {
-        pack_double v1 = boost::simd::Zero<pack_double>();
-        pack_double v2 = boost::simd::Zero<pack_double>();
-        pack_double v3 = boost::simd::Zero<pack_double>();
-        f.procure(v1, v2, v3);
-        f.procure(v1, v2, v3);
-        pack_double w1 = boost::simd::Zero<pack_double>();
-        pack_double w2 = boost::simd::Zero<pack_double>();
-        pack_double w3 = boost::simd::Zero<pack_double>();
-        f.procure(w1, w2, w3);
-        f.procure(w1, w2, w3);
-        v1 += w1;
-        v2 += w2;
-        v3 += w3;
-        size_t bitmask = 1;
-        for (; iteration & bitmask; bitmask <<= 1, --p) {
-            v1 += stack1[p - 1];
-            v2 += stack2[p - 1];
-            v3 += stack3[p - 1];
-        }
-        stack1[p] = v1;
-        stack2[p] = v2;
-        stack3[p++] = v3;
-    }
-    pack_double vsum1 = boost::simd::Zero<pack_double>();
-    pack_double vsum2 = boost::simd::Zero<pack_double>();
-    pack_double vsum3 = boost::simd::Zero<pack_double>();
-    for (size_t i = p; i > 0; --i) {
-        vsum1 += stack1[i - 1];
-        vsum2 += stack2[i - 1];
-        vsum3 += stack3[i - 1];
-    }
-    stat1 = std::accumulate(vsum1.begin(), vsum1.end(), stat1);
-    stat2 = std::accumulate(vsum2.begin(), vsum2.end(), stat2);
-    stat3 = std::accumulate(vsum3.begin(), vsum3.end(), stat3);
-    while (f.can_procure(1, stat1)) {
-        f.procure(stat1, stat2, stat3);
-    }
-    return f.result(stat1, stat2, stat3);
-}
-
-
 inline void kahan_update(double &accumulator, double &compensator, double value)
 {
-        double const new_accumulator = accumulator + value;
-        double const first_option = (accumulator - new_accumulator) + value;
-        double const second_option = (value - new_accumulator) + accumulator;
-        if (std::abs(accumulator) > std::abs(value)) {
-            compensator += first_option;
-        } else {
-            compensator += second_option;
-        }
-        accumulator = new_accumulator;
+    double const new_accumulator = accumulator + value;
+    double const first_option = (accumulator - new_accumulator) + value;
+    double const second_option = (value - new_accumulator) + accumulator;
+    if (std::abs(accumulator) > std::abs(value)) {
+        compensator += first_option;
+    } else {
+        compensator += second_option;
+    }
+    accumulator = new_accumulator;
 }
 
 template<typename tag>
