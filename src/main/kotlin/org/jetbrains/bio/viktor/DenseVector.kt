@@ -172,4 +172,18 @@ class LargeDenseVector(data: DoubleArray, offset: Int, size: Int) :
             super.timesAssign(other)
         }
     }
+
+    override fun divAssign(update: Double) {
+        NativeSpeedups.unsafeDivScalar(data, offset, update, data, offset, size)
+    }
+
+    override fun divAssign(other: StridedVector) {
+        if (other is DenseVector) {
+            NativeSpeedups.unsafeDiv(data, offset,
+                                     other.data, other.offset,
+                                     data, offset, size)
+        } else {
+            super.divAssign(other)
+        }
+    }
 }

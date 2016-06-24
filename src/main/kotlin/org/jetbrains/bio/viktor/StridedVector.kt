@@ -503,9 +503,9 @@ open class StridedVector internal constructor(
         return v
     }
 
-    operator open fun divAssign(value: Double) {
+    operator open fun divAssign(update: Double) {
         for (pos in 0..size - 1) {
-            unsafeSet(pos, unsafeGet(pos) / value)
+            unsafeSet(pos, unsafeGet(pos) / update)
         }
     }
 
@@ -515,7 +515,7 @@ open class StridedVector internal constructor(
         return v
     }
 
-    operator fun divAssign(other: StridedVector) {
+    operator open fun divAssign(other: StridedVector) {
         checkSize(other)
         for (pos in 0..size - 1) {
             unsafeSet(pos, unsafeGet(pos) / other.unsafeGet(pos))
