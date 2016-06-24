@@ -26,3 +26,24 @@ class BalancedSumTest(private val size: Int) {
         @JvmStatic fun `data`() = listOf(32, 64, 100, 500)
     }
 }
+
+@RunWith(Parameterized::class)
+class BalancedDotTest(private val size: Int) {
+    @Test fun accuracy() {
+        val r = Random()
+        val v = r.doubles(size.toLong()).toArray().asStrided()
+        val w = r.doubles(size.toLong()).toArray().asStrided()
+
+        val expected = KahanSum()
+        for (i in v.indices) {
+            expected.feed(v[i] * w[i])
+        }
+
+        assertEquals(expected.result(), v.balancedDot(w), 1e-8)
+    }
+
+    companion object {
+        @Parameters(name = "{0}")
+        @JvmStatic fun `data`() = listOf(32, 64, 100, 500)
+    }
+}

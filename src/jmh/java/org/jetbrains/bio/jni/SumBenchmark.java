@@ -1,5 +1,7 @@
 package org.jetbrains.bio.jni;
 
+import org.jetbrains.bio.viktor.BalancedSumKt;
+import org.jetbrains.bio.viktor.StridedVectorKt;
 import org.openjdk.jmh.annotations.*;
 
 import java.util.Random;
@@ -12,8 +14,7 @@ import java.util.concurrent.TimeUnit;
 @Measurement(iterations = 10)
 @Fork(value = 2, jvmArgsPrepend = "-Djava.library.path=./build/libs")
 public class SumBenchmark {
-
-	@Param({"1000", "10000", "100000",})
+	@Param({"1000", "10000", "100000"})
 	int arraySize;
 	double[] values;
 
@@ -36,7 +37,7 @@ public class SumBenchmark {
 
 	@Benchmark
 	public double javaSum() {
-		return DoubleStatJava.INSTANCE.sum(values, 0, arraySize);
+		return BalancedSumKt.balancedSum(StridedVectorKt.asStrided(values, 0, arraySize));
 	}
 
 	@Benchmark

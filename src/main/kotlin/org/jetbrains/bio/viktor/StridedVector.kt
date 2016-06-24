@@ -602,7 +602,8 @@ open class StridedVector internal constructor(
         return acc
     }
 
-    protected fun checkSize(other: StridedVector) {
+    @Suppress("nothing_to_inline")
+    internal inline fun checkSize(other: StridedVector) {
         require(size == other.size) { "non-conformable arrays" }
     }
 

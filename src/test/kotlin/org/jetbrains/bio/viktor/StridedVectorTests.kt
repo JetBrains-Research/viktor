@@ -304,20 +304,43 @@ class StridedVectorAgainstRTest {
     @Test fun whole() {
         val v = VALUES.asStrided()
         assertEquals(18.37403, v.sum(), 1E-5)
-        assertEquals(18.37403, v.sum(), 1E-5)
         assertEquals(1.837403, v.mean(), 1E-6)
+        assertEquals(18.37403, v.balancedSum(), 1E-5)
     }
 
     @Test fun slices() {
         val v = VALUES.asStrided(offset = 3, size = 4)
         assertEquals(8.292786, v.sum(), 1E-6)
         assertEquals(2.073197, v.mean(), 1E-6)
+        assertEquals(8.292786, v.balancedSum(), 1E-6)
+    }
+
+    @Test fun weighted() {
+        val v = VALUES.asStrided()
+        val w = WEIGHTS.asStrided()
+        assertEquals(8.417747, v.dot(w), 1E-6)
+        assertEquals(8.417747, v.balancedDot(w), 1E-6)
+    }
+
+    @Test fun weightedSlices() {
+        val v = VALUES.asStrided(offset = 3, size = 4)
+        val w = WEIGHTS.asStrided(offset = 2, size = 4)
+        assertEquals(2.363317, v.dot(w), 1E-6)
+        assertEquals(2.363317, v.balancedDot(w), 1E-6)
     }
 
     companion object {
+        /**
+         * The VALUES were produced by R command "rgamma(10, 4, 2)"
+         * The WEIGHTS were produced by R command "runif(10)"
+         * The expected statistics were calculated in R
+         */
         private val VALUES = doubleArrayOf(1.5409738, 2.6926526, 0.8159389, 2.5009070,
                                            3.2777667, 1.5157005, 0.9984120, 2.3274278,
                                            1.7286019, 0.9756442)
+        private val WEIGHTS = doubleArrayOf(0.04437868, 0.93508668, 0.09091827, 0.17638019,
+                                            0.86624410, 0.24522868, 0.85157408, 0.17318330,
+                                            0.07582913, 0.73878585)
     }
 }
 
