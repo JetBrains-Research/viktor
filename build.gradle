@@ -105,8 +105,8 @@ model {
 task jniHeaders(dependsOn: compileJava) {
     def outputDir = file("$buildDir/include")
     def jniClasses = [
-        'org.jetbrains.bio.jni.NativeSpeedups',
-        'org.jetbrains.bio.jni.LoaderKt'
+        'org.jetbrains.bio.viktor.NativeSpeedups',
+        'org.jetbrains.bio.viktor.LoaderKt'
     ]
     def jniHeaders = jniClasses.collect {
         new File(outputDir, it.replace('.', '_') + '.hpp')

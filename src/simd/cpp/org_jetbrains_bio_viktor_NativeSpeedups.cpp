@@ -8,14 +8,14 @@
 #include <boost/simd/function/max.hpp>
 #include <boost/simd/function/min.hpp>
 
-#include "org_jetbrains_bio_jni_NativeSpeedups.hpp"
+#include "org_jetbrains_bio_viktor_NativeSpeedups.hpp"
 #include "simd_math.hpp"
 #include "source.hpp"
 #include "summing.hpp"
 #include "transform_accumulate.hpp"
 
 #define JNI_METHOD(rtype, name)                                         \
-    JNIEXPORT rtype JNICALL Java_org_jetbrains_bio_jni_NativeSpeedups_##name
+    JNIEXPORT rtype JNICALL Java_org_jetbrains_bio_viktor_NativeSpeedups_##name
 
 JNI_METHOD(void, unsafePlus)(JNIEnv *env, jobject,
                              jdoubleArray jsrc1, jint src_offset1,

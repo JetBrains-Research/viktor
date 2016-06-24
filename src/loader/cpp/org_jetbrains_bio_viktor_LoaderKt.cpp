@@ -2,10 +2,10 @@
 #include <cstdint>
 #include <cpuid.h>
 
-#include "org_jetbrains_bio_jni_LoaderKt.hpp"
+#include "org_jetbrains_bio_viktor_LoaderKt.hpp"
 
 #define JNI_METHOD(rtype, name)                                         \
-    JNIEXPORT rtype JNICALL Java_org_jetbrains_bio_jni_LoaderKt_##name
+    JNIEXPORT rtype JNICALL Java_org_jetbrains_bio_viktor_LoaderKt_##name
 
 static inline int64_t xgetbv(int ctr) {
    uint32_t eax, edx;
