@@ -1,8 +1,5 @@
 package org.jetbrains.bio.viktor
 
-import org.jetbrains.bio.viktor.Loader
-import org.jetbrains.bio.viktor.NativeSpeedups
-
 /**
  * A contiguous strided vector.
  *
@@ -67,12 +64,6 @@ class LargeDenseVector(data: DoubleArray, offset: Int, size: Int) :
     override fun sd() = NativeSpeedups.sd(data, offset, size)
 
     override fun sum() = NativeSpeedups.sum(data, offset, size)
-
-    override fun sumSq(): Double {
-        val copy = copy()
-        copy *= copy
-        return copy.sum()
-    }
 
     override fun cumSum() = NativeSpeedups.cumSum(data, offset, data, offset, size)
 

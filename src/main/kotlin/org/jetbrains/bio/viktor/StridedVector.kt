@@ -199,15 +199,7 @@ open class StridedVector internal constructor(
      *
      * Optimized for dense vectors.
      */
-    open infix fun dot(other: StridedVector): Double {
-        require(other.size == size) { "non-conformable arrays" }
-        var acc = 0.0
-        for (pos in 0..size - 1) {
-            acc += unsafeGet(pos) * other.unsafeGet(pos)
-        }
-
-        return acc
-    }
+    open infix fun dot(other: StridedVector) = balancedDot(other)
 
     /**
      * Computes the mean of the elements.
@@ -230,33 +222,18 @@ open class StridedVector internal constructor(
     }
 
     /**
-     * Returns the sum of the elements using [KahanSum].
+     * Returns the sum of the elements using balanced summation.
      *
      * Optimized for dense vectors.
      */
-    open fun sum(): Double {
-        val acc = KahanSum()
-        for (pos in 0..size - 1) {
-            acc += unsafeGet(pos)
-        }
-
-        return acc.result()
-    }
+    open fun sum() = balancedSum()
 
     /**
      * Returns the sum of the squares of elements.
      *
      * Optimized for dense vectors.
      */
-    open fun sumSq(): Double {
-        val acc = KahanSum()
-        for (pos in 0..size - 1) {
-            val value = unsafeGet(pos)
-            acc += value * value
-        }
-
-        return acc.result()
-    }
+    fun sumSq() = dot(this)
 
     /**
      * Computes cumulative sum of the elements.
@@ -387,12 +364,12 @@ open class StridedVector internal constructor(
      */
     open fun logSumExp(): Double {
         val offset = max()
-        val sum = KahanSum()
+        val acc = KahanSum()
         for (pos in 0..size - 1) {
-            sum += FastMath.exp(unsafeGet(pos) - offset)
+            acc += FastMath.exp(unsafeGet(pos) - offset)
         }
 
-        return Math.log(sum.result()) + offset
+        return Math.log(acc.result()) + offset
     }
 
     infix fun logAddExp(other: StridedVector): StridedVector {
