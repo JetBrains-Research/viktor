@@ -322,13 +322,11 @@ class StridedVectorAgainstRTest {
         val v = VALUES.asStrided()
         val w = WEIGHTS.asStrided()
         assertEquals(8.417747, v.dot(w), 1E-6)
-        assertEquals(8.417747, v.dot(w), 1E-6)
     }
 
     @Test fun weightedSlices() {
         val v = VALUES.asStrided(offset = 3, size = 4)
         val w = WEIGHTS.asStrided(offset = 2, size = 4)
-        assertEquals(2.363317, v.dot(w), 1E-6)
         assertEquals(2.363317, v.dot(w), 1E-6)
     }
 
