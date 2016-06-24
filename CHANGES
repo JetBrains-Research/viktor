@@ -7,7 +7,11 @@ Version 0.3.0
 -------------
 
 - Dropped dependency on Yeppp! and embedded a re-worked simdstat.
-- Removed 'StridedVector.sumSq'
+- Removed 'StridedVector.sumSq' in favour of 'dot'.
+- Switched to balanced summation in pure-Kotlin versions of
+  'StridedVector.sum' and 'dot'.
+- Added 'StridedVector.sd' for computing unbiased standard deviation.
+- Added SIMD speedups for / and /= operations.
 
 Version 0.2.3
 -------------
