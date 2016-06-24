@@ -110,7 +110,7 @@ class StridedMatrix2 internal constructor(
      */
     override fun flatten(): StridedVector {
         check(isDense) { "matrix is not dense" }
-        return StridedVector.create(data, offset, rowsNumber * columnsNumber, 1)
+        return data.asStrided(offset, rowsNumber * columnsNumber)
     }
 
     /** Returns a copy of the elements in this matrix. */

@@ -64,7 +64,11 @@ object StridedMatrix {
 
 /** A common interface for whole-matrix operations. */
 internal interface FlatMatrixOps<T> {
-    /** Returns a flat view of this matrix. */
+    /**
+     * Returns a flat view of this matrix.
+     *
+     * If the matrix is not dense the method must raise an error.
+     */
     fun flatten(): StridedVector
 
     /** Returns the copy of this matrix. */
