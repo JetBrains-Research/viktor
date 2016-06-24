@@ -9,6 +9,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import org.junit.runners.Parameterized.Parameters
+import java.util.*
 import java.util.stream.DoubleStream
 import java.util.stream.IntStream
 import kotlin.test.assertNotEquals
@@ -185,7 +186,7 @@ private val CASES = listOf(
         // Dense small.
         doubleArrayOf(1.0, 2.0, 3.0).asStrided(),
         // Dense large.
-        DoubleArray(DenseVector.DENSE_SPLIT_SIZE + 1) { it.toDouble() }.asStrided())
+        Random().doubles(DenseVector.DENSE_SPLIT_SIZE + 1L).toArray().asStrided())
 
 @RunWith(Parameterized::class)
 class StridedVectorOpsTest(private val v: StridedVector) {
