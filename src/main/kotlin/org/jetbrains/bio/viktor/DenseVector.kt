@@ -1,7 +1,7 @@
 package org.jetbrains.bio.viktor
 
-import org.jetbrains.bio.jni.Loader
-import org.jetbrains.bio.jni.NativeSpeedups
+import org.jetbrains.bio.viktor.Loader
+import org.jetbrains.bio.viktor.NativeSpeedups
 
 /**
  * A contiguous strided vector.

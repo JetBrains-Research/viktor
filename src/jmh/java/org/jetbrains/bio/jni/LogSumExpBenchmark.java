@@ -3,6 +3,7 @@ package org.jetbrains.bio.jni;
 import org.apache.commons.math3.random.RandomDataGenerator;
 import org.apache.commons.math3.stat.StatUtils;
 import org.apache.commons.math3.util.FastMath;
+import org.jetbrains.bio.viktor.NativeSpeedups;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 

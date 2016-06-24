@@ -1,6 +1,7 @@
 package org.jetbrains.bio.jni;
 
 import org.jetbrains.bio.viktor.BalancedSumKt;
+import org.jetbrains.bio.viktor.NativeSpeedups;
 import org.jetbrains.bio.viktor.StridedVectorKt;
 import org.openjdk.jmh.annotations.*;
 
@@ -21,8 +22,6 @@ public class WeightedSumBenchmark {
 
 	@Setup
 	public void generateData() {
-		Loader.INSTANCE.ensureLoaded();
-
 		final Random random = new Random();
 		values = random.doubles(arraySize).toArray();
 		weights = random.doubles(arraySize).toArray();

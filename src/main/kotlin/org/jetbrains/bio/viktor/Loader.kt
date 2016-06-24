@@ -1,4 +1,4 @@
-package org.jetbrains.bio.jni
+package org.jetbrains.bio.viktor
 
 import java.nio.file.Files
 import java.nio.file.Path
@@ -39,9 +39,9 @@ class ResourceLibrary(private val name: String) {
     }
 }
 
-object Loader {
-    /** If `true` array operations will be SIMD-optimized. */
-    internal var useNative = true
+internal object Loader {
+    /** If `true` vector operations will be SIMD-optimized. */
+    internal var useNative = false
 
     fun ensureLoaded() {}
 
@@ -58,49 +58,21 @@ object Loader {
             ResourceLibrary("simd.$arch").install()
 
             when {
-                isAvxSupported() -> ResourceLibrary("simd.avx.$arch").install()
-                isSse2Supported() -> ResourceLibrary("simd.sse2.$arch").install()
-                else -> {
-                    disableNativeOptimization()
+                isAvxSupported() -> {
+                    ResourceLibrary("simd.avx.$arch").install()
+                    useNative = true
+                }
+                isSse2Supported() -> {
+                    ResourceLibrary("simd.sse2.$arch").install()
+                    useNative = true
                 }
             }
         } catch (e: Exception) {
             System.err.println(listOf(
-                    "Native SIMD optimization of statistics and array operations is not available.",
-                    "Pure Java fallback implementation will be used instead.").joinToString("\n"))
+                    "Native SIMD optimization of vector operations is not available.",
+                    "Fallback Kotlin implementation will be used instead.").joinToString("\n"))
             e.printStackTrace(System.err)
-
-            disableNativeOptimization()
         }
-    }
-
-    /**
-     * Enables using the optimized native methods.
-     *
-     * Note that the optimization should be on by default;
-     *
-     * it is turned off in the various exceptional cases, e.g. when the library fails to load.
-     * If the optimization was turned off automatically but you enable it by calling this method,
-     * expect exceptions and runtime errors down the road. The most common use case for this method
-     * is turning the optimization back on after disabling it by [.disableNativeOptimization]
-     * for any reason.
-     */
-    fun enableNativeOptimization() {
-        useNative = true
-    }
-
-    /**
-     * Disables using the optimized native methods, opting for pure Java implementations instead.
-     *
-     * See [enableNativeOptimization] for caveats. Here are a few reasons for this method to be
-     * called:
-     * 1. producing a baseline reference value for benchmarking
-     * 2. as a workaround when native methods fail unexpectedly (in most failure cases the optimization
-     * is turned off automatically, but there always might be some really obscure ones)
-     * 3. small arrays (native calls come with an overhead, so pure Java might be faster in these cases)
-     */
-    fun disableNativeOptimization() {
-        useNative = false
     }
 }
 

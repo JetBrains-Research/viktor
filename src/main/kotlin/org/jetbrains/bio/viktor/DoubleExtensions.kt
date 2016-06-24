@@ -1,6 +1,6 @@
 package org.jetbrains.bio.viktor
 
-import org.jetbrains.bio.jni.NativeSpeedups
+import org.jetbrains.bio.viktor.NativeSpeedups
 
 /**
  * Operator overloads for [Double] and [StridedVector].
