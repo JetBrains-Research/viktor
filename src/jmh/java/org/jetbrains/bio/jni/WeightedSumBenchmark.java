@@ -19,16 +19,21 @@ public class WeightedSumBenchmark {
 	int arraySize;
 	double[] values;
 	double[] weights;
+	short[] shorts;
 
 	@Setup
 	public void generateData() {
 		final Random random = new Random();
 		values = random.doubles(arraySize).toArray();
 		weights = random.doubles(arraySize).toArray();
+		shorts = new short[arraySize];
+		for (int i = 0; i < arraySize; i++) {
+			shorts[i] = (short) random.nextInt(1000);
+		}
 	}
 
 	@Benchmark
-	public double simpleSum() {
+	public double simpleDot() {
 		double res = 0.;
 		for (int i = 0; i < arraySize; i++) {
 			res += values[i] * weights[i];
@@ -37,15 +42,18 @@ public class WeightedSumBenchmark {
 	}
 
 	@Benchmark
-	public double javaSum() {
-		return BalancedSumKt.balancedDot(
-				StridedVectorKt.asStrided(values, 0, arraySize),
-				StridedVectorKt.asStrided(weights, 0, arraySize));
+	public double dot() {
+		return StridedVectorKt.asStrided(values, 0, arraySize).dot(StridedVectorKt.asStrided(weights, 0, arraySize));
 	}
 
 	@Benchmark
-	public double nativeSum() {
+	public double nativeDot() {
 		return NativeSpeedups.INSTANCE.weightedSum(values, 0, weights, 0, arraySize);
+	}
+
+	@Benchmark
+	public double shortDot() {
+		return StridedVectorKt.asStrided(values, 0, arraySize).dot(shorts);
 	}
 
 }

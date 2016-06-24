@@ -43,14 +43,12 @@ internal fun StridedVector.balancedSum(): Double {
     return acc + accUnaligned
 }
 
-internal fun StridedVector.balancedDot(other: StridedVector): Double {
-    checkSize(other)
-
+internal inline fun StridedVector.balancedDot(getter: (Int) -> Double): Double {
     var accUnaligned = 0.0
     var remaining = size
     while (remaining % 4 != 0) {
         remaining--
-        accUnaligned += unsafeGet(remaining) * other.unsafeGet(remaining)
+        accUnaligned += unsafeGet(remaining) * getter(remaining)
     }
 
     val stack = DoubleArray(31 - 2)
@@ -58,10 +56,10 @@ internal fun StridedVector.balancedDot(other: StridedVector): Double {
     var i = 0
     while (i < remaining) {
         // Shift.
-        var v = (unsafeGet(i) * other.unsafeGet(i) +
-                 unsafeGet(i + 1) * other.unsafeGet(i + 1))
-        val w = (unsafeGet(i + 2) * other.unsafeGet(i + 2) +
-                 unsafeGet(i + 3) * other.unsafeGet(i + 3))
+        var v = (unsafeGet(i) * getter(i) +
+                unsafeGet(i + 1) * getter(i + 1))
+        val w = (unsafeGet(i + 2) * getter(i + 2) +
+                unsafeGet(i + 3) * getter(i + 3))
         v += w
 
         // Reduce.

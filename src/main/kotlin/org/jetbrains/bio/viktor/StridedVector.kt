@@ -164,42 +164,26 @@ open class StridedVector internal constructor(
     /**
      * Computes a dot product of this vector with an array.
      */
-    infix fun dot(other: ShortArray): Double {
-        require(other.size == size) { "non-conformable arrays" }
-        var acc = 0.0
-        for (pos in 0..size - 1) {
-            acc += unsafeGet(pos) * other[pos].toDouble()
-        }
-
-        return acc
-    }
+    infix fun dot(other: ShortArray): Double = balancedDot { other[it].toDouble() }
 
     /**
      * Computes a dot product of this vector with an array.
      */
-    infix fun dot(other: IntArray): Double {
-        require(other.size == size) { "non-conformable arrays" }
-        var acc = 0.0
-        for (pos in 0..size - 1) {
-            acc += unsafeGet(pos) * other[pos].toDouble()
-        }
-
-        return acc
-    }
+    infix fun dot(other: IntArray): Double = balancedDot { other[it].toDouble() }
 
     /**
      * Computes a dot product of this vector with an array.
      *
      * Optimized for dense vectors.
      */
-    open infix fun dot(other: DoubleArray) = dot(other.asStrided())
+    open infix fun dot(other: DoubleArray) = balancedDot { other[it] }
 
     /**
      * Computes a dot product between the two vectors.
      *
      * Optimized for dense vectors.
      */
-    open infix fun dot(other: StridedVector) = balancedDot(other)
+    open infix fun dot(other: StridedVector): Double = balancedDot { other[it] }
 
     /**
      * Computes the mean of the elements.

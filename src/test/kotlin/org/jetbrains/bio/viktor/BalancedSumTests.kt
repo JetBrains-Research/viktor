@@ -38,7 +38,7 @@ class BalancedDotTest(private val size: Int) {
             expected.feed(v[i] * w[i])
         }
 
-        assertEquals(expected.result(), v.balancedDot(w), 1e-8)
+        assertEquals(expected.result(), v.dot(w), 1e-8)
     }
 
     companion object {
