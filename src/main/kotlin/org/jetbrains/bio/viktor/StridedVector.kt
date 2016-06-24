@@ -217,6 +217,19 @@ open class StridedVector internal constructor(
     open fun mean() = sum() / size
 
     /**
+     * Computes the unbiased standard deviation of the elements.
+     *
+     * Optimized for dense vectors.
+     *
+     * @since 0.3.0
+     */
+    open fun sd(): Double {
+        val s = sum()
+        val s2 = sumSq()
+        return Math.sqrt((s2 - s * s / size) / (size - 1))
+    }
+
+    /**
      * Returns the sum of the elements using [KahanSum].
      *
      * Optimized for dense vectors.
@@ -299,6 +312,8 @@ open class StridedVector internal constructor(
      * Computes exp(x) - 1 for each element of this vector.
      *
      * Optimized for dense vectors.
+     *
+     * @since 0.3.0
      */
     open fun expm1InPlace() {
         for (pos in 0..size - 1) {
@@ -333,6 +348,8 @@ open class StridedVector internal constructor(
      * Computes log(1 + x) for each element of this vector.
      *
      * Optimized for dense vectors.
+     *
+     * @since 0.3.0
      */
     open fun log1pInPlace() {
         for (pos in 0..size - 1) {

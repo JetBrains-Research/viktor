@@ -64,6 +64,8 @@ class LargeDenseVector(data: DoubleArray, offset: Int, size: Int) :
 
     override fun mean() = NativeSpeedups.sum(data, offset, size) / size
 
+    override fun sd() = NativeSpeedups.sd(data, offset, size)
+
     override fun sum() = NativeSpeedups.sum(data, offset, size)
 
     override fun sumSq(): Double {

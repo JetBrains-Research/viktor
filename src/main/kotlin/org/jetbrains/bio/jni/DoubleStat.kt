@@ -2,26 +2,6 @@ package org.jetbrains.bio.jni
 
 object DoubleStat {
     /**
-     * Calculates the (unbiased) standard deviation of `values` slice beginning at `offset`
-     * with length `length`.
-     */
-    fun standardDeviation(values: DoubleArray, offset: Int = 0, length: Int = values.size): Double {
-        checkOffsetAndLength(values, offset, length)
-        return if (Loader.useNative)
-            NativeSpeedups.sd(values, offset, length)
-        else
-            DoubleStatJava.standardDeviation(values, offset, length)
-    }
-
-    /**
-     * Calculates the biased standard deviation of `values` slice beginning at `offset`
-     * with length `length`.
-     */
-    fun standardDeviationBiased(values: DoubleArray, offset: Int = 0, length: Int = values.size): Double {
-        return Math.sqrt((length - 1) * 1.0 / length) * standardDeviation(values, offset, length)
-    }
-
-    /**
      * Calculates the biased weighted standard deviation of `values` and `weights` slices
      * beginning at `valuesOffset` and `weightsOffset` respectively with length `length`.
      * The result is defined as follows:
@@ -48,54 +28,6 @@ object DoubleStat {
 }
 
 internal object DoubleStatJava {
-    fun standardDeviation(values: DoubleArray, offset: Int, length: Int): Double {
-        var unaligned_part_vv = 0.0
-        var unaligned_part_v = 0.0
-        var effectiveArraySize = length
-        while (effectiveArraySize % 4 != 0) {
-            --effectiveArraySize
-            val value = values[offset + effectiveArraySize]
-            unaligned_part_vv += value * value
-            unaligned_part_v += value
-        }
-
-        val stack_vv = DoubleArray(62)
-        val stack_v = DoubleArray(62)
-        var p = 0
-        run {
-            var i = 0
-            while (i < effectiveArraySize) {
-                var v_vv = values[offset + i] * values[offset + i] + values[offset + i + 1] * values[offset + i + 1]
-                val w_vv = values[offset + i + 2] * values[offset + i + 2] + values[offset + i + 3] * values[offset + i + 3]
-                var v_v = values[offset + i] + values[offset + i + 1]
-                val w_v = values[offset + i + 2] + values[offset + i + 3]
-                v_vv += w_vv
-                v_v += w_v
-                var bitmask = 4
-                while (i and bitmask != 0) {
-                    v_vv += stack_vv[p - 1]
-                    v_v += stack_v[p - 1]
-                    bitmask = bitmask shl 1
-                    --p
-                }
-                stack_vv[p] = v_vv
-                stack_v[p++] = v_v
-                i += 4
-            }
-        }
-
-        var vsum_vv = 0.0
-        var vsum_v = 0.0
-        for (i in p downTo 1) {
-            vsum_vv += stack_vv[i - 1]
-            vsum_v += stack_v[i - 1]
-        }
-
-        vsum_vv += unaligned_part_vv
-        vsum_v += unaligned_part_v
-        return Math.sqrt((vsum_vv - vsum_v * vsum_v / values.size) / (values.size - 1))
-    }
-
     fun weightedStandardDeviation(values: DoubleArray, valuesOffset: Int,
                                   weights: DoubleArray, weightsOffset: Int, length: Int): Double {
         var unaligned_part_vvw = 0.0

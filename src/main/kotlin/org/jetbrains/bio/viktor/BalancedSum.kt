@@ -1,13 +1,14 @@
 package org.jetbrains.bio.viktor
 
 /**
- * A summation algorithm balancing accuracy with throughput.
+ * Summation algorithms balancing accuracy with throughput.
  *
  * References
  * ----------
  *
  * Dalton et al. "SIMDizing pairwise sums", 2014.
  */
+
 internal fun StridedVector.balancedSum(): Double {
     var accUnaligned = 0.0
     var remaining = size

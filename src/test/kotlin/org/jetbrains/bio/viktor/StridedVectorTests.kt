@@ -1,5 +1,6 @@
 package org.jetbrains.bio.viktor
 
+import org.apache.commons.math3.stat.StatUtils
 import org.apache.commons.math3.util.FastMath
 import org.apache.commons.math3.util.Precision
 import org.junit.Assert.assertArrayEquals
@@ -262,6 +263,11 @@ class StridedVectorOpsTest(private val v: StridedVector) {
                      Precision.EPSILON)
     }
 
+    @Test fun sd() {
+        assertEquals(Math.sqrt(StatUtils.variance(v.toArray())), v.sd(),
+                     Precision.EPSILON)
+    }
+
     @Test fun sum() {
         assertEquals(v.indices.sumByDouble { v[it] }, v.sum(),
                      Precision.EPSILON)
@@ -306,6 +312,7 @@ class StridedVectorAgainstRTest {
         assertEquals(18.37403, v.sum(), 1E-5)
         assertEquals(1.837403, v.mean(), 1E-6)
         assertEquals(18.37403, v.balancedSum(), 1E-5)
+        assertEquals(0.8286257, v.sd(), 1E-7)
     }
 
     @Test fun slices() {
@@ -313,6 +320,7 @@ class StridedVectorAgainstRTest {
         assertEquals(8.292786, v.sum(), 1E-6)
         assertEquals(2.073197, v.mean(), 1E-6)
         assertEquals(8.292786, v.balancedSum(), 1E-6)
+        assertEquals(1.016512, v.sd(), 1E-6)
     }
 
     @Test fun weighted() {
