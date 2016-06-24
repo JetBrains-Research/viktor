@@ -61,3 +61,46 @@ object StridedMatrix {
      */
     @JvmStatic fun indexedStochastic(depth: Int, size: Int) = full(depth, size, size, 1.0 / size)
 }
+
+/** A common interface for whole-matrix operations. */
+internal interface FlatMatrixOps<T> {
+    /** Returns a flat view of this matrix. */
+    fun flatten(): StridedVector
+
+    /** Returns the copy of this matrix. */
+    fun copy(): T
+
+    fun fill(init: Double) = flatten().fill(init)
+
+    fun mean() = flatten().mean()
+
+    fun sum() = flatten().sum()
+
+    fun max() = flatten().max()
+
+    fun argMax() = flatten().argMax()
+
+    fun min() = flatten().min()
+
+    fun argMin() = flatten().argMin()
+
+    fun logSumExp() = flatten().logSumExp()
+
+    fun logRescale() = flatten().logRescale()
+
+    fun expInPlace() = flatten().expInPlace()
+
+    fun exp() = copy().apply { expm1InPlace() }
+
+    fun expm1InPlace() = flatten().expInPlace()
+
+    fun expm1() = copy().apply { expm1InPlace() }
+
+    fun logInPlace() = flatten().logInPlace()
+
+    fun log() = copy().apply { logInPlace() }
+
+    fun log1pInPlace() = flatten().logInPlace()
+
+    fun log1p() = copy().apply { log1pInPlace() }
+}

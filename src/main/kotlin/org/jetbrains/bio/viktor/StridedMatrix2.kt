@@ -14,7 +14,7 @@ class StridedMatrix2 internal constructor(
         val rowsNumber: Int, val columnsNumber: Int,
         val data: DoubleArray, val offset: Int,
         val rowStride: Int,
-        val columnStride: Int) {
+        val columnStride: Int) : ToStridedVector<StridedMatrix2> {
 
     constructor(numRows: Int, numColumns: Int) :
     // Use row-major order by default.
@@ -108,13 +108,13 @@ class StridedMatrix2 internal constructor(
      * No data copying is performed, thus the operation is only applicable
      * to dense matrices.
      */
-    fun flatten(): StridedVector {
+    override fun flatten(): StridedVector {
         check(isDense) { "matrix is not dense" }
         return StridedVector.create(data, offset, rowsNumber * columnsNumber, 1)
     }
 
     /** Returns a copy of the elements in this matrix. */
-    fun copy(): StridedMatrix2 {
+    override fun copy(): StridedMatrix2 {
         val copy = StridedMatrix2(rowsNumber, columnsNumber)
         copyTo(copy)
         return copy
@@ -143,40 +143,6 @@ class StridedMatrix2 internal constructor(
         1 -> IntStream.range(0, rowsNumber).mapToObj { rowView(it) }
         else -> throw IllegalArgumentException(axis.toString())
     }
-
-    fun fill(init: Double) = flatten().fill(init)
-
-    fun mean() = flatten().mean()
-
-    fun sum() = flatten().sum()
-
-    fun max() = flatten().max()
-
-    fun argMax() = flatten().argMax()
-
-    fun min() = flatten().min()
-
-    fun argMin() = flatten().argMin()
-
-    fun logSumExp() = flatten().logSumExp()
-
-    fun logRescale() = flatten().logRescale()
-
-    fun expInPlace() = flatten().expInPlace()
-
-    fun exp() = copy().apply { expm1InPlace() }
-
-    fun expm1InPlace() = flatten().expInPlace()
-
-    fun expm1() = copy().apply { expm1InPlace() }
-
-    fun logInPlace() = flatten().logInPlace()
-
-    fun log() = copy().apply { logInPlace() }
-
-    fun log1pInPlace() = flatten().logInPlace()
-
-    fun log1p() = copy().apply { log1pInPlace() }
 
     fun logAddExp(other: StridedMatrix2, dst: StridedMatrix2) {
         checkDimensions(other)

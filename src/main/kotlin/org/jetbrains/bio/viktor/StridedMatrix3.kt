@@ -11,7 +11,9 @@ import java.util.*
 class StridedMatrix3 internal constructor(
         val depth: Int, val rowsNumber: Int, val columnsNumber: Int,
         val data: DoubleArray,
-        val depthStride: Int, val rowStride: Int, val columnStride: Int) {
+        val depthStride: Int, val rowStride: Int, val columnStride: Int)
+:
+        ToStridedVector<StridedMatrix3> {
 
     constructor(depth: Int, numRows: Int, numColumns: Int) :
     this(depth, numRows, numColumns,
@@ -59,7 +61,7 @@ class StridedMatrix3 internal constructor(
         return d * depthStride + r * rowStride + c * columnStride
     }
 
-    fun copy(): StridedMatrix3 {
+    override fun copy(): StridedMatrix3 {
         val copy = StridedMatrix(depth, rowsNumber, columnsNumber)
         copyTo(copy)
         return copy
@@ -75,7 +77,7 @@ class StridedMatrix3 internal constructor(
         System.arraycopy(data, 0, other.data, 0, data.size)
     }
 
-    fun flatten(): StridedVector {
+    override fun flatten(): StridedVector {
         check(isDense) { "matrix is not dense" }
         return data.asStrided()
     }
@@ -98,40 +100,6 @@ class StridedMatrix3 internal constructor(
     operator fun set(d: Int, r: Int, other: Double) = view(d).set(r, other)
 
     operator fun set(d: Int, r: Int, other: StridedVector) = view(d).set(r, other)
-
-    fun fill(init: Double): Unit = flatten().fill(init)
-
-    fun mean() = flatten().mean()
-
-    fun sum() = flatten().sum()
-
-    fun max() = flatten().max()
-
-    fun argMax() = flatten().argMax()
-
-    fun min() = flatten().min()
-
-    fun argMin() = flatten().argMin()
-
-    fun logSumExp() = flatten().logSumExp()
-
-    fun logRescale() = flatten().logRescale()
-
-    fun expInPlace() = flatten().expInPlace()
-
-    fun exp() = copy().apply { expm1InPlace() }
-
-    fun expm1InPlace() = flatten().expInPlace()
-
-    fun expm1() = copy().apply { expm1InPlace() }
-
-    fun logInPlace() = flatten().logInPlace()
-
-    fun log() = copy().apply { logInPlace() }
-
-    fun log1pInPlace() = flatten().logInPlace()
-
-    fun log1p() = copy().apply { log1pInPlace() }
 
     fun logAddExp(other: StridedMatrix3, dst: StridedMatrix3) {
         checkDimensions(other)
