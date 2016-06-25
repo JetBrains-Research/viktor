@@ -1,3 +1,7 @@
+ext {
+    boostSimdBranch = 'develop'
+}
+
 buildscript {
     repositories {
         jcenter()
@@ -25,7 +29,7 @@ model {
 }
 
 task downloadBoostSimd(type: de.undercouch.gradle.tasks.download.Download) {
-    src 'https://github.com/NumScale/boost.simd/archive/develop.zip'
+    src "https://github.com/NumScale/boost.simd/archive/${boostSimdBranch}.zip"
     dest new File(buildDir, 'boost.simd.zip')
     overwrite false
 }
@@ -33,7 +37,7 @@ task downloadBoostSimd(type: de.undercouch.gradle.tasks.download.Download) {
 task unzipBoostSimd(dependsOn: downloadBoostSimd, type: Copy) {
     from zipTree(downloadBoostSimd.dest)
     into buildDir
-    outputs.dir new File(buildDir, 'boost.simd-master')
+    outputs.dir new File(buildDir, "boost.simd-$boostSimdBranch")
 }
 
 def nullOutputStream = new OutputStream() {
@@ -42,7 +46,7 @@ def nullOutputStream = new OutputStream() {
 }
 
 task installBoostSimd(dependsOn: unzipBoostSimd) {
-    def cmakeDir = new File(buildDir, 'boost.simd-develop/build')
+    def cmakeDir = new File(buildDir, "boost.simd-$boostSimdBranch/build")
     outputs.dir new File(buildDir, 'include/boost')
     doLast {
         cmakeDir.mkdirs()
