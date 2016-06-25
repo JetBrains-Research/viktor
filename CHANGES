@@ -13,6 +13,7 @@ Version 0.3.0
 - Added 'StridedVector.sd' for computing unbiased standard deviation.
 - Added SIMD speedups for / and /= operations.
 - Added 'StridedVector.log1p' and 'expm1'.
+- Removed 'StridedMatrix2.plus' and 'logAddExp'.
 
 Version 0.2.3
 -------------

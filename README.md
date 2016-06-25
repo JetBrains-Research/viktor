@@ -15,7 +15,7 @@ Kotlin. Here're some of the highlights:
     m[0] = StridedVector.full(3, 42.0)  // row-view.
     m[_I, 0]                            // column-view.
     m[0] = 42.0                         // broadcasting.
-    m + m                               // arithmetic operations.
+    m[0] + m[0]                         // arithmetic operations.
     ```
 
 [ndarray]: http://docs.scipy.org/doc/numpy/reference/arrays.ndarray.html
@@ -29,7 +29,7 @@ Gradle just add the following to your `build.gradle`:
 ```gradle
 repositories {
     maven {
-        url "https://dl.bintray.com/jetbrains-research/maven"
+        url 'https://dl.bintray.com/jetbrains-research/maven'
     }
 }
 
