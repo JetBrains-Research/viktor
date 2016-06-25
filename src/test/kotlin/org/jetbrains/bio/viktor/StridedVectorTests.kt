@@ -223,8 +223,9 @@ class StridedVectorOpsTest(private val v: StridedVector) {
     }
 
     @Test fun fill() {
-        v.fill(42.0)
-        assertEquals(StridedVector.full(v.size, 42.0), v)
+        val copy = v.copy()
+        copy.fill(42.0)
+        assertEquals(StridedVector.full(copy.size, 42.0), copy)
     }
 
     @Test fun reshape() {
