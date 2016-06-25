@@ -144,17 +144,6 @@ class StridedMatrix2 internal constructor(
         else -> throw IllegalArgumentException(axis.toString())
     }
 
-    fun logAddExp(other: StridedMatrix2, dst: StridedMatrix2) {
-        checkDimensions(other)
-        checkDimensions(dst)
-        flatten().logAddExp(other.flatten(), dst.flatten())
-    }
-
-    operator fun plus(other: StridedMatrix2): StridedMatrix2 {
-        checkDimensions(other)
-        return (flatten() + other.flatten()).reshape(rowsNumber, columnsNumber)
-    }
-
     fun toArray() = Array(rowsNumber) { rowView(it).toArray() }
 
     private fun toString(maxDisplay: Int): String {
