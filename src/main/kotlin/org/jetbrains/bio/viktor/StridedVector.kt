@@ -211,13 +211,6 @@ open class StridedVector internal constructor(
     open fun sum() = balancedSum()
 
     /**
-     * Returns the sum of the squares of elements.
-     *
-     * Optimized for dense vectors.
-     */
-    fun sumSq() = dot(this)
-
-    /**
      * Computes cumulative sum of the elements.
      *
      * The operation is done **in place**.
