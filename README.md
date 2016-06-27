@@ -35,7 +35,7 @@ repositories {
 }
 
 dependencies {
-    compile 'org.jetbrains.bio:viktor:0.3.1'
+    compile 'org.jetbrains.bio:viktor:0.3.2'
 }
 
 ```

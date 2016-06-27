@@ -67,7 +67,7 @@ internal object Loader {
                     useNative = true
                 }
             }
-        } catch (e: UnsatisfiedLinkError) {
+        } catch (e: Throwable) {
             System.err.println(listOf(
                     "Native SIMD optimization of vector operations is not available.",
                     "Fallback Kotlin implementation will be used instead.").joinToString("\n"))
