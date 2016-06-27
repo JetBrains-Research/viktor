@@ -62,3 +62,37 @@ $ ./gradlew assemble
 ```
 
 [boost.simd]: https://github.com/NumScale/boost.simd
+
+Testing
+-------
+
+No extra configuration is required for running the tests from Gradle
+
+```bash
+$ ./gradlew test
+```
+
+However, you might need to alter `java.library.path` to run the tests from 
+the IDE. The following Java command line option should work for IDEA
+
+```bash
+-Djava.library.path=./build/libs
+```
+
+Publishing
+----------
+
+You can do it with a one-liner
+
+```bash
+./gradlew clean assemble generatePomFileForMavenJavaPublication bintrayUpload 
+```
+
+Make sure to set Bintray credentials (see API key section 
+[here](https://bintray.com/profile/edit)) in `$HOME/.gradle/gradle.properties`.
+
+```
+$ cat $HOME/.gradle/gradle.properties
+bintrayUser=CHANGEME
+bintrayKey=CHANGEME
+```
