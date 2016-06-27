@@ -10,7 +10,7 @@ import java.util.*
  */
 class StridedMatrix3 internal constructor(
         val depth: Int, val rowsNumber: Int, val columnsNumber: Int,
-        val data: DoubleArray,
+        val data: DoubleArray, val offset: Int,
         val depthStride: Int, val rowStride: Int, val columnStride: Int)
 :
         FlatMatrixOps<StridedMatrix3> {
@@ -18,7 +18,7 @@ class StridedMatrix3 internal constructor(
     constructor(depth: Int, numRows: Int, numColumns: Int) :
     this(depth, numRows, numColumns,
          DoubleArray(depth * numRows * numColumns),
-         numRows * numColumns, numColumns, 1) {
+         0, numRows * numColumns, numColumns, 1) {
     }
 
     /**
@@ -58,13 +58,13 @@ class StridedMatrix3 internal constructor(
 
     @Suppress("nothing_to_inline")
     private inline fun unsafeIndex(d: Int, r: Int, c: Int): Int {
-        return d * depthStride + r * rowStride + c * columnStride
+        return offset + d * depthStride + r * rowStride + c * columnStride
     }
 
     override fun copy(): StridedMatrix3 {
-        val copy = StridedMatrix(depth, rowsNumber, columnsNumber)
-        copyTo(copy)
-        return copy
+        val m = StridedMatrix(depth, rowsNumber, columnsNumber)
+        copyTo(m)
+        return m
     }
 
     fun copyTo(other: StridedMatrix3) {
@@ -89,7 +89,10 @@ class StridedMatrix3 internal constructor(
     operator fun set(d: Int, other: Double) = view(d).fill(other)
 
     fun view(d: Int): StridedMatrix2 {
-        require(d >= 0 && d < depth) { "d must be in [0, $depth)" }
+        if (d < 0 || d >= depth) {
+            throw IndexOutOfBoundsException("d must be in [0, $depth)")
+        }
+
         return StridedMatrix2(rowsNumber, columnsNumber, data,
                               d * depthStride, rowStride, columnStride)
     }
@@ -100,12 +103,6 @@ class StridedMatrix3 internal constructor(
     operator fun set(d: Int, r: Int, other: Double) = view(d).set(r, other)
 
     operator fun set(d: Int, r: Int, other: StridedVector) = view(d).set(r, other)
-
-    fun logAddExp(other: StridedMatrix3, dst: StridedMatrix3) {
-        checkDimensions(other)
-        checkDimensions(dst)
-        flatten().logAddExp(other.flatten(), dst.flatten())
-    }
 
     fun toArray() = Array(depth) { view(it).toArray() }
 
@@ -141,9 +138,16 @@ class StridedMatrix3 internal constructor(
         return acc
     }
 
-    private fun checkDimensions(other: StridedMatrix3) {
+    override fun checkDimensions(other: StridedMatrix3) {
         check(this === other ||
               (depth == other.depth && rowsNumber == other.rowsNumber &&
                columnsNumber == other.columnsNumber)) { "non-conformable matrices" }
     }
+}
+
+/** Reshapes this vector into a matrix in row-major order. */
+fun StridedVector.reshape(depth: Int, numRows: Int, numColumns: Int): StridedMatrix3 {
+    require(depth * numRows * numColumns == size)
+    return StridedMatrix3(depth, numRows, numColumns, data, offset,
+                          numRows * numColumns * stride, numColumns * stride, stride)
 }

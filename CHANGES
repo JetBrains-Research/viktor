@@ -13,8 +13,10 @@ Version 0.3.0
 - Added 'StridedVector.sd' for computing unbiased standard deviation.
 - Added SIMD speedups for / and /= operations.
 - Added 'StridedVector.log1p' and 'expm1'.
-- Removed 'StridedMatrix2.plus' and 'logAddExp'.
 - Fixed a bug in scalar division in expressions of the form '1.0 / v'.
+- Mirrored 'StridedVector' operations in 'StridedMatrix2' and
+  'StridedMatrix3'. Scalar-matrix, e.g. '1.0 / m' operations are to be
+  added in future releases.
 
 Version 0.2.3
 -------------

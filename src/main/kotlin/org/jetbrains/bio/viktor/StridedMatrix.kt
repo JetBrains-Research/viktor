@@ -63,7 +63,7 @@ object StridedMatrix {
 }
 
 /** A common interface for whole-matrix operations. */
-internal interface FlatMatrixOps<T> {
+internal interface FlatMatrixOps<T : FlatMatrixOps<T>> {
     /**
      * Returns a flat view of this matrix.
      *
@@ -73,6 +73,9 @@ internal interface FlatMatrixOps<T> {
 
     /** Returns the copy of this matrix. */
     fun copy(): T
+
+    /** Ensures a given matrix has the same dimensions as this matrix. */
+    fun checkDimensions(other: T)
 
     fun fill(init: Double) = flatten().fill(init)
 
@@ -107,4 +110,71 @@ internal interface FlatMatrixOps<T> {
     fun log1pInPlace() = flatten().logInPlace()
 
     fun log1p() = copy().apply { log1pInPlace() }
+
+    infix fun logAddExp(other: T): T = copy().apply { logAddExp(other, this) }
+
+    fun logAddExp(other: T, dst: T) {
+        checkDimensions(other)
+        checkDimensions(dst)
+        flatten().logAddExp(other.flatten(), dst.flatten())
+    }
+
+    operator fun unaryPlus() = this
+
+    operator fun unaryMinus() = copy().apply {
+        val v = flatten()
+        NativeSpeedups.unsafeNegate(v.data, v.offset, v.data, v.offset, v.size)
+    }
+
+    operator fun plus(other: T) = copy().apply { this += other }
+
+    operator open fun plusAssign(other: T) {
+        checkDimensions(other)
+        flatten() += other.flatten()
+    }
+
+    operator fun plus(update: Double) = copy().apply { this += update }
+
+    operator open fun plusAssign(update: Double) {
+        flatten() += update
+    }
+
+    operator fun minus(other: T) = copy().apply { this -= other }
+
+    operator open fun minusAssign(other: T) {
+        checkDimensions(other)
+        flatten() -= other.flatten()
+    }
+
+    operator fun minus(update: Double) = copy().apply { this -= update }
+
+    operator open fun minusAssign(update: Double) {
+        flatten() -= update
+    }
+
+    operator fun times(other: T) = copy().apply { this *= other }
+
+    operator open fun timesAssign(other: T) {
+        checkDimensions(other)
+        flatten() *= other.flatten()
+    }
+
+    operator fun times(update: Double) = copy().apply { this *= update }
+
+    operator open fun timesAssign(update: Double) {
+        flatten() *= update
+    }
+
+    operator fun div(other: T) = copy().apply { this /= other }
+
+    operator open fun divAssign(other: T) {
+        checkDimensions(other)
+        flatten() /= other.flatten()
+    }
+
+    operator fun div(update: Double) = copy().apply { this /= update }
+
+    operator open fun divAssign(update: Double) {
+        flatten() /= update
+    }
 }

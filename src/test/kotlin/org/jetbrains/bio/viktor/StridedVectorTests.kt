@@ -93,10 +93,6 @@ class StridedVectorSlicing {
                      StridedVector.of(1.0, 2.0).T.columnView(0))
         assertEquals(StridedVector.of(1.0, 2.0, 3.0),
                      StridedVector.of(1.0, 2.0, 3.0).T.columnView(0))
-
-        val m = StridedMatrix(2, 3) { i, j -> i + j * 42.0 }
-        assertEquals(StridedVector.of(42.0, 43.0),
-                     m.columnView(1).T.columnView(0))
     }
 
     @Test fun slice() {
@@ -226,26 +222,6 @@ class StridedVectorOpsTest(private val v: StridedVector) {
         val copy = v.copy()
         copy.fill(42.0)
         assertEquals(StridedVector.full(copy.size, 42.0), copy)
-    }
-
-    @Test fun reshape() {
-        val v = (0..5).toStrided()
-        assertArrayEquals(arrayOf(doubleArrayOf(0.0, 1.0, 2.0),
-                                  doubleArrayOf(3.0, 4.0, 5.0)),
-                          v.reshape(2, 3).toArray())
-        assertArrayEquals(arrayOf(doubleArrayOf(0.0, 1.0),
-                                  doubleArrayOf(2.0, 3.0),
-                                  doubleArrayOf(4.0, 5.0)),
-                          v.reshape(3, 2).toArray())
-    }
-
-    @Test fun reshapeWithStride() {
-        val v = StridedVector.create(doubleArrayOf(0.0, 1.0, 2.0, 3.0,
-                                                   4.0, 5.0, 6.0, 7.0),
-                                     0, 4, stride = 2)
-        assertArrayEquals(arrayOf(doubleArrayOf(0.0, 2.0),
-                                  doubleArrayOf(4.0, 6.0)),
-                          v.reshape(2, 2).toArray())
     }
 
     @Test fun reverse() {

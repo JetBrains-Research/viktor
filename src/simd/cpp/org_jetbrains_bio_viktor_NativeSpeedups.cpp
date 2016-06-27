@@ -492,9 +492,9 @@ JNI_METHOD(jdouble, sd)(JNIEnv *env, jobject,
 }
 
 JNI_METHOD(void, cumSum)(JNIEnv *env, jobject,
-                            jdoubleArray jsrc, jint src_offset,
-                            jdoubleArray jdst, jint dst_offset,
-                            jint length)
+                         jdoubleArray jsrc, jint src_offset,
+                         jdoubleArray jdst, jint dst_offset,
+                         jint length)
 {
     jdouble *src = (jdouble *) env->GetPrimitiveArrayCritical(jsrc, NULL);
     jdouble *dst = (jdouble *) env->GetPrimitiveArrayCritical(jdst, NULL);

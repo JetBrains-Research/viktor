@@ -154,13 +154,6 @@ open class StridedVector internal constructor(
         }
     }
 
-    /** Reshapes this vector into a matrix in row-major order. */
-    fun reshape(numRows: Int, numColumns: Int): StridedMatrix2 {
-        require(numRows * numColumns == size)
-        return StridedMatrix2(numRows, numColumns, data, offset,
-                              numColumns * stride, stride)
-    }
-
     /**
      * Computes a dot product of this vector with an array.
      */

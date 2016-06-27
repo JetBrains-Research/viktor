@@ -58,7 +58,10 @@ class StridedMatrix2 internal constructor(
 
     /** Returns a view of the [r]-th row of this matrix. */
     fun rowView(r: Int): StridedVector {
-        require(r >= 0 && r < rowsNumber) { "r must be in [0, $rowsNumber)" }
+        if (r < 0 || r >= rowsNumber) {
+            throw IndexOutOfBoundsException("r must be in [0, $rowsNumber)")
+        }
+
         return StridedVector.create(data, offset + rowStride * r, columnsNumber, columnStride)
     }
 
@@ -66,7 +69,10 @@ class StridedMatrix2 internal constructor(
      * Returns a view of the [c]-th column of this matrix.
      */
     fun columnView(c: Int): StridedVector {
-        require(c >= 0 && c < columnsNumber) { "c must be in [0, $columnsNumber)" }
+        if (c < 0 || c >= columnsNumber) {
+            throw IndexOutOfBoundsException("c must be in [0, $columnsNumber)")
+        }
+
         return StridedVector.create(data, offset + columnStride * c, rowsNumber, rowStride)
     }
 
@@ -93,25 +99,12 @@ class StridedMatrix2 internal constructor(
 
     operator fun set(any: _I, c: Int, init: Double) = columnView(c).fill(init)
 
-    operator fun set(row: Int, any: _I, init: Double) = columnView(row).fill(init)
-
     /** An alias for [transpose]. */
     val T: StridedMatrix2 get() = transpose()
 
     /** Constructs matrix transpose in O(1) time. */
     fun transpose() = StridedMatrix2(columnsNumber, rowsNumber, data, offset,
                                      columnStride, rowStride)
-
-    /**
-     * Flattens the matrix into a vector in O(1) time.
-     *
-     * No data copying is performed, thus the operation is only applicable
-     * to dense matrices.
-     */
-    override fun flatten(): StridedVector {
-        check(isDense) { "matrix is not dense" }
-        return data.asStrided(offset, rowsNumber * columnsNumber)
-    }
 
     /** Returns a copy of the elements in this matrix. */
     override fun copy(): StridedMatrix2 {
@@ -131,6 +124,17 @@ class StridedMatrix2 internal constructor(
                 other[r] = this[r]
             }
         }
+    }
+
+    /**
+     * Flattens the matrix into a vector in O(1) time.
+     *
+     * No data copying is performed, thus the operation is only applicable
+     * to dense matrices.
+     */
+    override fun flatten(): StridedVector {
+        check(isDense) { "matrix is not dense" }
+        return data.asStrided(offset, rowsNumber * columnsNumber)
     }
 
     /**
@@ -198,9 +202,16 @@ class StridedMatrix2 internal constructor(
         return acc
     }
 
-    private fun checkDimensions(other: StridedMatrix2) {
+    override fun checkDimensions(other: StridedMatrix2) {
         check(this === other ||
               (rowsNumber == other.rowsNumber &&
                columnsNumber == other.columnsNumber)) { "non-conformable matrices" }
     }
+}
+
+/** Reshapes this vector into a matrix in row-major order. */
+fun StridedVector.reshape(numRows: Int, numColumns: Int): StridedMatrix2 {
+    require(numRows * numColumns == size)
+    return StridedMatrix2(numRows, numColumns, data, offset,
+                          numColumns * stride, stride)
 }
