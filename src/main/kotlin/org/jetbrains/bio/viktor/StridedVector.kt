@@ -237,11 +237,7 @@ open class StridedVector internal constructor(
      */
     open fun max() = unsafeGet(argMax())
 
-    fun exp(): StridedVector {
-        val copy = copy()
-        copy.expInPlace()
-        return copy
-    }
+    fun exp() = copy().apply { expInPlace() }
 
     /**
      * Computes the exponent of each element of this vector.
@@ -254,11 +250,7 @@ open class StridedVector internal constructor(
         }
     }
 
-    fun expm1(): StridedVector {
-        val copy = copy()
-        copy.expm1InPlace()
-        return copy
-    }
+    fun expm1() = copy().apply { expm1InPlace() }
 
     /**
      * Computes exp(x) - 1 for each element of this vector.
@@ -273,11 +265,7 @@ open class StridedVector internal constructor(
         }
     }
 
-    fun log(): StridedVector {
-        val copy = copy()
-        copy.logInPlace()
-        return copy
-    }
+    fun log() = copy().apply { logInPlace() }
 
     /**
      * Computes the natural log of each element of this vector.
@@ -290,11 +278,7 @@ open class StridedVector internal constructor(
         }
     }
 
-    fun log1p(): StridedVector {
-        val copy = copy()
-        copy.log1pInPlace()
-        return copy
-    }
+    fun log1p() = copy().apply { log1pInPlace() }
 
     /**
      * Computes log(1 + x) for each element of this vector.
@@ -315,12 +299,11 @@ open class StridedVector internal constructor(
      * The operation is done **in place**.
      */
     fun rescale() {
-        val total = sum() + Precision.EPSILON * size.toDouble()
-        this /= total
+        this /= sum() + Precision.EPSILON * size.toDouble()
     }
 
     /**
-     * Rescales the element so that the exponent of the sum is 1.
+     * Rescales the element so that the exponent of the sum is 1.0.
      *
      * Optimized for dense vectors.
      *
@@ -374,11 +357,7 @@ open class StridedVector internal constructor(
         return v
     }
 
-    operator fun plus(other: StridedVector): StridedVector {
-        val v = copy()
-        v += other
-        return v
-    }
+    operator fun plus(other: StridedVector) = copy().apply { this += other }
 
     operator open fun plusAssign(other: StridedVector) {
         checkSize(other)
@@ -387,11 +366,7 @@ open class StridedVector internal constructor(
         }
     }
 
-    operator fun plus(update: Double): StridedVector {
-        val v = copy()
-        v += update
-        return v
-    }
+    operator fun plus(update: Double) = copy().apply { this += update }
 
     operator open fun plusAssign(update: Double) {
         for (pos in 0..size - 1) {
@@ -399,11 +374,7 @@ open class StridedVector internal constructor(
         }
     }
 
-    operator fun minus(other: StridedVector): StridedVector {
-        val v = copy()
-        v -= other
-        return v
-    }
+    operator fun minus(other: StridedVector) = copy().apply { this -= other }
 
     operator open fun minusAssign(other: StridedVector) {
         checkSize(other)
@@ -412,11 +383,7 @@ open class StridedVector internal constructor(
         }
     }
 
-    operator fun minus(update: Double): StridedVector {
-        val v = copy()
-        v -= update
-        return v
-    }
+    operator fun minus(update: Double) = copy().apply { this -= update }
 
     operator open fun minusAssign(update: Double) {
         for (pos in 0..size - 1) {
@@ -424,23 +391,7 @@ open class StridedVector internal constructor(
         }
     }
 
-    operator fun times(value: Double): StridedVector {
-        val v = copy()
-        v *= value
-        return v
-    }
-
-    operator open fun timesAssign(update: Double) {
-        for (pos in 0..size - 1) {
-            unsafeSet(pos, unsafeGet(pos) * update)
-        }
-    }
-
-    operator fun times(other: StridedVector): StridedVector {
-        val v = copy()
-        v *= other
-        return v
-    }
+    operator fun times(other: StridedVector) = copy().apply { this *= other }
 
     operator open fun timesAssign(other: StridedVector) {
         checkSize(other)
@@ -449,23 +400,15 @@ open class StridedVector internal constructor(
         }
     }
 
-    operator fun div(value: Double): StridedVector {
-        val v = copy()
-        v /= value
-        return v
-    }
+    operator fun times(update: Double) = copy().apply { this *= update }
 
-    operator open fun divAssign(update: Double) {
+    operator open fun timesAssign(update: Double) {
         for (pos in 0..size - 1) {
-            unsafeSet(pos, unsafeGet(pos) / update)
+            unsafeSet(pos, unsafeGet(pos) * update)
         }
     }
 
-    operator fun div(other: StridedVector): StridedVector {
-        val v = copy()
-        v /= other
-        return v
-    }
+    operator fun div(other: StridedVector) = copy().apply { this /= other }
 
     operator open fun divAssign(other: StridedVector) {
         checkSize(other)
@@ -474,18 +417,19 @@ open class StridedVector internal constructor(
         }
     }
 
+    operator fun div(update: Double) = copy().apply { this /= update }
+
+    operator open fun divAssign(update: Double) {
+        for (pos in 0..size - 1) {
+            unsafeSet(pos, unsafeGet(pos) / update)
+        }
+    }
+
     fun isEmpty() = size == 0
 
     fun isNotEmpty() = size > 0
 
-    open fun toArray(): DoubleArray {
-        val res = DoubleArray(size)
-        for (pos in 0..size - 1) {
-            res[pos] = unsafeGet(pos)
-        }
-
-        return res
-    }
+    open fun toArray() = DoubleArray(size) { unsafeGet(it) }
 
     /** Creates an iterator over the elements of the array. */
     operator fun iterator(): DoubleIterator = object : DoubleIterator() {
