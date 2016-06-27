@@ -14,6 +14,7 @@ Version 0.3.0
 - Added SIMD speedups for / and /= operations.
 - Added 'StridedVector.log1p' and 'expm1'.
 - Removed 'StridedMatrix2.plus' and 'logAddExp'.
+- Fixed a bug in scalar division in expressions of the form '1.0 / v'.
 
 Version 0.2.3
 -------------

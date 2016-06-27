@@ -147,6 +147,16 @@ private:
     double update_;
 };
 
+struct scalar_div {
+    scalar_div(double const update) : update_(update) {};
+
+    template <typename T>
+    BOOST_FORCEINLINE T operator()(T const &x) const { return update_ / x; }
+
+private:
+    double update_;
+};
+
 }
 
 JNI_METHOD(void, unsafePlusScalar)(JNIEnv *env, jobject,
@@ -217,6 +227,24 @@ JNI_METHOD(void, unsafeDivScalar)(JNIEnv *env, jobject,
                            src + src_offset + length,
                            dst + dst_offset,
                            div_scalar(update));
+    env->ReleasePrimitiveArrayCritical(jsrc, src, JNI_ABORT);
+    env->ReleasePrimitiveArrayCritical(jdst, dst, JNI_ABORT);
+}
+
+JNI_METHOD(void, unsafeScalarDiv)(JNIEnv *env, jobject,
+                                  jdouble update,
+                                  jdoubleArray jsrc, jint src_offset,
+                                  jdoubleArray jdst, jint dst_offset,
+                                  jint length)
+{
+    jdouble *src = reinterpret_cast<jdouble *>(
+        env->GetPrimitiveArrayCritical(jsrc, NULL));
+    jdouble *dst = reinterpret_cast<jdouble *>(
+        env->GetPrimitiveArrayCritical(jdst, NULL));
+    boost::simd::transform(src + src_offset,
+                           src + src_offset + length,
+                           dst + dst_offset,
+                           scalar_div(update));
     env->ReleasePrimitiveArrayCritical(jsrc, src, JNI_ABORT);
     env->ReleasePrimitiveArrayCritical(jdst, dst, JNI_ABORT);
 }

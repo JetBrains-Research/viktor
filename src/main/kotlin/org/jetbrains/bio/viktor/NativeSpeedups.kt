@@ -36,6 +36,9 @@ object NativeSpeedups {
     external fun unsafeDivScalar(src1: DoubleArray, srcOffset1: Int, update: Double,
                                  dst: DoubleArray, dstOffset: Int, length: Int)
 
+    external fun unsafeScalarDiv(update: Double, src1: DoubleArray, srcOffset1: Int,
+                                 dst: DoubleArray, dstOffset: Int, length: Int)
+
     external fun unsafeMin(values: DoubleArray, offset: Int, length: Int): Double
 
     external fun unsafeMax(values: DoubleArray, offset: Int, length: Int): Double
