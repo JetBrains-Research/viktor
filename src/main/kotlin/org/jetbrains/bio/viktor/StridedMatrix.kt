@@ -63,7 +63,7 @@ object StridedMatrix {
 }
 
 /** A common interface for whole-matrix operations. */
-internal interface FlatMatrixOps<T : FlatMatrixOps<T>> {
+interface FlatMatrixOps<T : FlatMatrixOps<T>> {
     /**
      * Returns a flat view of this matrix.
      *
@@ -123,6 +123,8 @@ internal interface FlatMatrixOps<T : FlatMatrixOps<T>> {
 
     operator fun unaryMinus() = copy().apply {
         val v = flatten()
+
+        // XXX this might be slower for small matrices.
         NativeSpeedups.unsafeNegate(v.data, v.offset, v.data, v.offset, v.size)
     }
 

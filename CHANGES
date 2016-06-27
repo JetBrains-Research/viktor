@@ -15,8 +15,9 @@ Version 0.3.0
 - Added 'StridedVector.log1p' and 'expm1'.
 - Fixed a bug in scalar division in expressions of the form '1.0 / v'.
 - Mirrored 'StridedVector' operations in 'StridedMatrix2' and
-  'StridedMatrix3'. Scalar-matrix, e.g. '1.0 / m' operations are to be
-  added in future releases.
+  'StridedMatrix3'.
+- Extended operator overloads for 'Double' to 'StridedMatrix2' and
+  'StidedMatrix3'.
 
 Version 0.2.3
 -------------
@@ -39,7 +40,7 @@ Released on April 29th 2016
 
 - Added unary operator overloads for 'StridedVector'.
 - Implemented * and / operations for 'StridedVector'.
-- Added extra operator overloads to 'Double', so it is now possible to
+- Added extra operator overloads for 'Double', so it is now possible to
   write (1.0 + v / 2.0).
 - Fixed 'StridedVector.toString' in case of 'NaN' and infinities.
 - Changed 'StridedVector.toString' to be more like NumPy for larger vectors.

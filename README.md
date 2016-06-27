@@ -15,7 +15,8 @@ Kotlin. Here're some of the highlights:
     m[0] = StridedVector.full(3, 42.0)  // row-view.
     m[_I, 0]                            // column-view.
     m[0] = 42.0                         // broadcasting.
-    m[0] + m[0]                         // arithmetic operations.
+    m + 0.5 * m                         // arithmetic operations.
+    m[0].exp() + 1.0                    // math functions.
     ```
 
 [ndarray]: http://docs.scipy.org/doc/numpy/reference/arrays.ndarray.html
