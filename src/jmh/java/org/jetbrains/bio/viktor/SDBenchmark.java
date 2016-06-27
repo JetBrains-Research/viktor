@@ -1,8 +1,5 @@
-package org.jetbrains.bio.jni;
+package org.jetbrains.bio.viktor;
 
-import org.jetbrains.bio.viktor.BalancedSumKt;
-import org.jetbrains.bio.viktor.NativeSpeedups;
-import org.jetbrains.bio.viktor.StridedVectorKt;
 import org.openjdk.jmh.annotations.*;
 
 import java.util.Random;
@@ -14,7 +11,8 @@ import java.util.concurrent.TimeUnit;
 @Warmup(iterations = 5)
 @Measurement(iterations = 10)
 @Fork(value = 2, jvmArgsPrepend = "-Djava.library.path=./build/libs")
-public class SumBenchmark {
+public class SDBenchmark {
+
 	@Param({"1000", "10000", "100000"})
 	int arraySize;
 	double[] values;
@@ -26,22 +24,22 @@ public class SumBenchmark {
 	}
 
 	@Benchmark
-	public double simpleSum() {
-		double res = 0.;
+	public double simpleSD() {
+		double sum = 0., sumSquares = 0.;
 		for (int i = 0; i < arraySize; i++) {
-			res += values[i];
+			sum += values[i];
+			sumSquares += values[i] * values[i];
 		}
-		return res;
+		return Math.sqrt((sumSquares - sum * sum / arraySize) / (arraySize - 1));
 	}
 
 	@Benchmark
-	public double javaSum() {
-		return BalancedSumKt.balancedSum(StridedVectorKt.asStrided(values, 0, arraySize));
+	public double javaSD() {
+		return StridedVectorKt.asStrided(values, 0, arraySize).sd();
 	}
 
 	@Benchmark
-	public double nativeSum() {
-		return NativeSpeedups.INSTANCE.sum(values, 0, arraySize);
+	public double nativeSD() {
+		return NativeSpeedups.INSTANCE.sd(values, 0, arraySize);
 	}
-
 }

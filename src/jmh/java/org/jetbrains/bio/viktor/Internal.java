@@ -1,4 +1,4 @@
-package org.jetbrains.bio.jni;
+package org.jetbrains.bio.viktor;
 
 import org.apache.commons.math3.random.RandomDataGenerator;
 

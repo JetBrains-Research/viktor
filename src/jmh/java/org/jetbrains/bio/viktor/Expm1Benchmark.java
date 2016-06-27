@@ -1,20 +1,21 @@
-package org.jetbrains.bio.jni;
+package org.jetbrains.bio.viktor;
 
+import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Precision;
-import org.jetbrains.bio.viktor.NativeSpeedups;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 
 import java.util.concurrent.TimeUnit;
+import java.util.function.DoubleUnaryOperator;
 
 @BenchmarkMode(Mode.Throughput)
-@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@OutputTimeUnit(TimeUnit.SECONDS)
 @State(Scope.Benchmark)
 @Warmup(iterations = 10)
 @Measurement(iterations = 5)
 @Fork(value = 2, jvmArgsPrepend = "-Djava.library.path=./build/libs")
-public class LogBenchmark {
-    @Param({"1000", "10000"})
+public class Expm1Benchmark {
+    @Param({"1000", "10000", "100000"})
     int arraySize;
     double[] src;
     double[] dst;
@@ -29,34 +30,37 @@ public class LogBenchmark {
     @TearDown
     public void checkAnswer() {
         for (int i = 0; i < arraySize; i++) {
-            final double expected = Math.log(src[i]);
+            final double expected = Math.expm1(src[i]);
             if (!Precision.equals(expected, dst[i], 5)) {
                 throw new IllegalStateException(String.format(
-                        "log(%s) = %s (instead of %s)",
+                        "expm1(%s) = %s (instead of %s)",
                         src[i], dst[i], expected));
             }
         }
     }
 
     @Benchmark
-    public void scalar(final Blackhole bh) {
+    public void scalarFastMath(final Blackhole bh) {
+        transform(src, dst, FastMath::expm1);
+        bh.consume(dst);
+    }
+
+    @Benchmark
+    public void scalarMath(final Blackhole bh) {
+        transform(src, dst, Math::expm1);
+        bh.consume(dst);
+    }
+
+    @Benchmark
+    public void vector(final Blackhole bh) {
+        NativeSpeedups.INSTANCE.unsafeExpm1(src, 0, dst, 0, arraySize);
+        bh.consume(dst);
+    }
+
+    private void transform(double[] src, double[] dst, final DoubleUnaryOperator op) {
         for (int i = 0; i < src.length; i++) {
-            dst[i] = Math.log(src[i]);
+            dst[i] = op.applyAsDouble(src[i]);
         }
-
-        bh.consume(dst);
-    }
-
-    @Benchmark
-    public void vectorBoostSimd(final Blackhole bh) {
-        NativeSpeedups.INSTANCE.unsafeLog(src, 0, dst, 0, arraySize);
-        bh.consume(dst);
-    }
-
-    @Benchmark
-    public void vectorYeppp(final Blackhole bh) {
-        info.yeppp.Math.Log_V64f_V64f(src, 0, dst, 0, arraySize);
-        bh.consume(dst);
     }
 }
 

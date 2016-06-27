@@ -1,8 +1,5 @@
-package org.jetbrains.bio.jni;
+package org.jetbrains.bio.viktor;
 
-import org.jetbrains.bio.viktor.BalancedSumKt;
-import org.jetbrains.bio.viktor.NativeSpeedups;
-import org.jetbrains.bio.viktor.StridedVectorKt;
 import org.openjdk.jmh.annotations.*;
 
 import java.util.Random;
