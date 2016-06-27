@@ -323,11 +323,7 @@ open class StridedVector internal constructor(
         return Math.log(acc.result()) + offset
     }
 
-    infix fun logAddExp(other: StridedVector): StridedVector {
-        val v = copy()
-        v.logAddExp(other, v)
-        return v
-    }
+    infix fun logAddExp(other: StridedVector) = copy().apply { logAddExp(other, this) }
 
     open fun logAddExp(other: StridedVector, dst: StridedVector) {
         checkSize(other)
