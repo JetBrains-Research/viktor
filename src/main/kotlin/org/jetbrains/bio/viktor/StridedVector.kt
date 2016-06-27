@@ -30,7 +30,7 @@ fun DoubleArray.asStrided(offset: Int = 0, size: Int = this.size): StridedVector
  *
  *     [1, 4]
  *
- * Vectors with `stride` equal to 1 are caled called *dense*. The
+ * Vectors with `stride` equal to 1 are called called *dense*. The
  * distinction is important because some of the operations can be
  * significantly optimized for dense vectors.
  *

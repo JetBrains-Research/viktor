@@ -8,7 +8,7 @@ class ResourceLibrary(private val name: String) {
     @Suppress("unchecked_cast")
     fun install() {
         val resource = System.mapLibraryName(name)
-        val inputStream = ResourceLibrary::class.java.getResourceAsStream(resource)
+        val inputStream = ResourceLibrary::class.java.getResourceAsStream("/$resource")
         if (inputStream != null) {
             val libraryPath = LIBRARY_DIR.resolve(resource)
             Files.copy(inputStream, libraryPath, REPLACE_EXISTING)
@@ -67,7 +67,7 @@ internal object Loader {
                     useNative = true
                 }
             }
-        } catch (e: Exception) {
+        } catch (e: UnsatisfiedLinkError) {
             System.err.println(listOf(
                     "Native SIMD optimization of vector operations is not available.",
                     "Fallback Kotlin implementation will be used instead.").joinToString("\n"))

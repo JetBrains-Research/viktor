@@ -3,6 +3,14 @@ viktor Changelog
 
 Here you can see the full list of changes between each viktor release.
 
+Version 0.3.1
+-------------
+
+Bugfix release, released on June 27th 2016
+
+- Fixed loading native libraries from the JAR file.
+- Fixed error handling on unsupported architectures.
+
 Version 0.3.0
 -------------
 

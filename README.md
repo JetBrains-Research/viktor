@@ -35,7 +35,7 @@ repositories {
 }
 
 dependencies {
-    compile 'org.jetbrains.bio:viktor:0.3.0'
+    compile 'org.jetbrains.bio:viktor:0.3.1'
 }
 
 ```
@@ -72,7 +72,7 @@ No extra configuration is required for running the tests from Gradle
 $ ./gradlew test
 ```
 
-However, you might need to alter `java.library.path` to run the tests from 
+However, you might need to alter `java.library.path` to run the tests from
 the IDE. The following Java command line option should work for IDEA
 
 ```bash
@@ -85,10 +85,10 @@ Publishing
 You can do it with a one-liner
 
 ```bash
-./gradlew clean assemble generatePomFileForMavenJavaPublication bintrayUpload 
+./gradlew clean assemble generatePomFileForMavenJavaPublication bintrayUpload
 ```
 
-Make sure to set Bintray credentials (see API key section 
+Make sure to set Bintray credentials (see API key section
 [here](https://bintray.com/profile/edit)) in `$HOME/.gradle/gradle.properties`.
 
 ```
