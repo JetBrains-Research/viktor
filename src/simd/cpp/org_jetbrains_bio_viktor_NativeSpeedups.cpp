@@ -1,3 +1,4 @@
+#include <boost/simd/algorithm.hpp>
 #include <boost/simd/constant/minf.hpp>
 #include <boost/simd/function/dot.hpp>
 #include <boost/simd/function/exp.hpp>
@@ -12,7 +13,6 @@
 #include "simd_math.hpp"
 #include "source.hpp"
 #include "summing.hpp"
-#include "transform_accumulate.hpp"
 
 #define JNI_METHOD(rtype, name)                                         \
     JNIEXPORT rtype JNICALL Java_org_jetbrains_bio_viktor_NativeSpeedups_##name
@@ -272,9 +272,10 @@ JNI_METHOD(jdouble, unsafeMin)(JNIEnv *env, jobject,
 {
     jdouble *src = reinterpret_cast<jdouble *>(
         env->GetPrimitiveArrayCritical(jsrc, NULL));
-    jdouble min = boost::simd::accumulate(
+    jdouble min = boost::simd::reduce(
         src + src_offset, src + src_offset + length,
-        boost::simd::Inf<jdouble>(), boost::simd::min);
+        boost::simd::Inf<jdouble>(), boost::simd::min,
+        boost::simd::Inf<jdouble>());
     env->ReleasePrimitiveArrayCritical(jsrc, src, JNI_ABORT);
     return min;
 }
@@ -285,9 +286,10 @@ JNI_METHOD(jdouble, unsafeMax)(JNIEnv *env, jobject,
 {
     jdouble *src = reinterpret_cast<jdouble *>(
         env->GetPrimitiveArrayCritical(jsrc, NULL));
-    jdouble min = boost::simd::accumulate(
+    jdouble min = boost::simd::reduce(
         src + src_offset, src + src_offset + length,
-        boost::simd::Minf<jdouble>(), boost::simd::max);
+        boost::simd::Minf<jdouble>(), boost::simd::max,
+        boost::simd::Minf<jdouble>());
     env->ReleasePrimitiveArrayCritical(jsrc, src, JNI_ABORT);
     return min;
 }

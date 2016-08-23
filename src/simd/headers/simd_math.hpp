@@ -1,6 +1,7 @@
 #pragma once
 
 #include <boost/align/is_aligned.hpp>
+#include <boost/simd/algorithm.hpp>
 #include <boost/simd/constant/zero.hpp>
 #include <boost/simd/constant/minf.hpp>
 #include <boost/simd/function/aligned_load.hpp>
@@ -9,7 +10,6 @@
 #include <boost/simd/function/sum.hpp>
 #include <boost/simd/pack.hpp>
 
-#include "transform_accumulate.hpp"
 #include "source.hpp"
 #include "summing.hpp"
 
@@ -24,16 +24,15 @@ double logsumexp(double const *src, size_t length)
     using boost::simd::aligned_load;
     size_t const vector_size = pack_double::static_size;
 
-    // For arrays of length 4 and smaller 'boost::simd::accumulate'
-    // is ill-behaved, but this shouldn't be a problem for us, since
-    // we use SIMD only for large arrays.
-    double offset = boost::simd::accumulate(
-        src, src + length, boost::simd::Minf<double>(),
-        boost::simd::max);
+    double offset = boost::simd::reduce(
+        src, src + length,
+        boost::simd::Minf<double>(),
+        boost::simd::max,
+        boost::simd::Minf<jdouble>());
     pack_double voffset(offset);
 
     double acc = 0.;
-    while (length && !is_aligned(pack_double::alignment, src)) {
+    while (length && !is_aligned(src, pack_double::alignment)) {
         acc += boost::simd::exp(*(src++) - offset);
         --length;
     }

@@ -45,7 +45,7 @@ struct source_1d<sum_tag>
 
     bool is_aligned() const
     {
-        return boost::alignment::is_aligned(pack_double::alignment, src_);
+        return boost::alignment::is_aligned(src_, pack_double::alignment);
     }
 
 private:
@@ -79,7 +79,7 @@ struct source_1d<weighted_sum_tag>
 
     bool is_aligned() const
     {
-        return boost::alignment::is_aligned(pack_double::alignment, src_);
+        return boost::alignment::is_aligned(src_, pack_double::alignment);
     }
 
 private:
@@ -112,7 +112,7 @@ struct source_1d<cum_sum_tag>
 
     bool is_aligned() const
     {
-        return boost::alignment::is_aligned(pack_double::alignment, src_);
+        return boost::alignment::is_aligned(src_, pack_double::alignment);
     }
 
     template<typename T>
@@ -164,7 +164,7 @@ struct source_2d<weighted_mean_tag>
 
     bool is_aligned() const
     {
-        return boost::alignment::is_aligned(pack_double::alignment, array_);
+        return boost::alignment::is_aligned(array_, pack_double::alignment);
     }
 
     double result(double vw, double w) const
@@ -203,7 +203,7 @@ struct source_2d<sd_tag>
 
     bool is_aligned() const
     {
-        return boost::alignment::is_aligned(pack_double::alignment, array_);
+        return boost::alignment::is_aligned(array_, pack_double::alignment);
     }
 
     double result(double v2, double v) const
