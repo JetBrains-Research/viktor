@@ -9,14 +9,13 @@ buildscript {
 
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath "org.jetbrains.dokka:dokka-gradle-plugin:0.9.8"
+        classpath "org.jetbrains.dokka:dokka-gradle-plugin:0.9.+"
     }
 }
 
 plugins {
     id 'com.jfrog.bintray' version '1.6'
     id 'me.champeau.gradle.jmh' version '0.3.1'
-    id 'org.ajoberstar.github-pages' version '1.5.0'
 }
 
 apply plugin: 'cpp'
@@ -142,19 +141,13 @@ dependencies {
 
 dokka {
     moduleName = "$version"
+    outputFormat = 'gfm'
+    outputDirectory = "$rootDir/docs"
 
     linkMapping {
         dir = 'src/main/kotlin'
         url = "https://github.com/JetBrains-Research/viktor/blob/${project.version}/src/main/kotlin"
         suffix = '#L'
-    }
-}
-
-githubPages {
-    repoUri = 'git@github.com:jetbrains-research/viktor'
-
-    pages {
-        from (dokka.outputs.files)
     }
 }
 
