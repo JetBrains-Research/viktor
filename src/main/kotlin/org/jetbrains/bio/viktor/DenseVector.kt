@@ -146,7 +146,7 @@ class LargeDenseVector(data: DoubleArray, offset: Int, size: Int) :
                                        other.data, other.offset,
                                        data, offset, size)
         } else {
-            super.plusAssign(other)
+            super.minusAssign(other)
         }
     }
 
