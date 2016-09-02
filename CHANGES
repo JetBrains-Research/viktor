@@ -6,7 +6,7 @@ Here you can see the full list of changes between each viktor release.
 Version 0.3.3
 -------------
 
-Bugfix release
+Bugfix release, released on September 2nd 2016
 
 - Fixed a bug in 'DenseVector.minusAssign' which called 'plusAssign'
   if the argument was not dense.
