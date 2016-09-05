@@ -440,8 +440,8 @@ open class StridedVector internal constructor(
         else -> format(value)
     }
 
-    fun toString(maxDisplay: Int,
-                 format: DecimalFormat = DecimalFormat("#.####")): String {
+    internal fun toString(maxDisplay: Int,
+                          format: DecimalFormat = DecimalFormat("#.####")): String {
         val sb = StringBuilder()
         sb.append('[')
 
@@ -472,7 +472,7 @@ open class StridedVector internal constructor(
         return sb.toString()
     }
 
-    override fun toString() = toString(16)
+    override fun toString() = toString(8)
 
     override fun equals(other: Any?): Boolean {
         if (this === other) {

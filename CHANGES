@@ -3,6 +3,12 @@ viktor Changelog
 
 Here you can see the full list of changes between each viktor release.
 
+Version 0.3.4
+-------------
+
+- Fixed a bug in 'StridedMatrix2.toString', which incorrectly rendered
+  large matrices, and unified the implementation with 'StridedMatrix3'.
+
 Version 0.3.3
 -------------
 

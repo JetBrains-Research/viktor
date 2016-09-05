@@ -1,6 +1,5 @@
 package org.jetbrains.bio.viktor
 
-import java.util.*
 import java.util.stream.IntStream
 import java.util.stream.Stream
 
@@ -150,25 +149,34 @@ class StridedMatrix2 internal constructor(
 
     fun toArray() = Array(rowsNumber) { rowView(it).toArray() }
 
-    private fun toString(maxDisplay: Int): String {
-        if (Math.max(rowsNumber, columnsNumber) <= maxDisplay) {
-            return Arrays.deepToString(toArray())
+    internal fun toString(maxDisplay: Int): String {
+        val sb = StringBuilder()
+        sb.append('[')
+        if (maxDisplay < rowsNumber) {
+            for (r in 0..maxDisplay / 2 - 1) {
+                sb.append(this[r].toString(maxDisplay)).append(", ")
+            }
+
+            sb.append("..., ")
+
+            val leftover = maxDisplay - maxDisplay / 2
+            for (r in rowsNumber - leftover..rowsNumber - 1) {
+                sb.append(this[r].toString(maxDisplay))
+                if (r < rowsNumber - 1) {
+                    sb.append(", ")
+                }
+            }
         } else {
-            val numRows = Math.min(rowsNumber, maxDisplay)
-            val sb = StringBuilder()
-            sb.append('[')
-            for (r in 0..numRows - 1) {
-                sb.append(rowView(r))
+            for (r in 0..rowsNumber - 1) {
+                sb.append(this[r].toString(maxDisplay))
+                if (r < rowsNumber - 1) {
+                    sb.append(", ")
+                }
             }
-
-            if (numRows > maxDisplay) {
-                sb.append(", ...]")
-            } else {
-                sb.append(']')
-            }
-
-            return sb.toString()
         }
+
+        sb.append(']')
+        return sb.toString()
     }
 
     override fun toString() = toString(8)

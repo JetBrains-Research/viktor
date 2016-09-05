@@ -135,3 +135,18 @@ class StridedMatrix3GetSet {
         }
     }
 }
+
+class StridedMatrix3OpsTest {
+    @Test fun equals() {
+        val m = StridedMatrix(2, 3, 4) { i, j, k -> 1.0 * i + 2 * j + 3 * k }
+
+        assertEquals(m, m)
+        assertEquals(m, m.copy())
+        assertNotEquals(m, m.exp())
+    }
+
+    @Test fun _toString() {
+        assertEquals("[]", StridedMatrix(0, 0, 0).toString())
+        assertEquals("[[[0]]]", StridedMatrix(1, 1, 1).toString())
+    }
+}
