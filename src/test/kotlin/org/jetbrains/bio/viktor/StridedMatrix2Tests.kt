@@ -141,6 +141,14 @@ class StridedMatrix2OpsTest {
     @Test fun _toString() {
         assertEquals("[]", StridedMatrix(0, 0).toString())
         assertEquals("[[]]", StridedMatrix(1, 0).toString())
-        assertEquals("[[0.0], [0.0]]", StridedMatrix(2, 1).toString())
+        assertEquals("[[0], [0]]", StridedMatrix(2, 1).toString())
+    }
+
+    @Test fun toStringLarge() {
+        val v = StridedVector(1024) { it.toDouble() }
+        assertEquals("[[0, 1], [2, 3], ..., [1020, 1021], [1022, 1023]]",
+                     v.reshape(512, 2).toString(4))
+        assertEquals("[[0, 1, ..., 510, 511], [512, 513, ..., 1022, 1023]]",
+                     v.reshape(2, 512).toString(4))
     }
 }

@@ -1,7 +1,5 @@
 package org.jetbrains.bio.viktor
 
-import java.util.*
-
 /**
  * A specialization of [StridedMatrix] for 3-D data.
  *
@@ -106,7 +104,39 @@ class StridedMatrix3 internal constructor(
 
     fun toArray() = Array(depth) { view(it).toArray() }
 
-    override fun toString() = Arrays.deepToString(toArray())
+    // XXX: abstract this copy-paste into an interface? See
+    // [StridedMatrix2.toString].
+    internal fun toString(maxDisplay: Int): String {
+        val sb = StringBuilder()
+        sb.append('[')
+        if (maxDisplay < rowsNumber) {
+            for (r in 0..maxDisplay / 2 - 1) {
+                sb.append(this[r].toString(maxDisplay)).append(", ")
+            }
+
+            sb.append("..., ")
+
+            val leftover = maxDisplay - maxDisplay / 2
+            for (r in rowsNumber - leftover..rowsNumber - 1) {
+                sb.append(this[r].toString(maxDisplay))
+                if (r < rowsNumber - 1) {
+                    sb.append(", ")
+                }
+            }
+        } else {
+            for (r in 0..rowsNumber - 1) {
+                sb.append(this[r].toString(maxDisplay))
+                if (r < rowsNumber - 1) {
+                    sb.append(", ")
+                }
+            }
+        }
+
+        sb.append(']')
+        return sb.toString()
+    }
+
+    override fun toString() = toString(8)
 
     override fun equals(other: Any?): Boolean {
         if (this === other) {
