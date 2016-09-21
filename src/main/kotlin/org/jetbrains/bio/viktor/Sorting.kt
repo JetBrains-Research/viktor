@@ -15,7 +15,7 @@ fun StridedVector.sort(reverse: Boolean = false) = reorder(argSort(reverse))
 /**
  * Returns a permutation of indices which makes the vector sorted.
  *
- * @param reverse see [.sort] for details.
+ * @param reverse see [sort] for details.
  */
 fun StridedVector.argSort(reverse: Boolean = false): IntArray {
     val comparator = Comparator(IndexedDoubleValue::compareTo)

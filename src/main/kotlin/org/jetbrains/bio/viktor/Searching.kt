@@ -38,7 +38,7 @@ fun StridedVector.argMin(): Int {
     return minPos
 }
 
-/** Returns the index of the maxmimum element. */
+/** Returns the index of the maximum element. */
 fun StridedVector.argMax(): Int {
     require(size > 0) { "no data" }
     var maxPos = 0
