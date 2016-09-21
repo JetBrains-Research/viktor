@@ -148,5 +148,7 @@ class StridedMatrix3OpsTest {
     @Test fun _toString() {
         assertEquals("[]", StridedMatrix(0, 0, 0).toString())
         assertEquals("[[[0]]]", StridedMatrix(1, 1, 1).toString())
+        assertEquals("[[[0], [0]], [[0], [0]], [[0], [0]]]",
+                     StridedMatrix(3, 2, 1).toString())
     }
 }

@@ -447,8 +447,8 @@ open class StridedVector internal constructor(
         else -> format(value)
     }
 
-    internal fun toString(maxDisplay: Int,
-                          format: DecimalFormat = DecimalFormat("#.####")): String {
+    fun toString(maxDisplay: Int,
+                 format: DecimalFormat = DecimalFormat("#.####")): String {
         val sb = StringBuilder()
         sb.append('[')
 
