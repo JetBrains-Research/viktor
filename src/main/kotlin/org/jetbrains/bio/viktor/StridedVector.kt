@@ -49,6 +49,9 @@ open class StridedVector internal constructor(
 
     val indices: IntRange get() = 0..size - 1
 
+    /** Returns the shape of this vector. */
+    val shape: IntArray get() = intArrayOf(size)
+
     operator fun get(pos: Int): Double {
         try {
             return unsafeGet(pos)
