@@ -21,14 +21,18 @@ fun DoubleArray.asStrided(offset: Int = 0, size: Int = this.size): StridedVector
  * elements of a vector can be at arbitrary index intervals (strides)
  * from each other. For example
  *
- *     data = [0, 1, 2, 3, 4, 5]
- *     offset = 1
- *     size = 2
- *     stride = 3
+ * ```
+ * data = [0, 1, 2, 3, 4, 5]
+ * offset = 1
+ * size = 2
+ * stride = 3
+ * ```
  *
  * corresponds to a vector with elements
  *
- *     [1, 4]
+ * ```
+ * [1, 4]
+ * ```
  *
  * Vectors with `stride` equal to 1 are called called *dense*. The
  * distinction is important because some of the operations can be
