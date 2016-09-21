@@ -1,5 +1,6 @@
 ext {
-    boostSimdBranch = 'develop'
+    boostSimdBranch = 'v4.16.9.0'
+    boostSimdRoot = '4.16.9.0'
 }
 
 buildscript {
@@ -37,7 +38,7 @@ task downloadBoostSimd(type: de.undercouch.gradle.tasks.download.Download) {
 task unzipBoostSimd(dependsOn: downloadBoostSimd, type: Copy) {
     from zipTree(downloadBoostSimd.dest)
     into buildDir
-    outputs.dir new File(buildDir, "boost.simd-$boostSimdBranch")
+    outputs.dir new File(buildDir, "$boostSimdRoot")
 }
 
 def nullOutputStream = new OutputStream() {
@@ -46,7 +47,8 @@ def nullOutputStream = new OutputStream() {
 }
 
 task installBoostSimd(dependsOn: unzipBoostSimd) {
-    def cmakeDir = new File(buildDir, "boost.simd-$boostSimdBranch/build")
+    def cmakeDir = new File(
+        buildDir, "boost.simd-$boostSimdRoot/build")
     outputs.dir new File(buildDir, 'include/boost')
     doLast {
         cmakeDir.mkdirs()
