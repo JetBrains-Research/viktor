@@ -8,6 +8,7 @@ Version 0.3.4
 
 - Fixed a bug in 'StridedMatrix2.toString', which incorrectly rendered
   large matrices, and unified the implementation with 'StridedMatrix3'.
+- Added NumPy-compatible serialization support.
 
 Version 0.3.3
 -------------

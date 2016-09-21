@@ -1,6 +1,6 @@
 package org.jetbrains.bio.viktor
 
-object NativeSpeedups {
+internal object NativeSpeedups {
     init {
         Loader.ensureLoaded()
     }

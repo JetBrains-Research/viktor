@@ -13,11 +13,14 @@ class StridedMatrix3 internal constructor(
 :
         FlatMatrixOps<StridedMatrix3> {
 
-    constructor(depth: Int, numRows: Int, numColumns: Int) :
-    this(depth, numRows, numColumns,
-         DoubleArray(depth * numRows * numColumns),
+    constructor(depth: Int, numRows: Int, numColumns: Int,
+                data: DoubleArray = DoubleArray(depth * numRows * numColumns)) :
+    this(depth, numRows, numColumns, data,
          0, numRows * numColumns, numColumns, 1) {
     }
+
+    /** Returns the shape of this matrix. */
+    val shape: IntArray get() = intArrayOf(depth, rowsNumber, columnsNumber)
 
     /**
      * Dense matrices are laid out in a single contiguous block

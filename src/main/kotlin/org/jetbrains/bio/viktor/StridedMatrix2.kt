@@ -15,9 +15,12 @@ class StridedMatrix2 internal constructor(
         val rowStride: Int,
         val columnStride: Int) : FlatMatrixOps<StridedMatrix2> {
 
-    constructor(numRows: Int, numColumns: Int) :
-    // Use row-major order by default.
-    this(numRows, numColumns, DoubleArray(numRows * numColumns), 0, numColumns, 1) {}
+    constructor(numRows: Int, numColumns: Int,
+                data: DoubleArray = DoubleArray(numRows * numColumns)) :
+    this(numRows, numColumns, data, 0, numColumns, 1) {}
+
+    /** Returns the shape of this matrix. */
+    val shape: IntArray get() = intArrayOf(rowsNumber, columnsNumber)
 
     /**
      * Dense matrices are laid out in a single contiguous block
