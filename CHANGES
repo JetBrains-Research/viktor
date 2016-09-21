@@ -3,6 +3,14 @@ viktor Changelog
 
 Here you can see the full list of changes between each viktor release.
 
+Version 0.3.5
+-------------
+
+Bugfix release, released on September 21st 2016
+
+- Fixed yet another bug, but this time in `StridedMatrix3.toString`.
+  Like they say, copy-paste is never a good thing.
+
 Version 0.3.4
 -------------
 

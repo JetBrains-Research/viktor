@@ -1,5 +1,6 @@
 package org.jetbrains.bio.viktor
 
+import java.text.DecimalFormat
 import java.util.stream.IntStream
 import java.util.stream.Stream
 
@@ -152,26 +153,27 @@ class StridedMatrix2 internal constructor(
 
     fun toArray() = Array(rowsNumber) { rowView(it).toArray() }
 
-    internal fun toString(maxDisplay: Int): String {
+    fun toString(maxDisplay: Int,
+                 format: DecimalFormat = DecimalFormat("#.####")): String {
         val sb = StringBuilder()
         sb.append('[')
         if (maxDisplay < rowsNumber) {
             for (r in 0..maxDisplay / 2 - 1) {
-                sb.append(this[r].toString(maxDisplay)).append(", ")
+                sb.append(this[r].toString(maxDisplay, format)).append(", ")
             }
 
             sb.append("..., ")
 
             val leftover = maxDisplay - maxDisplay / 2
             for (r in rowsNumber - leftover..rowsNumber - 1) {
-                sb.append(this[r].toString(maxDisplay))
+                sb.append(this[r].toString(maxDisplay, format))
                 if (r < rowsNumber - 1) {
                     sb.append(", ")
                 }
             }
         } else {
             for (r in 0..rowsNumber - 1) {
-                sb.append(this[r].toString(maxDisplay))
+                sb.append(this[r].toString(maxDisplay, format))
                 if (r < rowsNumber - 1) {
                     sb.append(", ")
                 }
