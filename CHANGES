@@ -3,6 +3,11 @@ viktor Changelog
 
 Here you can see the full list of changes between each viktor release.
 
+Version 0.3.6
+-------------
+
+- Fixed serialization of non-dense matrices.
+
 Version 0.3.5
 -------------
 

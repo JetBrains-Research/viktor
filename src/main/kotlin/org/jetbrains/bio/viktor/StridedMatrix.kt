@@ -130,53 +130,53 @@ interface FlatMatrixOps<T : FlatMatrixOps<T>> {
 
     operator fun plus(other: T) = copy().apply { this += other }
 
-    operator open fun plusAssign(other: T) {
+    operator fun plusAssign(other: T) {
         checkDimensions(other)
         flatten() += other.flatten()
     }
 
     operator fun plus(update: Double) = copy().apply { this += update }
 
-    operator open fun plusAssign(update: Double) {
+    operator fun plusAssign(update: Double) {
         flatten() += update
     }
 
     operator fun minus(other: T) = copy().apply { this -= other }
 
-    operator open fun minusAssign(other: T) {
+    operator fun minusAssign(other: T) {
         checkDimensions(other)
         flatten() -= other.flatten()
     }
 
     operator fun minus(update: Double) = copy().apply { this -= update }
 
-    operator open fun minusAssign(update: Double) {
+    operator fun minusAssign(update: Double) {
         flatten() -= update
     }
 
     operator fun times(other: T) = copy().apply { this *= other }
 
-    operator open fun timesAssign(other: T) {
+    operator fun timesAssign(other: T) {
         checkDimensions(other)
         flatten() *= other.flatten()
     }
 
     operator fun times(update: Double) = copy().apply { this *= update }
 
-    operator open fun timesAssign(update: Double) {
+    operator fun timesAssign(update: Double) {
         flatten() *= update
     }
 
     operator fun div(other: T) = copy().apply { this /= other }
 
-    operator open fun divAssign(other: T) {
+    operator fun divAssign(other: T) {
         checkDimensions(other)
         flatten() /= other.flatten()
     }
 
     operator fun div(update: Double) = copy().apply { this /= update }
 
-    operator open fun divAssign(update: Double) {
+    operator fun divAssign(update: Double) {
         flatten() /= update
     }
 }

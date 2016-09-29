@@ -30,7 +30,7 @@ class StridedMatrix2 internal constructor(
      * This allows to use SIMD operations, e.g. when computing the
      * sum of elements.
      */
-    private val isDense: Boolean get() {
+    internal val isDense: Boolean get() {
         return rowStride == columnsNumber && columnStride == 1
     }
 

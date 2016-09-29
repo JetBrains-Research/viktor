@@ -27,12 +27,16 @@ fun NpyFile.write(path: Path, v: StridedVector) {
 
 /** Writes a given 2-D matrix to [path] in NPY format. */
 fun NpyFile.write(path: Path, m: StridedMatrix2) {
-    write(path, m.flatten().toArray(), shape = m.shape)
+    // We could getaway without doing a double copy of tranposed
+    // matrices here once `npy` supports Fortran order.
+    val dense = if (m.isDense) m else m.copy()
+    write(path, dense.flatten().toArray(), shape = m.shape)
 }
 
 /** Writes a given 3-D matrix to [path] in NPY format. */
 fun NpyFile.write(path: Path, m: StridedMatrix3) {
-    write(path, m.flatten().toArray(), m.shape)
+    val dense = if (m.isDense) m else m.copy()
+    write(path, dense.flatten().toArray(), shape = m.shape)
 }
 
 /** Adds a given vector to an NPZ format under the specified [name]. */
@@ -42,10 +46,12 @@ fun NpzFile.Writer.write(name: String, v: StridedVector) {
 
 /** Writes a given 2-D matrix into an NPZ file under the specified [name]. */
 fun NpzFile.Writer.write(name: String, m: StridedMatrix2) {
-    write(name, m.flatten().toArray(), m.shape)
+    val dense = if (m.isDense) m else m.copy()
+    write(name, dense.flatten().toArray(), shape = m.shape)
 }
 
 /** Writes a given 3-D matrix into an NPZ file under the specified [name]. */
 fun NpzFile.Writer.write(name: String, m: StridedMatrix3) {
-    write(name, m.flatten().toArray(), m.shape)
+    val dense = if (m.isDense) m else m.copy()
+    write(name, dense.flatten().toArray(), shape = m.shape)
 }
