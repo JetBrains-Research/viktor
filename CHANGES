@@ -7,6 +7,7 @@ Version 0.3.6
 -------------
 
 - Fixed serialization of non-dense matrices.
+- Allowed slicing a `StridedVector` with custom `step`.
 
 Version 0.3.5
 -------------

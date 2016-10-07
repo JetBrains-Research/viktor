@@ -105,6 +105,30 @@ class StridedVectorSlicing {
         assertEquals(StridedVector.of(1.0, 42.0, 3.0), v)
     }
 
+    @Test fun sliceWithStep() {
+        val v = StridedVector.of(1.0, 2.0, 3.0, 4.0, 5.0, 6.0)
+
+        v.slice(step = 2).let {
+            assertEquals(3, it.size)
+            assertEquals(StridedVector.of(1.0, 3.0, 5.0), it)
+        }
+
+        v.slice(1, step = 2).let {
+            assertEquals(3, it.size)
+            assertEquals(StridedVector.of(2.0, 4.0, 6.0), it)
+        }
+
+        v.slice(1, step = 3).let {
+            assertEquals(2, it.size)
+            assertEquals(StridedVector.of(2.0, 5.0), it)
+        }
+
+        v.slice(1, step = 4).let {
+            assertEquals(2, it.size)
+            assertEquals(StridedVector.of(2.0, 6.0), it)
+        }
+    }
+
     @Test(expected = IndexOutOfBoundsException::class) fun sliceOutOfBounds() {
         StridedVector(0).slice(0, 42)
     }

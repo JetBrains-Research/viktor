@@ -1,7 +1,9 @@
 package org.jetbrains.bio.viktor
 
+import com.google.common.math.IntMath
 import org.apache.commons.math3.util.FastMath
 import org.apache.commons.math3.util.Precision
+import java.math.RoundingMode
 import java.text.DecimalFormat
 
 /**
@@ -87,13 +89,16 @@ open class StridedVector internal constructor(
      *
      * @param from the first index of the slice (inclusive).
      * @param to the last index of the slice (exclusive).
+     * @param step indexing step.
      */
-    fun slice(from: Int, to: Int = size): StridedVector {
+    fun slice(from: Int = 0, to: Int = size, step: Int = 1): StridedVector {
         if (from < 0 || to < from || to > size) {
-            throw IndexOutOfBoundsException()  // TODO: detailed error.
+            throw IndexOutOfBoundsException()
         }
 
-        return StridedVector(data, offset + from, to - from, stride)
+        return StridedVector(data, offset + from,
+                             IntMath.divide(to - from, step, RoundingMode.CEILING),
+                             stride * step)
     }
 
     operator fun set(any: _I, init: Double) = fill(init)
