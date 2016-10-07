@@ -1,9 +1,7 @@
 package org.jetbrains.bio.viktor
 
-import com.google.common.math.IntMath
 import org.apache.commons.math3.util.FastMath
 import org.apache.commons.math3.util.Precision
-import java.math.RoundingMode
 import java.text.DecimalFormat
 
 /**
@@ -96,8 +94,7 @@ open class StridedVector internal constructor(
             throw IndexOutOfBoundsException()
         }
 
-        return StridedVector(data, offset + from,
-                             IntMath.divide(to - from, step, RoundingMode.CEILING),
+        return StridedVector(data, offset + from, (to - from + step - 1) / step,
                              stride * step)
     }
 
