@@ -10,14 +10,14 @@ import java.util.*
  * @param reverse if `true` the elements are sorted in `ascending` order.
  *                Defaults to `false`.
  */
-fun StridedVector.sort(reverse: Boolean = false) = reorder(argSort(reverse))
+fun F64Vector.sort(reverse: Boolean = false) = reorder(argSort(reverse))
 
 /**
  * Returns a permutation of indices which makes the vector sorted.
  *
  * @param reverse see [sort] for details.
  */
-fun StridedVector.argSort(reverse: Boolean = false): IntArray {
+fun F64Vector.argSort(reverse: Boolean = false): IntArray {
     val comparator = Comparator(IndexedDoubleValue::compareTo)
     val indexedValues = Array(size) { IndexedDoubleValue(it, unsafeGet(it)) }
     indexedValues.sortWith(if (reverse) comparator.reversed() else comparator)
@@ -38,7 +38,7 @@ private data class IndexedDoubleValue(val index: Int, val value: Double) :
 }
 
 /** Applies a given permutation of indices to the elements in the vector. */
-fun StridedVector.reorder(indices: IntArray) {
+fun F64Vector.reorder(indices: IntArray) {
     require(size == indices.size)
     val copy = indices.clone()
     for (pos in 0..size - 1) {
@@ -72,7 +72,7 @@ fun StridedVector.reorder(indices: IntArray) {
  * @param p the index of the element to partition by.
  * @since 0.2.3
  */
-fun StridedVector.partition(p: Int) {
+fun F64Vector.partition(p: Int) {
     require(p >= 0 && p < size) { "p must be in [0, $size)" }
     partition(p, 0, size - 1)
 }
@@ -88,7 +88,7 @@ fun StridedVector.partition(p: Int) {
  * @param left start index (inclusive).
  * @param right end index (inclusive).
  */
-internal fun StridedVector.partition(p: Int, left: Int, right: Int): Int {
+internal fun F64Vector.partition(p: Int, left: Int, right: Int): Int {
     val pivot = this[p]
     swap(p, right)  // move to end.
 
@@ -105,7 +105,7 @@ internal fun StridedVector.partition(p: Int, left: Int, right: Int): Int {
 }
 
 @Suppress("nothing_to_inline")
-internal inline fun StridedVector.swap(i: Int, j: Int) {
+internal inline fun F64Vector.swap(i: Int, j: Int) {
     val tmp = unsafeGet(i)
     unsafeSet(i, unsafeGet(j))
     unsafeSet(j, tmp)

@@ -4,15 +4,15 @@ viktor [![Build Status](https://travis-ci.org/JetBrains-Research/viktor.svg?bran
 `viktor` implements a restricted subset of NumPy [ndarray] [ndarray] features in
 Kotlin. Here're some of the highlights:
 
-* Three basic data types: `StridedVector`, `StridedMatrix2` and
-  `StridedMatrix3` specialized to `double` values.
+* Three basic data types: `F64Vector`, `F64Matrix2` and
+  `F64Matrix3` specialized to `double` values.
 * Efficient vectorized operations, which are accelerated using SIMD whenever
   possible.
 * Semi-sweet syntax.
 
     ```kotlin
-    val m = StridedMatrix(4, 3)
-    m[0] = StridedVector.full(3, 42.0)  // row-view.
+    val m = F64Matrix(4, 3)
+    m[0] = F64Vector.full(3, 42.0)  // row-view.
     m[_I, 0]                            // column-view.
     m[0] = 42.0                         // broadcasting.
     m + 0.5 * m                         // arithmetic operations.

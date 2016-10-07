@@ -5,16 +5,16 @@ import java.util.stream.IntStream
 import java.util.stream.Stream
 
 /**
- * A specialization of [StridedMatrix] for 2-D data.
+ * A specialization of [F64Matrix] for 2-D data.
  *
  * @author Sergei Lebedev
  * @since 0.1.0
  */
-class StridedMatrix2 internal constructor(
+class F64Matrix2 internal constructor(
         val rowsNumber: Int, val columnsNumber: Int,
         val data: DoubleArray, val offset: Int,
         val rowStride: Int,
-        val columnStride: Int) : FlatMatrixOps<StridedMatrix2> {
+        val columnStride: Int) : FlatMatrixOps<F64Matrix2> {
 
     constructor(numRows: Int, numColumns: Int,
                 data: DoubleArray = DoubleArray(numRows * numColumns)) :
@@ -60,23 +60,23 @@ class StridedMatrix2 internal constructor(
     private inline fun unsafeIndex(r: Int, c: Int) = offset + r * rowStride + c * columnStride
 
     /** Returns a view of the [r]-th row of this matrix. */
-    fun rowView(r: Int): StridedVector {
+    fun rowView(r: Int): F64Vector {
         if (r < 0 || r >= rowsNumber) {
             throw IndexOutOfBoundsException("r must be in [0, $rowsNumber)")
         }
 
-        return StridedVector.create(data, offset + rowStride * r, columnsNumber, columnStride)
+        return F64Vector.create(data, offset + rowStride * r, columnsNumber, columnStride)
     }
 
     /**
      * Returns a view of the [c]-th column of this matrix.
      */
-    fun columnView(c: Int): StridedVector {
+    fun columnView(c: Int): F64Vector {
         if (c < 0 || c >= columnsNumber) {
             throw IndexOutOfBoundsException("c must be in [0, $columnsNumber)")
         }
 
-        return StridedVector.create(data, offset + columnStride * c, rowsNumber, rowStride)
+        return F64Vector.create(data, offset + columnStride * c, rowsNumber, rowStride)
     }
 
     /**
@@ -87,7 +87,7 @@ class StridedMatrix2 internal constructor(
      */
     operator fun get(r: Int) = rowView(r)
 
-    operator fun set(r: Int, other: StridedVector) = other.copyTo(rowView(r))
+    operator fun set(r: Int, other: F64Vector) = other.copyTo(rowView(r))
 
     operator fun set(r: Int, init: Double) = rowView(r).fill(init)
 
@@ -98,26 +98,26 @@ class StridedMatrix2 internal constructor(
      */
     operator fun get(any: _I, c: Int) = columnView(c)
 
-    operator fun set(any: _I, c: Int, other: StridedVector) = other.copyTo(columnView(c))
+    operator fun set(any: _I, c: Int, other: F64Vector) = other.copyTo(columnView(c))
 
     operator fun set(any: _I, c: Int, init: Double) = columnView(c).fill(init)
 
     /** An alias for [transpose]. */
-    val T: StridedMatrix2 get() = transpose()
+    val T: F64Matrix2 get() = transpose()
 
     /** Constructs matrix transpose in O(1) time. */
-    fun transpose() = StridedMatrix2(columnsNumber, rowsNumber, data, offset,
-                                     columnStride, rowStride)
+    fun transpose() = F64Matrix2(columnsNumber, rowsNumber, data, offset,
+                                 columnStride, rowStride)
 
     /** Returns a copy of the elements in this matrix. */
-    override fun copy(): StridedMatrix2 {
-        val copy = StridedMatrix2(rowsNumber, columnsNumber)
+    override fun copy(): F64Matrix2 {
+        val copy = F64Matrix2(rowsNumber, columnsNumber)
         copyTo(copy)
         return copy
     }
 
     /** Copies elements in this matrix to [other] matrix. */
-    fun copyTo(other: StridedMatrix2) {
+    fun copyTo(other: F64Matrix2) {
         checkDimensions(other)
         if (rowStride == other.rowStride && columnStride == other.columnStride) {
             System.arraycopy(data, offset, other.data, other.offset,
@@ -135,9 +135,9 @@ class StridedMatrix2 internal constructor(
      * No data copying is performed, thus the operation is only applicable
      * to dense matrices.
      */
-    override fun flatten(): StridedVector {
+    override fun flatten(): F64Vector {
         check(isDense) { "matrix is not dense" }
-        return data.asStrided(offset, rowsNumber * columnsNumber)
+        return data.asVector(offset, rowsNumber * columnsNumber)
     }
 
     /**
@@ -145,7 +145,7 @@ class StridedMatrix2 internal constructor(
      *
      * @param axis axis to go along, 0 stands for columns, 1 for rows.
      */
-    fun along(axis: Int): Stream<StridedVector> = when (axis) {
+    fun along(axis: Int): Stream<F64Vector> = when (axis) {
         0 -> IntStream.range(0, columnsNumber).mapToObj { columnView(it) }
         1 -> IntStream.range(0, rowsNumber).mapToObj { rowView(it) }
         else -> throw IllegalArgumentException(axis.toString())
@@ -189,7 +189,7 @@ class StridedMatrix2 internal constructor(
     override fun equals(other: Any?): Boolean {
         if (this === other) {
             return true
-        } else if (other !is StridedMatrix2) {
+        } else if (other !is F64Matrix2) {
             return false
         }
 
@@ -215,7 +215,7 @@ class StridedMatrix2 internal constructor(
         return acc
     }
 
-    override fun checkDimensions(other: StridedMatrix2) {
+    override fun checkDimensions(other: F64Matrix2) {
         check(this === other ||
               (rowsNumber == other.rowsNumber &&
                columnsNumber == other.columnsNumber)) { "non-conformable matrices" }
@@ -223,8 +223,8 @@ class StridedMatrix2 internal constructor(
 }
 
 /** Reshapes this vector into a matrix in row-major order. */
-fun StridedVector.reshape(numRows: Int, numColumns: Int): StridedMatrix2 {
+fun F64Vector.reshape(numRows: Int, numColumns: Int): F64Matrix2 {
     require(numRows * numColumns == size)
-    return StridedMatrix2(numRows, numColumns, data, offset,
+    return F64Matrix2(numRows, numColumns, data, offset,
                           numColumns * stride, stride)
 }

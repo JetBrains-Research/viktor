@@ -40,7 +40,7 @@ public class WeightedSumBenchmark {
 
 	@Benchmark
 	public double dot() {
-		return StridedVectorKt.asStrided(values, 0, arraySize).dot(StridedVectorKt.asStrided(weights, 0, arraySize));
+		return F64VectorKt.asVector(values, 0, arraySize).dot(F64VectorKt.asVector(weights, 0, arraySize));
 	}
 
 	@Benchmark
@@ -50,7 +50,7 @@ public class WeightedSumBenchmark {
 
 	@Benchmark
 	public double shortDot() {
-		return StridedVectorKt.asStrided(values, 0, arraySize).dot(shorts);
+		return F64VectorKt.asVector(values, 0, arraySize).dot(shorts);
 	}
 
 }

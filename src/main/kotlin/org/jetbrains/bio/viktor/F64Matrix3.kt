@@ -3,17 +3,17 @@ package org.jetbrains.bio.viktor
 import java.text.DecimalFormat
 
 /**
- * A specialization of [StridedMatrix] for 3-D data.
+ * A specialization of [F64Matrix] for 3-D data.
  *
  * @author Sergei Lebedev
  * @since 0.1.0
  */
-class StridedMatrix3 internal constructor(
+class F64Matrix3 internal constructor(
         val depth: Int, val rowsNumber: Int, val columnsNumber: Int,
         val data: DoubleArray, val offset: Int,
         val depthStride: Int, val rowStride: Int, val columnStride: Int)
 :
-        FlatMatrixOps<StridedMatrix3> {
+        FlatMatrixOps<F64Matrix3> {
 
     constructor(depth: Int, numRows: Int, numColumns: Int,
                 data: DoubleArray = DoubleArray(depth * numRows * numColumns)) :
@@ -64,13 +64,13 @@ class StridedMatrix3 internal constructor(
         return offset + d * depthStride + r * rowStride + c * columnStride
     }
 
-    override fun copy(): StridedMatrix3 {
-        val m = StridedMatrix(depth, rowsNumber, columnsNumber)
+    override fun copy(): F64Matrix3 {
+        val m = F64Matrix(depth, rowsNumber, columnsNumber)
         copyTo(m)
         return m
     }
 
-    fun copyTo(other: StridedMatrix3) {
+    fun copyTo(other: F64Matrix3) {
         checkDimensions(other)
         // XXX we don't support varying strides at the moment, although
         // it's not hard to implement.
@@ -80,23 +80,23 @@ class StridedMatrix3 internal constructor(
         System.arraycopy(data, 0, other.data, 0, data.size)
     }
 
-    override fun flatten(): StridedVector {
+    override fun flatten(): F64Vector {
         check(isDense) { "matrix is not dense" }
-        return data.asStrided()
+        return data.asVector()
     }
 
     operator fun get(d: Int) = view(d)
 
-    operator fun set(d: Int, other: StridedMatrix2) = other.copyTo(view(d))
+    operator fun set(d: Int, other: F64Matrix2) = other.copyTo(view(d))
 
     operator fun set(d: Int, other: Double) = view(d).fill(other)
 
-    fun view(d: Int): StridedMatrix2 {
+    fun view(d: Int): F64Matrix2 {
         if (d < 0 || d >= depth) {
             throw IndexOutOfBoundsException("d must be in [0, $depth)")
         }
 
-        return StridedMatrix2(rowsNumber, columnsNumber, data,
+        return F64Matrix2(rowsNumber, columnsNumber, data,
                               d * depthStride, rowStride, columnStride)
     }
 
@@ -105,12 +105,12 @@ class StridedMatrix3 internal constructor(
 
     operator fun set(d: Int, r: Int, other: Double) = view(d).set(r, other)
 
-    operator fun set(d: Int, r: Int, other: StridedVector) = view(d).set(r, other)
+    operator fun set(d: Int, r: Int, other: F64Vector) = view(d).set(r, other)
 
     fun toArray() = Array(depth) { view(it).toArray() }
 
     // XXX: abstract this copy-paste into an interface? See
-    // [StridedMatrix2.toString].
+    // [F64Matrix2.toString].
     fun toString(maxDisplay: Int,
                  format: DecimalFormat = DecimalFormat("#.####")): String {
         val sb = StringBuilder()
@@ -147,7 +147,7 @@ class StridedMatrix3 internal constructor(
     override fun equals(other: Any?): Boolean {
         if (this === other) {
             return true
-        } else if (other !is StridedMatrix3) {
+        } else if (other !is F64Matrix3) {
             return false
         }
 
@@ -174,7 +174,7 @@ class StridedMatrix3 internal constructor(
         return acc
     }
 
-    override fun checkDimensions(other: StridedMatrix3) {
+    override fun checkDimensions(other: F64Matrix3) {
         check(this === other ||
               (depth == other.depth && rowsNumber == other.rowsNumber &&
                columnsNumber == other.columnsNumber)) { "non-conformable matrices" }
@@ -182,8 +182,8 @@ class StridedMatrix3 internal constructor(
 }
 
 /** Reshapes this vector into a matrix in row-major order. */
-fun StridedVector.reshape(depth: Int, numRows: Int, numColumns: Int): StridedMatrix3 {
+fun F64Vector.reshape(depth: Int, numRows: Int, numColumns: Int): F64Matrix3 {
     require(depth * numRows * numColumns == size)
-    return StridedMatrix3(depth, numRows, numColumns, data, offset,
+    return F64Matrix3(depth, numRows, numColumns, data, offset,
                           numRows * numColumns * stride, numColumns * stride, stride)
 }

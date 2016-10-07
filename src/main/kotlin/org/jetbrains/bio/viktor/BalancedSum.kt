@@ -9,7 +9,7 @@ package org.jetbrains.bio.viktor
  * Dalton et al. "SIMDizing pairwise sums", 2014.
  */
 
-internal fun StridedVector.balancedSum(): Double {
+internal fun F64Vector.balancedSum(): Double {
     var accUnaligned = 0.0
     var remaining = size
     while (remaining % 4 > 0) {
@@ -43,7 +43,7 @@ internal fun StridedVector.balancedSum(): Double {
     return acc + accUnaligned
 }
 
-internal inline fun StridedVector.balancedDot(getter: (Int) -> Double): Double {
+internal inline fun F64Vector.balancedDot(getter: (Int) -> Double): Double {
     var accUnaligned = 0.0
     var remaining = size
     while (remaining % 4 != 0) {

@@ -8,7 +8,7 @@ package org.jetbrains.bio.viktor
  *
  * @since 0.2.3
  */
-fun StridedVector.searchSorted(target: Double): Int {
+fun F64Vector.searchSorted(target: Double): Int {
     var lo = 0
     var hi = size
     while (lo < hi) {
@@ -23,7 +23,7 @@ fun StridedVector.searchSorted(target: Double): Int {
 }
 
 /** Returns the index of the minimum element. */
-fun StridedVector.argMin(): Int {
+fun F64Vector.argMin(): Int {
     require(size > 0) { "no data" }
     var minPos = 0
     var minValue = java.lang.Double.POSITIVE_INFINITY
@@ -39,7 +39,7 @@ fun StridedVector.argMin(): Int {
 }
 
 /** Returns the index of the maximum element. */
-fun StridedVector.argMax(): Int {
+fun F64Vector.argMax(): Int {
     require(size > 0) { "no data" }
     var maxPos = 0
     var maxValue = java.lang.Double.NEGATIVE_INFINITY

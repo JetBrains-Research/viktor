@@ -18,7 +18,7 @@ internal object QuickSelect {
      *
      * Invariant:  left <= n <= right
      */
-    tailrec fun select(values: StridedVector,
+    tailrec fun select(values: F64Vector,
                        left: Int, right: Int, n: Int,
                        randomGenerator: RandomGenerator): Double {
         assert(left <= n && n <= right)
@@ -48,8 +48,8 @@ internal object QuickSelect {
  *
  * @since 0.2.0
  */
-fun StridedVector.quantile(q: Double = 0.5,
-                           randomGenerator: RandomGenerator = DEFAULT_RANDOM): Double {
+fun F64Vector.quantile(q: Double = 0.5,
+                       randomGenerator: RandomGenerator = DEFAULT_RANDOM): Double {
     require(isNotEmpty()) { "no data" }
     val pos = (size + 1) * q
     val d = pos - Math.floor(pos)
@@ -73,7 +73,7 @@ fun StridedVector.quantile(q: Double = 0.5,
  *
  * @since 0.2.0
  */
-fun StridedVector.shuffle(randomGenerator: RandomGenerator = DEFAULT_RANDOM) {
+fun F64Vector.shuffle(randomGenerator: RandomGenerator = DEFAULT_RANDOM) {
     if (size <= 1) {
         return
     }

@@ -7,14 +7,14 @@ import org.junit.Test
 import kotlin.test.assertNotEquals
 
 class StridedMatrix3Slicing {
-    private val m = StridedVector.of(0.0, 1.0,
-                                     2.0, 3.0,
-                                     4.0, 5.0).reshape(3, 1, 2)
+    private val m = F64Vector.of(0.0, 1.0,
+                                 2.0, 3.0,
+                                 4.0, 5.0).reshape(3, 1, 2)
 
     @Test fun view() {
-        assertEquals(StridedVector.of(0.0, 1.0).reshape(1, 2), m.view(0))
-        assertEquals(StridedVector.of(2.0, 3.0).reshape(1, 2), m.view(1))
-        assertEquals(StridedVector.of(4.0, 5.0).reshape(1, 2), m.view(2))
+        assertEquals(F64Vector.of(0.0, 1.0).reshape(1, 2), m.view(0))
+        assertEquals(F64Vector.of(2.0, 3.0).reshape(1, 2), m.view(1))
+        assertEquals(F64Vector.of(4.0, 5.0).reshape(1, 2), m.view(2))
     }
 
     @Test(expected = IndexOutOfBoundsException::class) fun viewOutOfBounds() {
@@ -22,9 +22,9 @@ class StridedMatrix3Slicing {
     }
 
     @Test fun reshape() {
-        val v = StridedVector.of(0.0, 1.0,
-                                 2.0, 3.0,
-                                 4.0, 5.0)
+        val v = F64Vector.of(0.0, 1.0,
+                             2.0, 3.0,
+                             4.0, 5.0)
         assertArrayEquals(arrayOf(arrayOf(doubleArrayOf(0.0, 1.0)),
                                   arrayOf(doubleArrayOf(2.0, 3.0)),
                                   arrayOf(doubleArrayOf(4.0, 5.0))),
@@ -39,9 +39,9 @@ class StridedMatrix3Slicing {
     }
 
     @Test fun reshapeWithStride() {
-        val v = StridedVector.create(doubleArrayOf(0.0, 1.0, 2.0, 3.0,
-                                                   4.0, 5.0, 6.0, 7.0),
-                                     0, 4, stride = 2)
+        val v = F64Vector.create(doubleArrayOf(0.0, 1.0, 2.0, 3.0,
+                                               4.0, 5.0, 6.0, 7.0),
+                                 0, 4, stride = 2)
         assertArrayEquals(arrayOf(arrayOf(doubleArrayOf(0.0, 2.0)),
                                   arrayOf(doubleArrayOf(4.0, 6.0))),
                           v.reshape(2, 1, 2).toArray())
@@ -54,9 +54,9 @@ class StridedMatrix3Slicing {
 }
 
 class StridedMatrix3GetSet {
-    private val m = StridedVector.of(0.0, 1.0,
-                                     2.0, 3.0,
-                                     4.0, 5.0).reshape(3, 1, 2)
+    private val m = F64Vector.of(0.0, 1.0,
+                                 2.0, 3.0,
+                                 4.0, 5.0).reshape(3, 1, 2)
 
     @Test fun get() {
         assertEquals(0.0, m[0, 0, 0], Precision.EPSILON)
@@ -83,7 +83,7 @@ class StridedMatrix3GetSet {
 
     @Test fun setMagicMatrix() {
         val copy = m.copy()
-        val replacement = StridedMatrix.full(m.rowsNumber, m.columnsNumber, 42.0)
+        val replacement = F64Matrix.full(m.rowsNumber, m.columnsNumber, 42.0)
         copy[0] = replacement
         assertEquals(replacement, copy[0])
 
@@ -97,13 +97,13 @@ class StridedMatrix3GetSet {
         val copy1 = m.copy()
         copy1[0] = 42.0
         val copy2 = m.copy()
-        copy2[0] = StridedMatrix.full(m.rowsNumber, m.columnsNumber, 42.0)
+        copy2[0] = F64Matrix.full(m.rowsNumber, m.columnsNumber, 42.0)
         assertEquals(copy1, copy2)
     }
 
     @Test fun setMagicVector() {
         val copy = m.copy()
-        val replacement = StridedVector.full(m.columnsNumber, 42.0)
+        val replacement = F64Vector.full(m.columnsNumber, 42.0)
         copy[0, 0] = replacement
         assertEquals(replacement, copy[0, 0])
 
@@ -119,13 +119,13 @@ class StridedMatrix3GetSet {
         val copy1 = m.copy()
         copy1[1, 0] = 42.0
         val copy2 = m.copy()
-        copy2[1, 0] = StridedVector.full(m.columnsNumber, 42.0)
+        copy2[1, 0] = F64Vector.full(m.columnsNumber, 42.0)
         assertEquals(copy1, copy2)
     }
 
     @Test fun setMagicScalar() {
         val copy = m.copy()
-        val replacement = StridedMatrix.full(m.rowsNumber, m.columnsNumber, 42.0)
+        val replacement = F64Matrix.full(m.rowsNumber, m.columnsNumber, 42.0)
         copy[0] = 42.0
         assertEquals(replacement, copy[0])
 
@@ -136,9 +136,9 @@ class StridedMatrix3GetSet {
     }
 }
 
-class StridedMatrix3OpsTest {
+class F64Matrix3OpsTest {
     @Test fun equals() {
-        val m = StridedMatrix(2, 3, 4) { i, j, k -> 1.0 * i + 2 * j + 3 * k }
+        val m = F64Matrix(2, 3, 4) { i, j, k -> 1.0 * i + 2 * j + 3 * k }
 
         assertEquals(m, m)
         assertEquals(m, m.copy())
@@ -146,9 +146,9 @@ class StridedMatrix3OpsTest {
     }
 
     @Test fun _toString() {
-        assertEquals("[]", StridedMatrix(0, 0, 0).toString())
-        assertEquals("[[[0]]]", StridedMatrix(1, 1, 1).toString())
+        assertEquals("[]", F64Matrix(0, 0, 0).toString())
+        assertEquals("[[[0]]]", F64Matrix(1, 1, 1).toString())
         assertEquals("[[[0], [0]], [[0], [0]], [[0], [0]]]",
-                     StridedMatrix(3, 2, 1).toString())
+                     F64Matrix(3, 2, 1).toString())
     }
 }

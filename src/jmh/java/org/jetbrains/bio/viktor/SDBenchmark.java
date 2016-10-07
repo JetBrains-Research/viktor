@@ -35,7 +35,7 @@ public class SDBenchmark {
 
 	@Benchmark
 	public double javaSD() {
-		return StridedVectorKt.asStrided(values, 0, arraySize).sd();
+		return F64VectorKt.asVector(values, 0, arraySize).sd();
 	}
 
 	@Benchmark

@@ -15,70 +15,70 @@ import java.util.stream.IntStream
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
-class StridedVectorCreationTest {
+class F64VectorCreationTest {
     @Test fun createSpecialization() {
-        assertTrue(StridedVector.create(doubleArrayOf(1.0), stride = 10) !is DenseVector)
-        assertTrue(StridedVector.create(doubleArrayOf(1.0)) is DenseVector)
-        assertTrue(StridedVector.create(doubleArrayOf(1.0, 2.0), offset = 1, size = 1) is DenseVector)
+        assertTrue(F64Vector.create(doubleArrayOf(1.0), stride = 10) !is DenseF64Vector)
+        assertTrue(F64Vector.create(doubleArrayOf(1.0)) is DenseF64Vector)
+        assertTrue(F64Vector.create(doubleArrayOf(1.0, 2.0), offset = 1, size = 1) is DenseF64Vector)
     }
 
     @Test fun of() {
         assertArrayEquals(doubleArrayOf(1.0),
-                          StridedVector.of(1.0).toArray(), Precision.EPSILON)
+                          F64Vector.of(1.0).toArray(), Precision.EPSILON)
         assertArrayEquals(doubleArrayOf(1.0, 2.0),
-                          StridedVector.of(1.0, 2.0).toArray(), Precision.EPSILON)
+                          F64Vector.of(1.0, 2.0).toArray(), Precision.EPSILON)
         assertArrayEquals(doubleArrayOf(1.0, 2.0, 3.0),
-                          StridedVector.of(1.0, 2.0, 3.0).toArray(), Precision.EPSILON)
+                          F64Vector.of(1.0, 2.0, 3.0).toArray(), Precision.EPSILON)
     }
 
     @Test fun asStrided() {
-        assertEquals(StridedVector.of(1.0), doubleArrayOf(1.0).asStrided())
-        assertEquals(StridedVector.of(3.0),
-                     doubleArrayOf(1.0, 2.0, 3.0).asStrided(offset = 2, size = 1))
+        assertEquals(F64Vector.of(1.0), doubleArrayOf(1.0).asVector())
+        assertEquals(F64Vector.of(3.0),
+                     doubleArrayOf(1.0, 2.0, 3.0).asVector(offset = 2, size = 1))
     }
 
     @Test fun asStridedView() {
         val values = doubleArrayOf(1.0, 2.0, 3.0)
-        val v = values.asStrided(offset = 2, size = 1)
+        val v = values.asVector(offset = 2, size = 1)
         v[0] = 42.0
         assertArrayEquals(doubleArrayOf(1.0, 2.0, 42.0), values, Precision.EPSILON)
     }
 
     @Test fun invoke() {
-        assertEquals(StridedVector.of(1.0, 2.0, 3.0),
-                     StridedVector(3) { it + 1.0 })
+        assertEquals(F64Vector.of(1.0, 2.0, 3.0),
+                     F64Vector(3) { it + 1.0 })
     }
 
     @Test fun stochastic() {
-        val v = StridedVector.stochastic(2)
+        val v = F64Vector.stochastic(2)
         assertEquals(2, v.size)
-        assertEquals(StridedVector.of(.5, .5), v)
+        assertEquals(F64Vector.of(.5, .5), v)
     }
 
     @Test fun full() {
-        val v = StridedVector.full(2, 42.0)
+        val v = F64Vector.full(2, 42.0)
         assertEquals(2, v.size)
-        assertEquals(StridedVector.of(42.0, 42.0), v)
+        assertEquals(F64Vector.of(42.0, 42.0), v)
     }
 
     @Test fun concatenate() {
-        assertEquals(StridedVector.of(1.0, 2.0, 3.0, 4.0, 5.0),
-                     StridedVector.concatenate(StridedVector.of(1.0, 2.0),
-                                               StridedVector.of(3.0),
-                                               StridedVector.of(4.0, 5.0)))
+        assertEquals(F64Vector.of(1.0, 2.0, 3.0, 4.0, 5.0),
+                     F64Vector.concatenate(F64Vector.of(1.0, 2.0),
+                                           F64Vector.of(3.0),
+                                           F64Vector.of(4.0, 5.0)))
     }
 
     @Test fun append() {
-        assertEquals(StridedVector.of(1.0, 2.0),
-                     StridedVector.of(1.0, 2.0).append(StridedVector(0)))
-        assertEquals(StridedVector.of(1.0, 2.0),
-                     StridedVector(0).append(StridedVector.of(1.0, 2.0)))
-        assertEquals(StridedVector.of(1.0, 2.0, 3.0, 4.0, 5.0),
-                     StridedVector.of(1.0, 2.0).append(StridedVector.of(3.0, 4.0, 5.0)))
+        assertEquals(F64Vector.of(1.0, 2.0),
+                     F64Vector.of(1.0, 2.0).append(F64Vector(0)))
+        assertEquals(F64Vector.of(1.0, 2.0),
+                     F64Vector(0).append(F64Vector.of(1.0, 2.0)))
+        assertEquals(F64Vector.of(1.0, 2.0, 3.0, 4.0, 5.0),
+                     F64Vector.of(1.0, 2.0).append(F64Vector.of(3.0, 4.0, 5.0)))
     }
 
     @Test fun copy() {
-        val v = StridedVector.of(1.0, 2.0, 3.0)
+        val v = F64Vector.of(1.0, 2.0, 3.0)
         val copy = v.copy()
         assertEquals(v, copy)
         v[0] = 42.0
@@ -88,49 +88,49 @@ class StridedVectorCreationTest {
 
 class StridedVectorSlicing {
     @Test fun transpose() {
-        assertEquals(StridedVector.of(1.0), StridedVector.of(1.0).T.columnView(0))
-        assertEquals(StridedVector.of(1.0, 2.0),
-                     StridedVector.of(1.0, 2.0).T.columnView(0))
-        assertEquals(StridedVector.of(1.0, 2.0, 3.0),
-                     StridedVector.of(1.0, 2.0, 3.0).T.columnView(0))
+        assertEquals(F64Vector.of(1.0), F64Vector.of(1.0).T.columnView(0))
+        assertEquals(F64Vector.of(1.0, 2.0),
+                     F64Vector.of(1.0, 2.0).T.columnView(0))
+        assertEquals(F64Vector.of(1.0, 2.0, 3.0),
+                     F64Vector.of(1.0, 2.0, 3.0).T.columnView(0))
     }
 
     @Test fun slice() {
-        val v = StridedVector.of(1.0, 2.0, 3.0)
+        val v = F64Vector.of(1.0, 2.0, 3.0)
         val slice = v.slice(1, 2)
         assertEquals(1, slice.size)
-        assertEquals(StridedVector.of(2.0), slice)
+        assertEquals(F64Vector.of(2.0), slice)
 
         slice[0] = 42.0
-        assertEquals(StridedVector.of(1.0, 42.0, 3.0), v)
+        assertEquals(F64Vector.of(1.0, 42.0, 3.0), v)
     }
 
     @Test fun sliceWithStep() {
-        val v = StridedVector.of(1.0, 2.0, 3.0, 4.0, 5.0, 6.0)
+        val v = F64Vector.of(1.0, 2.0, 3.0, 4.0, 5.0, 6.0)
 
         v.slice(step = 2).let {
             assertEquals(3, it.size)
-            assertEquals(StridedVector.of(1.0, 3.0, 5.0), it)
+            assertEquals(F64Vector.of(1.0, 3.0, 5.0), it)
         }
 
         v.slice(1, step = 2).let {
             assertEquals(3, it.size)
-            assertEquals(StridedVector.of(2.0, 4.0, 6.0), it)
+            assertEquals(F64Vector.of(2.0, 4.0, 6.0), it)
         }
 
         v.slice(1, step = 3).let {
             assertEquals(2, it.size)
-            assertEquals(StridedVector.of(2.0, 5.0), it)
+            assertEquals(F64Vector.of(2.0, 5.0), it)
         }
 
         v.slice(1, step = 4).let {
             assertEquals(2, it.size)
-            assertEquals(StridedVector.of(2.0, 6.0), it)
+            assertEquals(F64Vector.of(2.0, 6.0), it)
         }
     }
 
     @Test(expected = IndexOutOfBoundsException::class) fun sliceOutOfBounds() {
-        StridedVector(0).slice(0, 42)
+        F64Vector(0).slice(0, 42)
     }
 }
 
@@ -140,7 +140,7 @@ class StridedVectorGetSet(private val values: DoubleArray,
                           private val size: Int,
                           private val stride: Int) {
 
-    private val v = StridedVector.create(values, offset, size, stride)
+    private val v = F64Vector.create(values, offset, size, stride)
 
     @Test fun get() {
         for (i in v.indices) {
@@ -177,11 +177,11 @@ class StridedVectorGetSet(private val values: DoubleArray,
         val copy = v.copy()
         copy[_I] = 42.0
 
-        assertEquals(StridedVector.full(copy.size, 42.0), copy)
+        assertEquals(F64Vector.full(copy.size, 42.0), copy)
     }
 
     @Test fun setMagicVector() {
-        val other = StridedVector.full(v.size, 42.0)
+        val other = F64Vector.full(v.size, 42.0)
         val copy = v.copy()
         copy[_I] = other
 
@@ -189,7 +189,7 @@ class StridedVectorGetSet(private val values: DoubleArray,
     }
 
     companion object {
-        @Parameters(name = "StridedVector({1}, {2}, {3})")
+        @Parameters(name = "F64Vector({1}, {2}, {3})")
         @JvmStatic fun `data`() = listOf(
                 // Normal case.
                 arrayOf(doubleArrayOf(1.0, 2.0, 3.0), 0, 3, 1),
@@ -204,12 +204,12 @@ private val CASES = listOf(
         // Gapped.
         (1..3).toStrided(),
         // Dense small.
-        doubleArrayOf(1.0, 2.0, 3.0).asStrided(),
+        doubleArrayOf(1.0, 2.0, 3.0).asVector(),
         // Dense large.
-        Random().doubles(DenseVector.DENSE_SPLIT_SIZE + 1L).toArray().asStrided())
+        Random().doubles(DenseF64Vector.DENSE_SPLIT_SIZE + 1L).toArray().asVector())
 
 @RunWith(Parameterized::class)
-class StridedVectorOpsTest(private val v: StridedVector) {
+class F64VectorOpsTest(private val v: F64Vector) {
     @Test fun contains() {
         for (i in v) {
             assertTrue(i.toDouble() in v)
@@ -218,14 +218,14 @@ class StridedVectorOpsTest(private val v: StridedVector) {
 
     @Test fun equals() {
         assertEquals(v, v)
-        assertEquals(v, v.toArray().asStrided())
+        assertEquals(v, v.toArray().asVector())
         assertNotEquals(v, (2..4).toStrided())
         assertNotEquals(v, (1..30).toStrided())
     }
 
     @Test fun _toString() {
-        assertEquals("[]", StridedVector(0).toString())
-        assertEquals("[42]", StridedVector.of(42.0).toString())
+        assertEquals("[]", F64Vector(0).toString())
+        assertEquals("[42]", F64Vector.of(42.0).toString())
         assertEquals("[0, 1, 2, 3]", (0..3).toStrided().toString())
     }
 
@@ -237,15 +237,15 @@ class StridedVectorOpsTest(private val v: StridedVector) {
     }
 
     @Test fun toStringNanInf() {
-        val v = StridedVector.of(Double.NaN, Double.POSITIVE_INFINITY,
-                                 Double.NEGATIVE_INFINITY, 42.0)
+        val v = F64Vector.of(Double.NaN, Double.POSITIVE_INFINITY,
+                             Double.NEGATIVE_INFINITY, 42.0)
         assertEquals("[nan, inf, -inf, 42]", v.toString())
     }
 
     @Test fun fill() {
         val copy = v.copy()
         copy.fill(42.0)
-        assertEquals(StridedVector.full(copy.size, 42.0), copy)
+        assertEquals(F64Vector.full(copy.size, 42.0), copy)
     }
 
     @Test fun reverse() {
@@ -300,9 +300,9 @@ class StridedVectorOpsTest(private val v: StridedVector) {
     }
 }
 
-class StridedVectorAgainstRTest {
+class F64VectorAgainstRTest {
     @Test fun whole() {
-        val v = VALUES.asStrided()
+        val v = VALUES.asVector()
         assertEquals(18.37403, v.sum(), 1E-5)
         assertEquals(1.837403, v.mean(), 1E-6)
         assertEquals(18.37403, v.balancedSum(), 1E-5)
@@ -310,7 +310,7 @@ class StridedVectorAgainstRTest {
     }
 
     @Test fun slices() {
-        val v = VALUES.asStrided(offset = 3, size = 4)
+        val v = VALUES.asVector(offset = 3, size = 4)
         assertEquals(8.292786, v.sum(), 1E-6)
         assertEquals(2.073197, v.mean(), 1E-6)
         assertEquals(8.292786, v.balancedSum(), 1E-6)
@@ -318,14 +318,14 @@ class StridedVectorAgainstRTest {
     }
 
     @Test fun weighted() {
-        val v = VALUES.asStrided()
-        val w = WEIGHTS.asStrided()
+        val v = VALUES.asVector()
+        val w = WEIGHTS.asVector()
         assertEquals(8.417747, v.dot(w), 1E-6)
     }
 
     @Test fun weightedSlices() {
-        val v = VALUES.asStrided(offset = 3, size = 4)
-        val w = WEIGHTS.asStrided(offset = 2, size = 4)
+        val v = VALUES.asVector(offset = 3, size = 4)
+        val w = WEIGHTS.asVector(offset = 2, size = 4)
         assertEquals(2.363317, v.dot(w), 1E-6)
     }
 
@@ -345,7 +345,7 @@ class StridedVectorAgainstRTest {
 }
 
 @RunWith(Parameterized::class)
-class StridedVectorMathTest(private val v: StridedVector) {
+class F64VectorMathTest(private val v: F64Vector) {
     @Test fun exp() {
         val expV = (v / v.max()).exp()
         for (i in v.indices) {
@@ -405,7 +405,7 @@ class StridedVectorMathTest(private val v: StridedVector) {
 }
 
 @RunWith(Parameterized::class)
-class StridedVectorArithTest(private val v: StridedVector) {
+class F64VectorArithTest(private val v: F64Vector) {
     @Test fun unaryPlus() = assertEquals(v, +v)
 
     @Test fun unaryMinus() = assertEquals(v, -(-v))
@@ -425,7 +425,7 @@ class StridedVectorArithTest(private val v: StridedVector) {
     }
 
     @Test fun minus() {
-        val u = v - StridedVector.full(v.size, 42.0)
+        val u = v - F64Vector.full(v.size, 42.0)
         for (pos in 0..v.size - 1) {
             assertEquals(v[pos] - 42.0, u[pos], Precision.EPSILON)
         }
@@ -453,7 +453,7 @@ class StridedVectorArithTest(private val v: StridedVector) {
     }
 
     @Test fun div() {
-        val u = v / StridedVector.full(v.size, 42.0)
+        val u = v / F64Vector.full(v.size, 42.0)
         for (pos in 0..v.size - 1) {
             assertEquals(v[pos] / 42.0, u[pos], Precision.EPSILON)
         }
@@ -472,7 +472,7 @@ class StridedVectorArithTest(private val v: StridedVector) {
     }
 }
 
-private fun IntRange.toStrided(): StridedVector {
+private fun IntRange.toStrided(): F64Vector {
     // The NaN gaps are there for two reasons:
     //
     // 1. to ensure 'offset' and 'stride' are used correctly,
@@ -481,6 +481,6 @@ private fun IntRange.toStrided(): StridedVector {
             .mapToDouble { it.toDouble() }
             .flatMap { DoubleStream.of(Double.NaN, it) }
             .toArray()
-    return StridedVector.create(values, offset = 1,
-                                size = endInclusive + 1 - start, stride = 2)
+    return F64Vector.create(values, offset = 1,
+                            size = endInclusive + 1 - start, stride = 2)
 }

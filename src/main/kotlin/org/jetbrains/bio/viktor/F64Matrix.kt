@@ -6,14 +6,14 @@ package org.jetbrains.bio.viktor
  * @author Sergei Lebedev
  * @since 0.1.0
  */
-object StridedMatrix {
-    operator fun invoke(numRows: Int, numColumns: Int): StridedMatrix2 {
-        return StridedMatrix2(numRows, numColumns)
+object F64Matrix {
+    operator fun invoke(numRows: Int, numColumns: Int): F64Matrix2 {
+        return F64Matrix2(numRows, numColumns)
     }
 
     operator inline fun invoke(numRows: Int, numColumns: Int,
-                               block: (Int, Int) -> Double): StridedMatrix2 {
-        val m = StridedMatrix2(numRows, numColumns)
+                               block: (Int, Int) -> Double): F64Matrix2 {
+        val m = F64Matrix2(numRows, numColumns)
         for (r in 0..numRows - 1) {
             for (c in 0..numColumns - 1) {
                 m[r, c] = block(r, c)
@@ -23,13 +23,13 @@ object StridedMatrix {
         return m
     }
 
-    operator fun invoke(numRows: Int, numColumns: Int, depth: Int): StridedMatrix3 {
-        return StridedMatrix3(numRows, numColumns, depth)
+    operator fun invoke(numRows: Int, numColumns: Int, depth: Int): F64Matrix3 {
+        return F64Matrix3(numRows, numColumns, depth)
     }
 
     operator inline fun invoke(depth: Int, numRows: Int, numColumns: Int,
-                               block: (Int, Int, Int) -> Double): StridedMatrix3 {
-        val m = StridedMatrix3(depth, numRows, numColumns)
+                               block: (Int, Int, Int) -> Double): F64Matrix3 {
+        val m = F64Matrix3(depth, numRows, numColumns)
         for (d in 0..depth - 1) {
             for (r in 0..numRows - 1) {
                 for (c in 0..numColumns - 1) {
@@ -42,13 +42,13 @@ object StridedMatrix {
     }
 
     @JvmStatic fun full(numRows: Int, numColumns: Int,
-                        init: Double): StridedMatrix2 {
-        return StridedMatrix2(numRows, numColumns).apply { fill(init) }
+                        init: Double): F64Matrix2 {
+        return F64Matrix2(numRows, numColumns).apply { fill(init) }
     }
 
     @JvmStatic fun full(numRows: Int, numColumns: Int, depth: Int,
-                        init: Double): StridedMatrix3 {
-        return StridedMatrix3(numRows, numColumns, depth).apply { fill(init) }
+                        init: Double): F64Matrix3 {
+        return F64Matrix3(numRows, numColumns, depth).apply { fill(init) }
     }
 
     /**
@@ -69,7 +69,7 @@ interface FlatMatrixOps<T : FlatMatrixOps<T>> {
      *
      * If the matrix is not dense the method must raise an error.
      */
-    fun flatten(): StridedVector
+    fun flatten(): F64Vector
 
     /** Returns the copy of this matrix. */
     fun copy(): T

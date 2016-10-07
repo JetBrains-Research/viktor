@@ -7,8 +7,8 @@ import java.text.DecimalFormat
 /**
  * Wraps a given array of elements. The array will not be copied.
  */
-fun DoubleArray.asStrided(offset: Int = 0, size: Int = this.size): StridedVector {
-    return StridedVector.create(this, offset, size, 1)
+fun DoubleArray.asVector(offset: Int = 0, size: Int = this.size): F64Vector {
+    return F64Vector.create(this, offset, size, 1)
 }
 
 /**
@@ -41,7 +41,7 @@ fun DoubleArray.asStrided(offset: Int = 0, size: Int = this.size): StridedVector
  * @author Sergei Lebedev
  * @since 0.1.0
  */
-open class StridedVector internal constructor(
+open class F64Vector internal constructor(
         /** Raw data array. */
         val data: DoubleArray,
         /** Offset of the first vector element in the raw data array. */
@@ -89,18 +89,18 @@ open class StridedVector internal constructor(
      * @param to the last index of the slice (exclusive).
      * @param step indexing step.
      */
-    fun slice(from: Int = 0, to: Int = size, step: Int = 1): StridedVector {
+    fun slice(from: Int = 0, to: Int = size, step: Int = 1): F64Vector {
         if (from < 0 || to < from || to > size) {
             throw IndexOutOfBoundsException()
         }
 
-        return StridedVector(data, offset + from, (to - from + step - 1) / step,
+        return F64Vector(data, offset + from, (to - from + step - 1) / step,
                              stride * step)
     }
 
     operator fun set(any: _I, init: Double) = fill(init)
 
-    operator fun set(any: _I, other: StridedVector) = other.copyTo(this)
+    operator fun set(any: _I, other: F64Vector) = other.copyTo(this)
 
     operator fun contains(other: Double): Boolean {
         for (pos in 0..size - 1) {
@@ -127,7 +127,7 @@ open class StridedVector internal constructor(
     }
 
     /** An alias for [transpose]. */
-    val T: StridedMatrix2 get() = transpose()
+    val T: F64Matrix2 get() = transpose()
 
     /**
      * Constructs a column-vector view of this vector in O(1) time.
@@ -142,11 +142,11 @@ open class StridedVector internal constructor(
      *
      * @since 0.2.3
      */
-    fun append(other: StridedVector) = concatenate(this, other)
+    fun append(other: F64Vector) = concatenate(this, other)
 
     /** Returns a copy of the elements in this vector. */
-    fun copy(): StridedVector {
-        val copy = StridedVector(size)
+    fun copy(): F64Vector {
+        val copy = F64Vector(size)
         copyTo(copy)
         return copy
     }
@@ -156,7 +156,7 @@ open class StridedVector internal constructor(
      *
      * Optimized for dense vectors.
      */
-    open fun copyTo(other: StridedVector) {
+    open fun copyTo(other: F64Vector) {
         require(size == other.size)
         for (pos in 0..size - 1) {
             other.unsafeSet(pos, unsafeGet(pos))
@@ -176,14 +176,14 @@ open class StridedVector internal constructor(
     /**
      * Computes a dot product of this vector with an array.
      */
-    infix fun dot(other: DoubleArray) = dot(other.asStrided())
+    infix fun dot(other: DoubleArray) = dot(other.asVector())
 
     /**
      * Computes a dot product between the two vectors.
      *
      * Optimized for dense vectors.
      */
-    open infix fun dot(other: StridedVector) = balancedDot { other[it] }
+    open infix fun dot(other: F64Vector) = balancedDot { other[it] }
 
     /**
      * Computes the mean of the elements.
@@ -332,9 +332,9 @@ open class StridedVector internal constructor(
         return Math.log(acc.result()) + offset
     }
 
-    infix fun logAddExp(other: StridedVector) = copy().apply { logAddExp(other, this) }
+    infix fun logAddExp(other: F64Vector) = copy().apply { logAddExp(other, this) }
 
-    open fun logAddExp(other: StridedVector, dst: StridedVector) {
+    open fun logAddExp(other: F64Vector, dst: F64Vector) {
         checkSize(other)
         checkSize(dst)
         for (pos in 0..size - 1) {
@@ -344,7 +344,7 @@ open class StridedVector internal constructor(
 
     operator fun unaryPlus() = this
 
-    open operator fun unaryMinus(): StridedVector {
+    open operator fun unaryMinus(): F64Vector {
         // XXX 'v' is always dense but it might be too small to benefit
         //     from SIMD.
         val v = copy()
@@ -355,9 +355,9 @@ open class StridedVector internal constructor(
         return v
     }
 
-    operator fun plus(other: StridedVector) = copy().apply { this += other }
+    operator fun plus(other: F64Vector) = copy().apply { this += other }
 
-    operator open fun plusAssign(other: StridedVector) {
+    operator open fun plusAssign(other: F64Vector) {
         checkSize(other)
         for (pos in 0..size - 1) {
             unsafeSet(pos, unsafeGet(pos) + other.unsafeGet(pos))
@@ -372,9 +372,9 @@ open class StridedVector internal constructor(
         }
     }
 
-    operator fun minus(other: StridedVector) = copy().apply { this -= other }
+    operator fun minus(other: F64Vector) = copy().apply { this -= other }
 
-    operator open fun minusAssign(other: StridedVector) {
+    operator open fun minusAssign(other: F64Vector) {
         checkSize(other)
         for (pos in 0..size - 1) {
             unsafeSet(pos, unsafeGet(pos) - other.unsafeGet(pos))
@@ -389,9 +389,9 @@ open class StridedVector internal constructor(
         }
     }
 
-    operator fun times(other: StridedVector) = copy().apply { this *= other }
+    operator fun times(other: F64Vector) = copy().apply { this *= other }
 
-    operator open fun timesAssign(other: StridedVector) {
+    operator open fun timesAssign(other: F64Vector) {
         checkSize(other)
         for (pos in 0..size - 1) {
             unsafeSet(pos, unsafeGet(pos) * other.unsafeGet(pos))
@@ -406,9 +406,9 @@ open class StridedVector internal constructor(
         }
     }
 
-    operator fun div(other: StridedVector) = copy().apply { this /= other }
+    operator fun div(other: F64Vector) = copy().apply { this /= other }
 
-    operator open fun divAssign(other: StridedVector) {
+    operator open fun divAssign(other: F64Vector) {
         checkSize(other)
         for (pos in 0..size - 1) {
             unsafeSet(pos, unsafeGet(pos) / other.unsafeGet(pos))
@@ -486,7 +486,7 @@ open class StridedVector internal constructor(
     override fun equals(other: Any?): Boolean {
         if (this === other) {
             return true
-        } else if (other !is StridedVector) {
+        } else if (other !is F64Vector) {
             return false
         }
 
@@ -514,7 +514,7 @@ open class StridedVector internal constructor(
     }
 
     @Suppress("nothing_to_inline")
-    internal inline fun checkSize(other: StridedVector) {
+    internal inline fun checkSize(other: F64Vector) {
         require(size == other.size) { "non-conformable arrays" }
     }
 
@@ -524,7 +524,7 @@ open class StridedVector internal constructor(
          */
         operator fun invoke(size: Int) = create(DoubleArray(size), 0, size, 1)
 
-        operator inline fun invoke(size: Int, block: (Int) -> Double): StridedVector {
+        operator inline fun invoke(size: Int, block: (Int) -> Double): F64Vector {
             val v = this(size)
             for (i in 0..size - 1) {
                 v[i] = block(i)
@@ -535,20 +535,20 @@ open class StridedVector internal constructor(
         /**
          * Creates a vector with given elements.
          */
-        @JvmStatic fun of(first: Double, vararg rest: Double): StridedVector {
+        @JvmStatic fun of(first: Double, vararg rest: Double): F64Vector {
             val data = DoubleArray(rest.size + 1)
             data[0] = first
             System.arraycopy(rest, 0, data, 1, rest.size)
-            return data.asStrided()
+            return data.asVector()
         }
 
         /** Creates an array with elements summing to one. */
-        @JvmStatic fun stochastic(size: Int): StridedVector {
+        @JvmStatic fun stochastic(size: Int): F64Vector {
             return full(size, 1.0 / size)
         }
 
         /** Creates an array filled with a given [init] element. */
-        @JvmStatic fun full(size: Int, init: Double): StridedVector {
+        @JvmStatic fun full(size: Int, init: Double): F64Vector {
             val v = this(size)
             v.fill(init)
             return v
@@ -559,9 +559,9 @@ open class StridedVector internal constructor(
          *
          * @since 0.2.3
          */
-        @JvmStatic fun concatenate(first: StridedVector, vararg rest: StridedVector): StridedVector {
+        @JvmStatic fun concatenate(first: F64Vector, vararg rest: F64Vector): F64Vector {
             val size = first.size + rest.sumBy { it.size }
-            val result = StridedVector(size)
+            val result = F64Vector(size)
             var offset = 0
             for (v in arrayOf(first, *rest)) {
                 if (v.isNotEmpty()) {
@@ -574,12 +574,12 @@ open class StridedVector internal constructor(
         }
 
         internal fun create(data: DoubleArray, offset: Int = 0,
-                            size: Int = data.size, stride: Int = 1): StridedVector {
+                            size: Int = data.size, stride: Int = 1): F64Vector {
             require(offset + size <= data.size) { "not enough data" }
             return if (stride == 1) {
-                DenseVector.create(data, offset, size)
+                DenseF64Vector.create(data, offset, size)
             } else {
-                StridedVector(data, offset, size, stride)
+                F64Vector(data, offset, size, stride)
             }
         }
     }

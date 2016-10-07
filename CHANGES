@@ -3,11 +3,12 @@ viktor Changelog
 
 Here you can see the full list of changes between each viktor release.
 
-Version 0.3.6
+Version 0.4.0
 -------------
 
 - Fixed serialization of non-dense matrices.
 - Allowed slicing a `StridedVector` with custom `step`.
+- Replaced `Strided` prefix with `F64`.
 
 Version 0.3.5
 -------------
