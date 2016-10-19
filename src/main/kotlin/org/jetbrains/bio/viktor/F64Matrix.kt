@@ -40,7 +40,7 @@ open class F64Matrix(
      */
     fun flatten(): F64Vector {
         check(isDense) { "matrix is not dense" }
-        return data.asVector(offset, shape.reduce { a, b -> a * b })
+        return data.asVector(offset, shape.product())
     }
 
     /** Ensures a given matrix has the same dimensions as this matrix. */

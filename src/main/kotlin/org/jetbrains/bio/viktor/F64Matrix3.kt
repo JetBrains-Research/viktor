@@ -21,8 +21,11 @@ class F64Matrix3 internal constructor(data: DoubleArray, offset: Int,
          intArrayOf(numRows * numColumns, numColumns, 1),
          intArrayOf(depth, numRows, numColumns)) {}
 
+    @Deprecated("", replaceWith = ReplaceWith("shape[0]"))
     val depth: Int get() = shape[0]
+    @Deprecated("", replaceWith = ReplaceWith("shape[1]"))
     val rowsNumber: Int get() = shape[1]
+    @Deprecated("", replaceWith = ReplaceWith("shape[2]"))
     val columnsNumber: Int get() = shape[2]
 
     override fun unwrap() = this
@@ -133,33 +136,15 @@ class F64Matrix3 internal constructor(data: DoubleArray, offset: Int,
 
     override fun toString() = toString(8)
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) {
-            return true
-        } else if (other !is F64Matrix3) {
-            return false
-        }
-
-        if (!Arrays.equals(shape, other.shape)) {
-            return false
-        }
-
-        for (d in 0..depth - 1) {
-            if (this[d] != other[d]) {
-                return false
-            }
-        }
-
-        return true
+    override fun equals(other: Any?) = when {
+        this === other -> true
+        other !is F64Matrix3 -> false
+        !Arrays.equals(shape, other.shape) -> false
+        else -> (0..depth - 1).all { this[it] == other[it] }
     }
 
     override fun hashCode(): Int {
-        var acc = 1
-        for (d in 0..depth - 1) {
-            acc = 31 * acc + this[d].hashCode()
-        }
-
-        return acc
+        return (0..size - 1).fold(1) { acc, r -> 31 * acc + this[r].hashCode() }
     }
 }
 

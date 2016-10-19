@@ -21,7 +21,9 @@ class F64Matrix2 internal constructor(data: DoubleArray, offset: Int,
                 data: DoubleArray = DoubleArray(numRows * numColumns))
     : this(data, 0, intArrayOf(numColumns, 1), intArrayOf(numRows, numColumns)) {}
 
+    @Deprecated("", replaceWith = ReplaceWith("shape[0]"))
     val rowsNumber: Int get() = shape[0]
+    @Deprecated("", replaceWith = ReplaceWith("shape[1]"))
     val columnsNumber: Int get() = shape[1]
 
     override fun unwrap() = this
@@ -116,9 +118,9 @@ class F64Matrix2 internal constructor(data: DoubleArray, offset: Int,
         checkDimensions(other)
         if (Arrays.equals(strides, other.strides)) {
             System.arraycopy(data, offset, other.data, other.offset,
-                             rowsNumber * columnsNumber)
+                             shape.product())
         } else {
-            for (r in 0..rowsNumber - 1) {
+            for (r in 0..size - 1) {
                 other[r] = this[r]
             }
         }
@@ -175,33 +177,15 @@ class F64Matrix2 internal constructor(data: DoubleArray, offset: Int,
 
     override fun toString() = toString(8)
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) {
-            return true
-        } else if (other !is F64Matrix2) {
-            return false
-        }
-
-        if (!Arrays.equals(shape, other.shape)) {
-            return false
-        }
-
-        for (r in 0..rowsNumber - 1) {
-            if (this[r] != other[r]) {
-                return false
-            }
-        }
-
-        return true
+    override fun equals(other: Any?) = when {
+        this === other -> true
+        other !is F64Matrix2 -> false
+        !Arrays.equals(shape, other.shape) -> false
+        else -> (0..size - 1).all { this[it] == other[it] }
     }
 
     override fun hashCode(): Int {
-        var acc = 1
-        for (r in 0..rowsNumber - 1) {
-            acc = 31 * acc + this[r].hashCode()
-        }
-
-        return acc
+        return (0..size - 1).fold(1) { acc, r -> 31 * acc + this[r].hashCode() }
     }
 }
 
