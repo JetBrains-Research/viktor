@@ -1,5 +1,7 @@
 package org.jetbrains.bio.viktor
 
+import java.util.*
+
 /**
  * A strided matrix stored in a flat [DoubleArray].
  *
@@ -14,6 +16,9 @@ open class F64Matrix(
 
     val nDim: Int get() = shape.size
 
+    /** Number of elements along the first dimension. */
+    val size: Int get() = shape.first()
+
     /**
      * Dense matrices are laid out in a single contiguous block
      * of memory.
@@ -27,14 +32,20 @@ open class F64Matrix(
         return strides.last() == 1
     }
 
-    /** An alias for [transpose]. */
-    val T: F64Matrix get() = transpose()
+    /**
+     * Flattens the matrix into a vector in O(1) time.
+     *
+     * No data copying is performed, thus the operation is only applicable
+     * to dense matrices.
+     */
+    fun flatten(): F64Vector {
+        check(isDense) { "matrix is not dense" }
+        return data.asVector(offset, shape.reduce { a, b -> a * b })
+    }
 
-    /** Constructs matrix transpose in O(1) time. */
-    fun transpose() = if (nDim < 2) {
-        this
-    } else {
-        F64Matrix(data, offset, strides, shape.reversedArray())
+    /** Ensures a given matrix has the same dimensions as this matrix. */
+    fun checkDimensions(other: F64Matrix) {
+        check(this === other || Arrays.equals(shape, other.shape)) { "non-conformable matrices" }
     }
 
     companion object {
@@ -95,117 +106,110 @@ open class F64Matrix(
 }
 
 /** A common interface for whole-matrix operations. */
-interface F64MatrixOps<SELF : F64MatrixOps<SELF>> {
+interface F64MatrixOps<SELF> where SELF: F64MatrixOps<SELF>, SELF: F64Matrix {
     fun F64Vector.reshapeLike(other: SELF): SELF
 
-    /**
-     * Returns a flat view of this matrix.
-     *
-     * If the matrix is not dense the method must raise an error.
-     */
-    fun flatten(): F64Vector
+    /** Purely to please the type checker. */
+    fun unwrap(): SELF
 
     /** Returns the copy of this matrix. */
     fun copy(): SELF
 
-    /** Ensures a given matrix has the same dimensions as this matrix. */
-    fun checkDimensions(other: SELF)
+    fun fill(init: Double) = unwrap().flatten().fill(init)
 
-    fun fill(init: Double) = flatten().fill(init)
+    fun mean() = unwrap().flatten().mean()
 
-    fun mean() = flatten().mean()
+    fun sum() = unwrap().flatten().sum()
 
-    fun sum() = flatten().sum()
+    fun max() = unwrap().flatten().max()
 
-    fun max() = flatten().max()
+    fun argMax() = unwrap().flatten().argMax()
 
-    fun argMax() = flatten().argMax()
+    fun min() = unwrap().flatten().min()
 
-    fun min() = flatten().min()
+    fun argMin() = unwrap().flatten().argMin()
 
-    fun argMin() = flatten().argMin()
+    fun logSumExp() = unwrap().flatten().logSumExp()
 
-    fun logSumExp() = flatten().logSumExp()
+    fun logRescale() = unwrap().flatten().logRescale()
 
-    fun logRescale() = flatten().logRescale()
-
-    fun expInPlace() = flatten().expInPlace()
+    fun expInPlace() = unwrap().flatten().expInPlace()
 
     fun exp() = copy().apply { expm1InPlace() }
 
-    fun expm1InPlace() = flatten().expInPlace()
+    fun expm1InPlace() = unwrap().flatten().expInPlace()
 
     fun expm1() = copy().apply { expm1InPlace() }
 
-    fun logInPlace() = flatten().logInPlace()
+    fun logInPlace() = unwrap().flatten().logInPlace()
 
     fun log() = copy().apply { logInPlace() }
 
-    fun log1pInPlace() = flatten().logInPlace()
+    fun log1pInPlace() = unwrap().flatten().logInPlace()
 
     fun log1p() = copy().apply { log1pInPlace() }
 
     infix fun logAddExp(other: SELF): SELF = copy().apply { logAddExp(other, this) }
 
     fun logAddExp(other: SELF, dst: SELF) {
-        checkDimensions(other)
-        checkDimensions(dst)
-        flatten().logAddExp(other.flatten(), dst.flatten())
+        unwrap().checkDimensions(other)
+        unwrap().checkDimensions(dst)
+        unwrap().flatten().logAddExp(other.unwrap().flatten(), dst.unwrap().flatten())
     }
 
     operator fun unaryPlus() = this
 
-    operator fun unaryMinus() = copy().apply { (-flatten()).reshapeLike(this) }
+    operator fun unaryMinus() = copy().apply { (-unwrap().flatten()).reshapeLike(this) }
 
     operator fun plus(other: SELF) = copy().apply { this += other }
 
     operator fun plusAssign(other: SELF) {
-        checkDimensions(other)
-        flatten() += other.flatten()
+        unwrap().checkDimensions(other)
+        unwrap().flatten() += other.unwrap().flatten()
     }
 
     operator fun plus(update: Double) = copy().apply { this += update }
 
     operator fun plusAssign(update: Double) {
-        flatten() += update
+        unwrap().flatten() += update
     }
 
     operator fun minus(other: SELF) = copy().apply { this -= other }
 
     operator fun minusAssign(other: SELF) {
-        checkDimensions(other)
-        flatten() -= other.flatten()
+        unwrap().checkDimensions(other)
+        unwrap().flatten() -= other.unwrap().flatten()
     }
 
     operator fun minus(update: Double) = copy().apply { this -= update }
 
     operator fun minusAssign(update: Double) {
-        flatten() -= update
+        unwrap().flatten() -= update
     }
 
     operator fun times(other: SELF) = copy().apply { this *= other }
 
     operator fun timesAssign(other: SELF) {
-        checkDimensions(other)
-        flatten() *= other.flatten()
+        unwrap().checkDimensions(other)
+        unwrap().flatten() *= other.unwrap().flatten()
     }
 
     operator fun times(update: Double) = copy().apply { this *= update }
 
     operator fun timesAssign(update: Double) {
-        flatten() *= update
+        unwrap().flatten() *= update
     }
 
     operator fun div(other: SELF) = copy().apply { this /= other }
 
     operator fun divAssign(other: SELF) {
-        checkDimensions(other)
-        flatten() /= other.flatten()
+        unwrap().checkDimensions(other)
+        unwrap().flatten() /= other.unwrap().flatten()
     }
 
     operator fun div(update: Double) = copy().apply { this /= update }
 
     operator fun divAssign(update: Double) {
-        flatten() /= update
+        unwrap().flatten() /= update
     }
 }

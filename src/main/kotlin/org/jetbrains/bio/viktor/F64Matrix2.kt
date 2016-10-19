@@ -1,6 +1,7 @@
 package org.jetbrains.bio.viktor
 
 import java.text.DecimalFormat
+import java.util.*
 import java.util.stream.IntStream
 import java.util.stream.Stream
 
@@ -10,20 +11,30 @@ import java.util.stream.Stream
  * @author Sergei Lebedev
  * @since 0.1.0
  */
-class F64Matrix2 internal constructor(
-        val rowsNumber: Int, val columnsNumber: Int,
-        data: DoubleArray, offset: Int,
-        val rowStride: Int,
-        val columnStride: Int) :
-
-        F64Matrix(data, offset,
-                  intArrayOf(rowStride, columnStride),
-                  intArrayOf(rowsNumber, columnsNumber)),
+class F64Matrix2 internal constructor(data: DoubleArray, offset: Int,
+                                      strides: IntArray, shape: IntArray)
+:
+        F64Matrix(data, offset, strides, shape),
         F64MatrixOps<F64Matrix2> {
 
     constructor(numRows: Int, numColumns: Int,
                 data: DoubleArray = DoubleArray(numRows * numColumns))
-    : this(numRows, numColumns, data, 0, numColumns, 1) {}
+    : this(data, 0, intArrayOf(numColumns, 1), intArrayOf(numRows, numColumns)) {}
+
+    val rowsNumber: Int get() = shape[0]
+    val columnsNumber: Int get() = shape[1]
+
+    override fun unwrap() = this
+
+    /** An alias for [transpose]. */
+    val T: F64Matrix get() = transpose()
+
+    /** Constructs matrix transpose in O(1) time. */
+    fun transpose() = if (nDim < 2) {
+        this
+    } else {
+        F64Matrix2(data, offset, strides.reversedArray(), shape.reversedArray())
+    }
 
     operator fun get(r: Int, c: Int): Double {
         try {
@@ -48,7 +59,7 @@ class F64Matrix2 internal constructor(
     }
 
     @Suppress("nothing_to_inline")
-    private inline fun unsafeIndex(r: Int, c: Int) = offset + r * rowStride + c * columnStride
+    private inline fun unsafeIndex(r: Int, c: Int) = offset + r * strides[0] + c * strides[1]
 
     /** Returns a view of the [r]-th row of this matrix. */
     fun rowView(r: Int): F64Vector {
@@ -56,7 +67,7 @@ class F64Matrix2 internal constructor(
             throw IndexOutOfBoundsException("r must be in [0, $rowsNumber)")
         }
 
-        return F64Vector.create(data, offset + rowStride * r, columnsNumber, columnStride)
+        return F64Vector.create(data, offset + strides[0] * r, columnsNumber, strides[1])
     }
 
     /**
@@ -67,7 +78,7 @@ class F64Matrix2 internal constructor(
             throw IndexOutOfBoundsException("c must be in [0, $columnsNumber)")
         }
 
-        return F64Vector.create(data, offset + columnStride * c, rowsNumber, rowStride)
+        return F64Vector.create(data, offset + strides[1] * c, rowsNumber, strides[0])
     }
 
     /**
@@ -103,7 +114,7 @@ class F64Matrix2 internal constructor(
     /** Copies elements in this matrix to [other] matrix. */
     fun copyTo(other: F64Matrix2) {
         checkDimensions(other)
-        if (rowStride == other.rowStride && columnStride == other.columnStride) {
+        if (Arrays.equals(strides, other.strides)) {
             System.arraycopy(data, offset, other.data, other.offset,
                              rowsNumber * columnsNumber)
         } else {
@@ -113,19 +124,9 @@ class F64Matrix2 internal constructor(
         }
     }
 
-    /**
-     * Flattens the matrix into a vector in O(1) time.
-     *
-     * No data copying is performed, thus the operation is only applicable
-     * to dense matrices.
-     */
-    override fun flatten(): F64Vector {
-        check(isDense) { "matrix is not dense" }
-        return data.asVector(offset, rowsNumber * columnsNumber)
-    }
-
     override fun F64Vector.reshapeLike(other: F64Matrix2): F64Matrix2 {
-        return reshape(other.rowsNumber, other.columnsNumber)
+        val (nRows, nCols) = other.shape
+        return reshape(nRows, nCols)
     }
 
     /**
@@ -139,13 +140,13 @@ class F64Matrix2 internal constructor(
         else -> throw IllegalArgumentException(axis.toString())
     }
 
-    fun toArray() = Array(rowsNumber) { rowView(it).toArray() }
+    fun toArray() = Array(size) { rowView(it).toArray() }
 
     fun toString(maxDisplay: Int,
                  format: DecimalFormat = DecimalFormat("#.####")): String {
         val sb = StringBuilder()
         sb.append('[')
-        if (maxDisplay < rowsNumber) {
+        if (maxDisplay < size) {
             for (r in 0..maxDisplay / 2 - 1) {
                 sb.append(this[r].toString(maxDisplay, format)).append(", ")
             }
@@ -153,16 +154,16 @@ class F64Matrix2 internal constructor(
             sb.append("..., ")
 
             val leftover = maxDisplay - maxDisplay / 2
-            for (r in rowsNumber - leftover..rowsNumber - 1) {
+            for (r in size - leftover..size - 1) {
                 sb.append(this[r].toString(maxDisplay, format))
-                if (r < rowsNumber - 1) {
+                if (r < size - 1) {
                     sb.append(", ")
                 }
             }
         } else {
-            for (r in 0..rowsNumber - 1) {
+            for (r in 0..size - 1) {
                 sb.append(this[r].toString(maxDisplay, format))
-                if (r < rowsNumber - 1) {
+                if (r < size - 1) {
                     sb.append(", ")
                 }
             }
@@ -181,7 +182,7 @@ class F64Matrix2 internal constructor(
             return false
         }
 
-        if (rowsNumber != other.rowsNumber || columnsNumber != other.columnsNumber) {
+        if (!Arrays.equals(shape, other.shape)) {
             return false
         }
 
@@ -202,17 +203,12 @@ class F64Matrix2 internal constructor(
 
         return acc
     }
-
-    override fun checkDimensions(other: F64Matrix2) {
-        check(this === other ||
-              (rowsNumber == other.rowsNumber &&
-               columnsNumber == other.columnsNumber)) { "non-conformable matrices" }
-    }
 }
 
 /** Reshapes this vector into a matrix in row-major order. */
 fun F64Vector.reshape(numRows: Int, numColumns: Int): F64Matrix2 {
     require(numRows * numColumns == size)
-    return F64Matrix2(numRows, numColumns, data, offset,
-                      numColumns * stride, stride)
+    return F64Matrix2(data, offset,
+                      intArrayOf(numColumns * stride, stride),
+                      intArrayOf(numRows, numColumns))
 }

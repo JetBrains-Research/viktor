@@ -1,6 +1,7 @@
 package org.jetbrains.bio.viktor
 
 import java.text.DecimalFormat
+import java.util.*
 
 /**
  * A specialization of [F64Matrix] for 3-D data.
@@ -8,21 +9,23 @@ import java.text.DecimalFormat
  * @author Sergei Lebedev
  * @since 0.1.0
  */
-class F64Matrix3 internal constructor(
-        val depth: Int, val rowsNumber: Int, val columnsNumber: Int,
-        data: DoubleArray, offset: Int,
-        val depthStride: Int, val rowStride: Int, val columnStride: Int)
+class F64Matrix3 internal constructor(data: DoubleArray, offset: Int,
+                                      strides: IntArray, shape: IntArray)
 :
-        F64Matrix(data, offset,
-                  intArrayOf(depthStride, rowStride, columnStride),
-                  intArrayOf(depth, rowsNumber, columnsNumber)),
+        F64Matrix(data, offset, strides, shape),
         F64MatrixOps<F64Matrix3> {
 
     constructor(depth: Int, numRows: Int, numColumns: Int,
                 data: DoubleArray = DoubleArray(depth * numRows * numColumns)) :
-    this(depth, numRows, numColumns, data,
-         0, numRows * numColumns, numColumns, 1) {
-    }
+    this(data, 0,
+         intArrayOf(numRows * numColumns, numColumns, 1),
+         intArrayOf(depth, numRows, numColumns)) {}
+
+    val depth: Int get() = shape[0]
+    val rowsNumber: Int get() = shape[1]
+    val columnsNumber: Int get() = shape[2]
+
+    override fun unwrap() = this
 
     operator fun get(d: Int, r: Int, c: Int): Double {
         try {
@@ -48,7 +51,7 @@ class F64Matrix3 internal constructor(
 
     @Suppress("nothing_to_inline")
     private inline fun unsafeIndex(d: Int, r: Int, c: Int): Int {
-        return offset + d * depthStride + r * rowStride + c * columnStride
+        return offset + d * strides[0] + r * strides[1] + c * strides[2]
     }
 
     override fun copy(): F64Matrix3 {
@@ -61,15 +64,8 @@ class F64Matrix3 internal constructor(
         checkDimensions(other)
         // XXX we don't support varying strides at the moment, although
         // it's not hard to implement.
-        require(depthStride == other.depthStride &&
-                rowStride == other.rowStride &&
-                columnStride == other.columnStride)
+        require(Arrays.equals(strides, other.strides))
         System.arraycopy(data, 0, other.data, 0, data.size)
-    }
-
-    override fun flatten(): F64Vector {
-        check(isDense) { "matrix is not dense" }
-        return data.asVector()
     }
 
     override fun F64Vector.reshapeLike(other: F64Matrix3): F64Matrix3 {
@@ -87,8 +83,10 @@ class F64Matrix3 internal constructor(
             throw IndexOutOfBoundsException("d must be in [0, $depth)")
         }
 
-        return F64Matrix2(rowsNumber, columnsNumber, data,
-                              d * depthStride, rowStride, columnStride)
+        // TODO: generalize? use primary constructor?
+        return F64Matrix2(data, d * strides.first(),
+                          strides.sliceArray(1 until nDim),
+                          shape.sliceArray(1 until nDim))
     }
 
     // XXX this can be done with a single allocation.
@@ -142,8 +140,7 @@ class F64Matrix3 internal constructor(
             return false
         }
 
-        if (depth != other.depth || rowsNumber != other.rowsNumber ||
-            columnsNumber != other.columnsNumber) {
+        if (!Arrays.equals(shape, other.shape)) {
             return false
         }
 
@@ -164,17 +161,12 @@ class F64Matrix3 internal constructor(
 
         return acc
     }
-
-    override fun checkDimensions(other: F64Matrix3) {
-        check(this === other ||
-              (depth == other.depth && rowsNumber == other.rowsNumber &&
-               columnsNumber == other.columnsNumber)) { "non-conformable matrices" }
-    }
 }
 
 /** Reshapes this vector into a matrix in row-major order. */
 fun F64Vector.reshape(depth: Int, numRows: Int, numColumns: Int): F64Matrix3 {
     require(depth * numRows * numColumns == size)
-    return F64Matrix3(depth, numRows, numColumns, data, offset,
-                          numRows * numColumns * stride, numColumns * stride, stride)
+    return F64Matrix3(data, offset,
+                      intArrayOf(numRows * numColumns * stride, numColumns * stride, stride),
+                      intArrayOf(depth, numRows, numColumns))
 }
