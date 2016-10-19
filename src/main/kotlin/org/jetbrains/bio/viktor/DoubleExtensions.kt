@@ -31,7 +31,7 @@ operator fun Double.minus(other: F64Vector): F64Vector {
     return v
 }
 
-operator fun <T : FlatMatrixOps<T>> Double.minus(other: T): T {
+operator fun <T : F64MatrixOps<T>> Double.minus(other: T): T {
     val m = other.copy()
     minusInPlace(m.flatten())
     return m
@@ -39,11 +39,11 @@ operator fun <T : FlatMatrixOps<T>> Double.minus(other: T): T {
 
 inline operator fun Double.plus(other: F64Vector) = other + this
 
-inline operator fun <T : FlatMatrixOps<T>> Double.plus(other: T) = other + this
+inline operator fun <T : F64MatrixOps<T>> Double.plus(other: T) = other + this
 
 inline operator fun Double.times(other: F64Vector) = other * this
 
-inline operator fun <T : FlatMatrixOps<T>> Double.times(other: T) = other * this
+inline operator fun <T : F64MatrixOps<T>> Double.times(other: T) = other * this
 
 private inline fun Double.divInPlace(other: F64Vector) {
     if (other is LargeDenseF64Vector) {
@@ -62,7 +62,7 @@ operator fun Double.div(other: F64Vector): F64Vector {
     return v
 }
 
-operator fun <T : FlatMatrixOps<T>> Double.div(other: T): T {
+operator fun <T : F64MatrixOps<T>> Double.div(other: T): T {
     val m = other.copy()
     divInPlace(m.flatten())
     return m

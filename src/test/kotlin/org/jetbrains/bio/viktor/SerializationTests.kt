@@ -9,20 +9,20 @@ class TestReadWriteNpy {
     @Test fun vector() = withTempFile("v", ".npy") { path ->
         val v = F64Vector.of(1.0, 2.0, 3.0, 4.0)
         NpyFile.write(path, v)
-        assertEquals(v, NpyFile.read(path).asStridedVector())
+        assertEquals(v, NpyFile.read(path).asF64Vector())
     }
 
     @Test fun matrix2() = withTempFile("m2", ".npy") { path ->
         val m = F64Vector.of(1.0, 2.0, 3.0, 4.0, 5.0, 6.0).reshape(2, 3)
         NpyFile.write(path, m)
-        assertEquals(m, NpyFile.read(path).asStridedMatrix2())
+        assertEquals(m, NpyFile.read(path).asF64Matrix2())
     }
 
     @Test fun matrix3() = withTempFile("m3", ".npy") { path ->
         val m = F64Vector.of(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0)
                 .reshape(1, 4, 2)
         NpyFile.write(path, m)
-        assertEquals(m, NpyFile.read(path).asStridedMatrix3())
+        assertEquals(m, NpyFile.read(path).asF64Matrix3())
     }
 }
 
@@ -41,9 +41,9 @@ class TestReadWriteNpz {
             }
 
             NpzFile.read(path).use {
-                assertEquals(v, it["v"].asStridedVector())
-                assertEquals(m2, it["m2"].asStridedMatrix2())
-                assertEquals(m3, it["m3"].asStridedMatrix3())
+                assertEquals(v, it["v"].asF64Vector())
+                assertEquals(m2, it["m2"].asF64Matrix2())
+                assertEquals(m3, it["m3"].asF64Matrix3())
             }
         }
     }

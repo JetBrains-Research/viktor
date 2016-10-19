@@ -6,64 +6,98 @@ package org.jetbrains.bio.viktor
  * @author Sergei Lebedev
  * @since 0.1.0
  */
-object F64Matrix {
-    operator fun invoke(numRows: Int, numColumns: Int): F64Matrix2 {
-        return F64Matrix2(numRows, numColumns)
+open class F64Matrix(
+        val data: DoubleArray,
+        val offset: Int,
+        val strides: IntArray,
+        val shape: IntArray) {
+
+    val nDim: Int get() = shape.size
+
+    /**
+     * Dense matrices are laid out in a single contiguous block
+     * of memory.
+     *
+     * This allows to use SIMD operations, e.g. when computing the
+     * sum of elements.
+     */
+    internal val isDense: Boolean get() {
+        // This is inaccurate, but maybe sufficient for our use-case?
+        // Check with http://docs.scipy.org/doc/numpy/reference/arrays.ndarray.html
+        return strides.last() == 1
     }
 
-    operator inline fun invoke(numRows: Int, numColumns: Int,
-                               block: (Int, Int) -> Double): F64Matrix2 {
-        val m = F64Matrix2(numRows, numColumns)
-        for (r in 0..numRows - 1) {
-            for (c in 0..numColumns - 1) {
-                m[r, c] = block(r, c)
-            }
+    /** An alias for [transpose]. */
+    val T: F64Matrix get() = transpose()
+
+    /** Constructs matrix transpose in O(1) time. */
+    fun transpose() = if (nDim < 2) {
+        this
+    } else {
+        F64Matrix(data, offset, strides, shape.reversedArray())
+    }
+
+    companion object {
+        operator fun invoke(numRows: Int, numColumns: Int): F64Matrix2 {
+            return F64Matrix2(numRows, numColumns)
         }
 
-        return m
-    }
-
-    operator fun invoke(numRows: Int, numColumns: Int, depth: Int): F64Matrix3 {
-        return F64Matrix3(numRows, numColumns, depth)
-    }
-
-    operator inline fun invoke(depth: Int, numRows: Int, numColumns: Int,
-                               block: (Int, Int, Int) -> Double): F64Matrix3 {
-        val m = F64Matrix3(depth, numRows, numColumns)
-        for (d in 0..depth - 1) {
+        operator inline fun invoke(numRows: Int, numColumns: Int,
+                                   block: (Int, Int) -> Double): F64Matrix2 {
+            val m = F64Matrix2(numRows, numColumns)
             for (r in 0..numRows - 1) {
                 for (c in 0..numColumns - 1) {
-                    m[d, r, c] = block(d, r, c)
+                    m[r, c] = block(r, c)
                 }
             }
+
+            return m
         }
 
-        return m
+        operator fun invoke(numRows: Int, numColumns: Int, depth: Int): F64Matrix3 {
+            return F64Matrix3(numRows, numColumns, depth)
+        }
+
+        operator inline fun invoke(depth: Int, numRows: Int, numColumns: Int,
+                                   block: (Int, Int, Int) -> Double): F64Matrix3 {
+            val m = F64Matrix3(depth, numRows, numColumns)
+            for (d in 0..depth - 1) {
+                for (r in 0..numRows - 1) {
+                    for (c in 0..numColumns - 1) {
+                        m[d, r, c] = block(d, r, c)
+                    }
+                }
+            }
+
+            return m
+        }
+
+        @JvmStatic fun full(numRows: Int, numColumns: Int,
+                            init: Double): F64Matrix2 {
+            return F64Matrix2(numRows, numColumns).apply { fill(init) }
+        }
+
+        @JvmStatic fun full(numRows: Int, numColumns: Int, depth: Int,
+                            init: Double): F64Matrix3 {
+            return F64Matrix3(numRows, numColumns, depth).apply { fill(init) }
+        }
+
+        /**
+         * Creates a 2-D matrix with rows summing to one.
+         */
+        @JvmStatic fun stochastic(size: Int) = full(size, size, 1.0 / size)
+
+        /**
+         * Creates a 3-D matrix with [stochastic] submatrices.
+         */
+        @JvmStatic fun indexedStochastic(depth: Int, size: Int) = full(depth, size, size, 1.0 / size)
     }
-
-    @JvmStatic fun full(numRows: Int, numColumns: Int,
-                        init: Double): F64Matrix2 {
-        return F64Matrix2(numRows, numColumns).apply { fill(init) }
-    }
-
-    @JvmStatic fun full(numRows: Int, numColumns: Int, depth: Int,
-                        init: Double): F64Matrix3 {
-        return F64Matrix3(numRows, numColumns, depth).apply { fill(init) }
-    }
-
-    /**
-     * Creates a 2-D matrix with rows summing to one.
-     */
-    @JvmStatic fun stochastic(size: Int) = full(size, size, 1.0 / size)
-
-    /**
-     * Creates a 3-D matrix with [stochastic] submatrices.
-     */
-    @JvmStatic fun indexedStochastic(depth: Int, size: Int) = full(depth, size, size, 1.0 / size)
 }
 
 /** A common interface for whole-matrix operations. */
-interface FlatMatrixOps<T : FlatMatrixOps<T>> {
+interface F64MatrixOps<SELF : F64MatrixOps<SELF>> {
+    fun F64Vector.reshapeLike(other: SELF): SELF
+
     /**
      * Returns a flat view of this matrix.
      *
@@ -72,10 +106,10 @@ interface FlatMatrixOps<T : FlatMatrixOps<T>> {
     fun flatten(): F64Vector
 
     /** Returns the copy of this matrix. */
-    fun copy(): T
+    fun copy(): SELF
 
     /** Ensures a given matrix has the same dimensions as this matrix. */
-    fun checkDimensions(other: T)
+    fun checkDimensions(other: SELF)
 
     fun fill(init: Double) = flatten().fill(init)
 
@@ -111,9 +145,9 @@ interface FlatMatrixOps<T : FlatMatrixOps<T>> {
 
     fun log1p() = copy().apply { log1pInPlace() }
 
-    infix fun logAddExp(other: T): T = copy().apply { logAddExp(other, this) }
+    infix fun logAddExp(other: SELF): SELF = copy().apply { logAddExp(other, this) }
 
-    fun logAddExp(other: T, dst: T) {
+    fun logAddExp(other: SELF, dst: SELF) {
         checkDimensions(other)
         checkDimensions(dst)
         flatten().logAddExp(other.flatten(), dst.flatten())
@@ -121,16 +155,11 @@ interface FlatMatrixOps<T : FlatMatrixOps<T>> {
 
     operator fun unaryPlus() = this
 
-    operator fun unaryMinus() = copy().apply {
-        val v = flatten()
+    operator fun unaryMinus() = copy().apply { (-flatten()).reshapeLike(this) }
 
-        // XXX this might be slower for small matrices.
-        NativeSpeedups.unsafeNegate(v.data, v.offset, v.data, v.offset, v.size)
-    }
+    operator fun plus(other: SELF) = copy().apply { this += other }
 
-    operator fun plus(other: T) = copy().apply { this += other }
-
-    operator fun plusAssign(other: T) {
+    operator fun plusAssign(other: SELF) {
         checkDimensions(other)
         flatten() += other.flatten()
     }
@@ -141,9 +170,9 @@ interface FlatMatrixOps<T : FlatMatrixOps<T>> {
         flatten() += update
     }
 
-    operator fun minus(other: T) = copy().apply { this -= other }
+    operator fun minus(other: SELF) = copy().apply { this -= other }
 
-    operator fun minusAssign(other: T) {
+    operator fun minusAssign(other: SELF) {
         checkDimensions(other)
         flatten() -= other.flatten()
     }
@@ -154,9 +183,9 @@ interface FlatMatrixOps<T : FlatMatrixOps<T>> {
         flatten() -= update
     }
 
-    operator fun times(other: T) = copy().apply { this *= other }
+    operator fun times(other: SELF) = copy().apply { this *= other }
 
-    operator fun timesAssign(other: T) {
+    operator fun timesAssign(other: SELF) {
         checkDimensions(other)
         flatten() *= other.flatten()
     }
@@ -167,9 +196,9 @@ interface FlatMatrixOps<T : FlatMatrixOps<T>> {
         flatten() *= update
     }
 
-    operator fun div(other: T) = copy().apply { this /= other }
+    operator fun div(other: SELF) = copy().apply { this /= other }
 
-    operator fun divAssign(other: T) {
+    operator fun divAssign(other: SELF) {
         checkDimensions(other)
         flatten() /= other.flatten()
     }

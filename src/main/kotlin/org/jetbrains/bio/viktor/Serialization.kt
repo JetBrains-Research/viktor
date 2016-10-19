@@ -6,18 +6,18 @@ import org.jetbrains.bio.npy.NpzFile
 import java.nio.file.Path
 
 /** Returns a view of the [NpyArray] as a strided vector. */
-fun NpyArray.asStridedVector() = asDoubleArray().asVector()
+fun NpyArray.asF64Vector() = asDoubleArray().asVector()
 
 /** Returns a view of the [NpyArray] as a 2-D strided matrix. */
-fun NpyArray.asStridedMatrix2(): F64Matrix2 {
+fun NpyArray.asF64Matrix2(): F64Matrix2 {
     val (numRows, numColumns) = shape
-    return asStridedVector().reshape(numRows, numColumns)
+    return asF64Vector().reshape(numRows, numColumns)
 }
 
 /** Returns a view of the [NpyArray] as a 3-D strided matrix. */
-fun NpyArray.asStridedMatrix3(): F64Matrix3 {
+fun NpyArray.asF64Matrix3(): F64Matrix3 {
     val (depth, numRows, numColumns) = shape
-    return asStridedVector().reshape(depth, numRows, numColumns)
+    return asF64Vector().reshape(depth, numRows, numColumns)
 }
 
 /** Writes a given vector to [path] in NPY format. */

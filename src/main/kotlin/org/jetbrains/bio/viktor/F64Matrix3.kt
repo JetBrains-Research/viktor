@@ -10,31 +10,18 @@ import java.text.DecimalFormat
  */
 class F64Matrix3 internal constructor(
         val depth: Int, val rowsNumber: Int, val columnsNumber: Int,
-        val data: DoubleArray, val offset: Int,
+        data: DoubleArray, offset: Int,
         val depthStride: Int, val rowStride: Int, val columnStride: Int)
 :
-        FlatMatrixOps<F64Matrix3> {
+        F64Matrix(data, offset,
+                  intArrayOf(depthStride, rowStride, columnStride),
+                  intArrayOf(depth, rowsNumber, columnsNumber)),
+        F64MatrixOps<F64Matrix3> {
 
     constructor(depth: Int, numRows: Int, numColumns: Int,
                 data: DoubleArray = DoubleArray(depth * numRows * numColumns)) :
     this(depth, numRows, numColumns, data,
          0, numRows * numColumns, numColumns, 1) {
-    }
-
-    /** Returns the shape of this matrix. */
-    val shape: IntArray get() = intArrayOf(depth, rowsNumber, columnsNumber)
-
-    /**
-     * Dense matrices are laid out in a single contiguous block
-     * of memory.
-     *
-     * This allows to use SIMD operations, e.g. when computing the
-     * sum of elements.
-     */
-    internal val isDense: Boolean get() {
-        return depthStride == rowsNumber * columnsNumber &&
-               rowStride == columnsNumber &&
-               columnStride == 1
     }
 
     operator fun get(d: Int, r: Int, c: Int): Double {
@@ -83,6 +70,10 @@ class F64Matrix3 internal constructor(
     override fun flatten(): F64Vector {
         check(isDense) { "matrix is not dense" }
         return data.asVector()
+    }
+
+    override fun F64Vector.reshapeLike(other: F64Matrix3): F64Matrix3 {
+        return reshape(depth, rowsNumber, columnsNumber)
     }
 
     operator fun get(d: Int) = view(d)

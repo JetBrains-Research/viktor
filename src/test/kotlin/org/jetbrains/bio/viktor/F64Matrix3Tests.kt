@@ -6,7 +6,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 import kotlin.test.assertNotEquals
 
-class StridedMatrix3Slicing {
+class F64Matrix3Slicing {
     private val m = F64Vector.of(0.0, 1.0,
                                  2.0, 3.0,
                                  4.0, 5.0).reshape(3, 1, 2)
@@ -53,7 +53,7 @@ class StridedMatrix3Slicing {
     }
 }
 
-class StridedMatrix3GetSet {
+class F64Matrix3GetSet {
     private val m = F64Vector.of(0.0, 1.0,
                                  2.0, 3.0,
                                  4.0, 5.0).reshape(3, 1, 2)

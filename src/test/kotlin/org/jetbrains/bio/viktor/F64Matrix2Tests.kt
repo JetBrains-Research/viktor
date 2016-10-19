@@ -6,7 +6,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 import kotlin.test.assertNotEquals
 
-class StridedMatrix2Slicing {
+class F64Matrix2Slicing {
     private val m = F64Vector.of(0.0, 1.0,
                                  2.0, 3.0,
                                  4.0, 5.0).reshape(3, 2)
@@ -62,23 +62,23 @@ class StridedMatrix2Slicing {
     }
 }
 
-class StridedMatrix2GetSet {
+class F64Matrix2GetSet {
     private val m = F64Vector.of(0.0, 1.0,
                                  2.0, 3.0,
                                  4.0, 5.0).reshape(3, 2)
-    
+
     @Test fun get() {
         assertEquals(0.0, m[0, 0], Precision.EPSILON)
         assertEquals(1.0, m[0, 1], Precision.EPSILON)
         assertEquals(2.0, m[1, 0], Precision.EPSILON)
         assertEquals(3.0, m[1, 1], Precision.EPSILON)
         assertEquals(4.0, m[2, 0], Precision.EPSILON)
-        assertEquals(5.0, m[2, 1], Precision.EPSILON)        
+        assertEquals(5.0, m[2, 1], Precision.EPSILON)
     }
 
     @Test(expected = IndexOutOfBoundsException::class) fun getOutOfBounds() {
         m[42, 42]
-    }    
+    }
 
     @Test fun set() {
         val copy = m.copy()
@@ -128,6 +128,19 @@ class StridedMatrix2GetSet {
 }
 
 class F64Matrix2OpsTest {
+    @Test fun unaryMinus() {
+        val m = F64Vector.of(0.0, 1.0,
+                             2.0, 3.0,
+                             4.0, 5.0).reshape(3, 2)
+        val copy = m.copy()
+
+        assertEquals(m, -(-m))
+        assertEquals(-m[0][0], (-m)[0, 0], Precision.EPSILON)
+
+        // Make sure [m] is unchanged!
+        assertEquals(copy, m)
+    }
+
     @Test fun equals() {
         val m = F64Vector.of(0.0, 1.0,
                              2.0, 3.0,

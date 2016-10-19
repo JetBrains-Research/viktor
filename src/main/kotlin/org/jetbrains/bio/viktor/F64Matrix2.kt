@@ -12,27 +12,18 @@ import java.util.stream.Stream
  */
 class F64Matrix2 internal constructor(
         val rowsNumber: Int, val columnsNumber: Int,
-        val data: DoubleArray, val offset: Int,
+        data: DoubleArray, offset: Int,
         val rowStride: Int,
-        val columnStride: Int) : FlatMatrixOps<F64Matrix2> {
+        val columnStride: Int) :
+
+        F64Matrix(data, offset,
+                  intArrayOf(rowStride, columnStride),
+                  intArrayOf(rowsNumber, columnsNumber)),
+        F64MatrixOps<F64Matrix2> {
 
     constructor(numRows: Int, numColumns: Int,
-                data: DoubleArray = DoubleArray(numRows * numColumns)) :
-    this(numRows, numColumns, data, 0, numColumns, 1) {}
-
-    /** Returns the shape of this matrix. */
-    val shape: IntArray get() = intArrayOf(rowsNumber, columnsNumber)
-
-    /**
-     * Dense matrices are laid out in a single contiguous block
-     * of memory.
-     *
-     * This allows to use SIMD operations, e.g. when computing the
-     * sum of elements.
-     */
-    internal val isDense: Boolean get() {
-        return rowStride == columnsNumber && columnStride == 1
-    }
+                data: DoubleArray = DoubleArray(numRows * numColumns))
+    : this(numRows, numColumns, data, 0, numColumns, 1) {}
 
     operator fun get(r: Int, c: Int): Double {
         try {
@@ -102,13 +93,6 @@ class F64Matrix2 internal constructor(
 
     operator fun set(any: _I, c: Int, init: Double) = columnView(c).fill(init)
 
-    /** An alias for [transpose]. */
-    val T: F64Matrix2 get() = transpose()
-
-    /** Constructs matrix transpose in O(1) time. */
-    fun transpose() = F64Matrix2(columnsNumber, rowsNumber, data, offset,
-                                 columnStride, rowStride)
-
     /** Returns a copy of the elements in this matrix. */
     override fun copy(): F64Matrix2 {
         val copy = F64Matrix2(rowsNumber, columnsNumber)
@@ -138,6 +122,10 @@ class F64Matrix2 internal constructor(
     override fun flatten(): F64Vector {
         check(isDense) { "matrix is not dense" }
         return data.asVector(offset, rowsNumber * columnsNumber)
+    }
+
+    override fun F64Vector.reshapeLike(other: F64Matrix2): F64Matrix2 {
+        return reshape(other.rowsNumber, other.columnsNumber)
     }
 
     /**
@@ -226,5 +214,5 @@ class F64Matrix2 internal constructor(
 fun F64Vector.reshape(numRows: Int, numColumns: Int): F64Matrix2 {
     require(numRows * numColumns == size)
     return F64Matrix2(numRows, numColumns, data, offset,
-                          numColumns * stride, stride)
+                      numColumns * stride, stride)
 }
