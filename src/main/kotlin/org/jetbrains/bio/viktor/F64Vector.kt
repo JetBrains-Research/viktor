@@ -43,18 +43,22 @@ fun DoubleArray.asVector(offset: Int = 0, size: Int = this.size): F64Vector {
  */
 open class F64Vector internal constructor(
         /** Raw data array. */
-        val data: DoubleArray,
+        override val data: DoubleArray,
         /** Offset of the first vector element in the raw data array. */
-        val offset: Int,
+        override val offset: Int,
         /** Number of elements in the raw data array to use. */
-        val size: Int,
+        override val size: Int,
         /** Indexing step. */
-        val stride: Int) {
+        private val stride: Int) : F64Array.CastOps<F64Vector> {
+
+    override val strides: IntArray get() = intArrayOf(stride)
+
+    /** Returns the shape of this vector. */
+    override val shape: IntArray get() = intArrayOf(size)
 
     val indices: IntRange get() = 0..size - 1
 
-    /** Returns the shape of this vector. */
-    val shape: IntArray get() = intArrayOf(size)
+    override fun flatten() = this
 
     operator fun get(pos: Int): Double {
         try {
@@ -112,7 +116,7 @@ open class F64Vector internal constructor(
         return false
     }
 
-    open fun fill(init: Double) {
+    override fun fill(init: Double) {
         for (pos in 0..size - 1) {
             unsafeSet(pos, init)
         }
@@ -126,8 +130,22 @@ open class F64Vector internal constructor(
         }
     }
 
+    override fun copy(): F64Vector {
+        val copy = F64Vector(size)
+        copyTo(copy)
+        return copy
+    }
+
+    override fun copyTo(other: F64Array) {
+        checkShape(other)
+        other as F64Vector
+        for (pos in 0..size - 1) {
+            other.unsafeSet(pos, unsafeGet(pos))
+        }
+    }
+
     /** An alias for [transpose]. */
-    val T: F64Matrix2 get() = transpose()
+    override val T: F64Matrix get() = transpose()
 
     /**
      * Constructs a column-vector view of this vector in O(1) time.
@@ -135,7 +153,7 @@ open class F64Vector internal constructor(
      * A column vector is a matrix with [size] rows and a single column,
      * e.g. `[1, 2, 3]^T` is `[[1], [2], [3]]`.
      */
-    fun transpose() = reshape(size, 1)
+    override fun transpose(): F64Matrix = reshape(1, size) as F64Matrix
 
     /**
      * Appends this vector to another vector.
@@ -143,25 +161,6 @@ open class F64Vector internal constructor(
      * @since 0.2.3
      */
     fun append(other: F64Vector) = concatenate(this, other)
-
-    /** Returns a copy of the elements in this vector. */
-    fun copy(): F64Vector {
-        val copy = F64Vector(size)
-        copyTo(copy)
-        return copy
-    }
-
-    /**
-     * Copies the elements in this vector to [other].
-     *
-     * Optimized for dense vectors.
-     */
-    open fun copyTo(other: F64Vector) {
-        require(size == other.size)
-        for (pos in 0..size - 1) {
-            other.unsafeSet(pos, unsafeGet(pos))
-        }
-    }
 
     /**
      * Computes a dot product of this vector with an array.
@@ -186,13 +185,6 @@ open class F64Vector internal constructor(
     open infix fun dot(other: F64Vector) = balancedDot { other[it] }
 
     /**
-     * Computes the mean of the elements.
-     *
-     * Optimized for dense vectors.
-     */
-    open fun mean() = sum() / size
-
-    /**
      * Computes the unbiased standard deviation of the elements.
      *
      * Optimized for dense vectors.
@@ -205,12 +197,7 @@ open class F64Vector internal constructor(
         return Math.sqrt((s2 - s * s / size) / (size - 1))
     }
 
-    /**
-     * Returns the sum of the elements using balanced summation.
-     *
-     * Optimized for dense vectors.
-     */
-    open fun sum() = balancedSum()
+    override fun sum() = balancedSum()
 
     /**
      * Computes cumulative sum of the elements.
@@ -225,104 +212,65 @@ open class F64Vector internal constructor(
         }
     }
 
-    /**
-     * Returns the minimum element.
-     *
-     * Optimized for dense vectors.
-     */
-    open fun min() = unsafeGet(argMin())
+    override fun min() = unsafeGet(argMin())
 
-    /**
-     * Returns the maximum element.
-     *
-     * Optimized for dense vectors.
-     */
-    open fun max() = unsafeGet(argMax())
+    override fun argMin(): Int {
+        require(size > 0) { "no data" }
+        var minPos = 0
+        var minValue = Double.POSITIVE_INFINITY
+        for (pos in 0..size - 1) {
+            val value = unsafeGet(pos)
+            if (value < minValue) {
+                minPos = pos
+                minValue = value
+            }
+        }
 
-    fun exp() = copy().apply { expInPlace() }
+        return minPos
+    }
 
-    /**
-     * Computes the exponent of each element of this vector.
-     *
-     * Optimized for dense vectors.
-     */
-    open fun expInPlace() {
+    override fun max() = unsafeGet(argMax())
+
+    override fun argMax(): Int {
+        require(size > 0) { "no data" }
+        var maxPos = 0
+        var maxValue = Double.NEGATIVE_INFINITY
+        for (pos in 0..size - 1) {
+            val value = unsafeGet(pos)
+            if (value > maxValue) {
+                maxPos = pos
+                maxValue = value
+            }
+        }
+
+        return maxPos
+    }
+
+    override fun expInPlace() {
         for (pos in 0..size - 1) {
             unsafeSet(pos, FastMath.exp(unsafeGet(pos)))
         }
     }
 
-    fun expm1() = copy().apply { expm1InPlace() }
-
-    /**
-     * Computes exp(x) - 1 for each element of this vector.
-     *
-     * Optimized for dense vectors.
-     *
-     * @since 0.3.0
-     */
-    open fun expm1InPlace() {
+    override fun expm1InPlace() {
         for (pos in 0..size - 1) {
             unsafeSet(pos, FastMath.expm1(unsafeGet(pos)))
         }
     }
 
-    fun log() = copy().apply { logInPlace() }
-
-    /**
-     * Computes the natural log of each element of this vector.
-     *
-     * Optimized for dense vectors.
-     */
-    open fun logInPlace() {
+    override fun logInPlace() {
         for (pos in 0..size - 1) {
             unsafeSet(pos, Math.log(unsafeGet(pos)))
         }
     }
 
-    fun log1p() = copy().apply { log1pInPlace() }
-
-    /**
-     * Computes log(1 + x) for each element of this vector.
-     *
-     * Optimized for dense vectors.
-     *
-     * @since 0.3.0
-     */
-    open fun log1pInPlace() {
+    override fun log1pInPlace() {
         for (pos in 0..size - 1) {
             unsafeSet(pos, Math.log1p(unsafeGet(pos)))
         }
     }
 
-    /**
-     * Rescales the elements so that the sum is 1.0.
-     *
-     * The operation is done **in place**.
-     */
-    fun rescale() {
-        this /= sum() + Precision.EPSILON * size.toDouble()
-    }
-
-    /**
-     * Rescales the element so that the exponent of the sum is 1.0.
-     *
-     * Optimized for dense vectors.
-     *
-     * The operation is done **in place**.
-     */
-    open fun logRescale() {
-        this -= logSumExp()
-    }
-
-    /**
-     * Computes
-     *
-     *   log(exp(v[0]) + ... + exp(v[size - 1]))
-     *
-     * in a numerically stable way.
-     */
-    open fun logSumExp(): Double {
+    override fun logSumExp(): Double {
         val offset = max()
         val acc = KahanSum()
         for (pos in 0..size - 1) {
@@ -332,19 +280,17 @@ open class F64Vector internal constructor(
         return Math.log(acc.result()) + offset
     }
 
-    infix fun logAddExp(other: F64Vector) = copy().apply { logAddExp(other, this) }
-
-    open fun logAddExp(other: F64Vector, dst: F64Vector) {
-        checkSize(other)
-        checkSize(dst)
+    override fun logAddExp(other: F64Array, dst: F64Array) {
+        checkShape(other)
+        checkShape(dst)
+        other as F64Vector
+        dst as F64Vector
         for (pos in 0..size - 1) {
             dst.unsafeSet(pos, unsafeGet(pos) logAddExp other.unsafeGet(pos))
         }
     }
 
-    operator fun unaryPlus() = this
-
-    open operator fun unaryMinus(): F64Vector {
+    override fun unaryMinus(): F64Vector {
         // XXX 'v' is always dense but it might be too small to benefit
         //     from SIMD.
         val v = copy()
@@ -355,69 +301,57 @@ open class F64Vector internal constructor(
         return v
     }
 
-    operator fun plus(other: F64Vector) = copy().apply { this += other }
-
-    operator open fun plusAssign(other: F64Vector) {
-        checkSize(other)
+    override fun plusAssign(other: F64Array) {
+        checkShape(other)
+        other as F64Vector
         for (pos in 0..size - 1) {
             unsafeSet(pos, unsafeGet(pos) + other.unsafeGet(pos))
         }
     }
 
-    operator fun plus(update: Double) = copy().apply { this += update }
-
-    operator open fun plusAssign(update: Double) {
+    override fun plusAssign(update: Double) {
         for (pos in 0..size - 1) {
             unsafeSet(pos, unsafeGet(pos) + update)
         }
     }
 
-    operator fun minus(other: F64Vector) = copy().apply { this -= other }
-
-    operator open fun minusAssign(other: F64Vector) {
-        checkSize(other)
+    override fun minusAssign(other: F64Array) {
+        checkShape(other)
+        other as F64Vector
         for (pos in 0..size - 1) {
             unsafeSet(pos, unsafeGet(pos) - other.unsafeGet(pos))
         }
     }
 
-    operator fun minus(update: Double) = copy().apply { this -= update }
-
-    operator open fun minusAssign(update: Double) {
+    override fun minusAssign(update: Double) {
         for (pos in 0..size - 1) {
             unsafeSet(pos, unsafeGet(pos) - update)
         }
     }
 
-    operator fun times(other: F64Vector) = copy().apply { this *= other }
-
-    operator open fun timesAssign(other: F64Vector) {
-        checkSize(other)
+    override fun timesAssign(other: F64Array) {
+        checkShape(other)
+        other as F64Vector
         for (pos in 0..size - 1) {
             unsafeSet(pos, unsafeGet(pos) * other.unsafeGet(pos))
         }
     }
 
-    operator fun times(update: Double) = copy().apply { this *= update }
-
-    operator open fun timesAssign(update: Double) {
+    override fun timesAssign(update: Double) {
         for (pos in 0..size - 1) {
             unsafeSet(pos, unsafeGet(pos) * update)
         }
     }
 
-    operator fun div(other: F64Vector) = copy().apply { this /= other }
-
-    operator open fun divAssign(other: F64Vector) {
-        checkSize(other)
+    override fun divAssign(other: F64Array) {
+        checkShape(other)
+        other as F64Vector
         for (pos in 0..size - 1) {
             unsafeSet(pos, unsafeGet(pos) / other.unsafeGet(pos))
         }
     }
 
-    operator fun div(update: Double) = copy().apply { this /= update }
-
-    operator open fun divAssign(update: Double) {
+    override fun divAssign(update: Double) {
         for (pos in 0..size - 1) {
             unsafeSet(pos, unsafeGet(pos) / update)
         }
@@ -427,7 +361,7 @@ open class F64Vector internal constructor(
 
     fun isNotEmpty() = size > 0
 
-    open fun toArray() = DoubleArray(size) { unsafeGet(it) }
+    override fun toArray() = DoubleArray(size) { unsafeGet(it) }
 
     /** Creates an iterator over the elements of the array. */
     operator fun iterator(): DoubleIterator = object : DoubleIterator() {
@@ -483,39 +417,18 @@ open class F64Vector internal constructor(
 
     override fun toString() = toString(8)
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) {
-            return true
-        } else if (other !is F64Vector) {
-            return false
+    override fun equals(other: Any?) = when {
+        this === other -> true
+        other !is F64Vector -> false
+        size != other.size -> false
+        else -> (0..size - 1).all {
+            Precision.equals(unsafeGet(it), other.unsafeGet(it))
         }
-
-        if (size != other.size) {
-            return false
-        }
-
-        for (pos in 0..size - 1) {
-            if (!Precision.equals(unsafeGet(pos), other.unsafeGet(pos))) {
-                return false
-            }
-        }
-
-        return true
     }
 
-    override fun hashCode(): Int {
-        var acc = 1
-        for (pos in 0..size - 1) {
-            // XXX calling #hashCode results in boxing, see KT-7571.
-            acc = 31 * java.lang.Double.hashCode(unsafeGet(pos))
-        }
-
-        return acc
-    }
-
-    @Suppress("nothing_to_inline")
-    internal inline fun checkSize(other: F64Vector) {
-        require(size == other.size) { "non-conformable arrays" }
+    override fun hashCode() = (0..size - 1).fold(1) { acc, pos ->
+        // XXX calling #hashCode results in boxing, see KT-7571.
+        31 * acc + java.lang.Double.hashCode(unsafeGet(pos))
     }
 
     companion object {

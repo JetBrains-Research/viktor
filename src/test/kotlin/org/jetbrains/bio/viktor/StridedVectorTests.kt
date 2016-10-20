@@ -86,13 +86,14 @@ class F64VectorCreationTest {
     }
 }
 
-class StridedVectorSlicing {
+class F64VectorSlicing {
     @Test fun transpose() {
-        assertEquals(F64Vector.of(1.0), F64Vector.of(1.0).T.columnView(0))
+        assertEquals(F64Vector.of(1.0),
+                     F64Vector.of(1.0).T.view(0, along = 1) as F64Vector)
         assertEquals(F64Vector.of(1.0, 2.0),
-                     F64Vector.of(1.0, 2.0).T.columnView(0))
+                     F64Vector.of(1.0, 2.0).T.view(0, along = 1) as F64Vector)
         assertEquals(F64Vector.of(1.0, 2.0, 3.0),
-                     F64Vector.of(1.0, 2.0, 3.0).T.columnView(0))
+                     F64Vector.of(1.0, 2.0, 3.0).T.view(0, along = 1) as F64Vector)
     }
 
     @Test fun slice() {
@@ -137,7 +138,7 @@ class StridedVectorSlicing {
 @RunWith(Parameterized::class)
 class StridedVectorGetSet(private val values: DoubleArray,
                           private val offset: Int,
-                          private val size: Int,
+                          size: Int,
                           private val stride: Int) {
 
     private val v = F64Vector.create(values, offset, size, stride)
@@ -348,6 +349,7 @@ class F64VectorAgainstRTest {
 class F64VectorMathTest(private val v: F64Vector) {
     @Test fun exp() {
         val expV = (v / v.max()).exp()
+        expV as F64Vector
         for (i in v.indices) {
             assertEquals(FastMath.exp(v[i] / v.max()), expV[i], 1e-8)
         }
@@ -355,6 +357,7 @@ class F64VectorMathTest(private val v: F64Vector) {
 
     @Test fun expm1() {
         val expm1V = (v / v.max()).expm1()
+        expm1V as F64Vector
         for (i in v.indices) {
             assertEquals(FastMath.expm1(v[i] / v.max()), expm1V[i], 1e-8)
         }
@@ -362,6 +365,7 @@ class F64VectorMathTest(private val v: F64Vector) {
 
     @Test fun log() {
         val logV = v.log()
+        logV as F64Vector
         for (i in v.indices) {
             assertEquals(FastMath.log(v[i]), logV[i], 1e-8)
         }
@@ -369,6 +373,7 @@ class F64VectorMathTest(private val v: F64Vector) {
 
     @Test fun log1p() {
         val log1pV = v.log1p()
+        log1pV as F64Vector
         for (i in v.indices) {
             assertEquals(FastMath.log1p(v[i]), log1pV[i], 1e-8)
         }
@@ -388,6 +393,7 @@ class F64VectorMathTest(private val v: F64Vector) {
 
     @Test fun logAddExp() {
         val vLaeV = v logAddExp v
+        vLaeV as F64Vector
         for (i in v.indices) {
             assertEquals(v[i] logAddExp v[i], vLaeV[i], 1e-8)
         }
@@ -478,7 +484,7 @@ private fun IntRange.toStrided(): F64Vector {
     // 1. to ensure 'offset' and 'stride' are used correctly,
     // 2. to force the use of fallback implementation.
     val values = IntStream.range(start, endInclusive + 1)
-            .mapToDouble { it.toDouble() }
+            .mapToDouble(Int::toDouble)
             .flatMap { DoubleStream.of(Double.NaN, it) }
             .toArray()
     return F64Vector.create(values, offset = 1,

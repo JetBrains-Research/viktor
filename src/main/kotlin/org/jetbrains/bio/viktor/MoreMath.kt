@@ -5,7 +5,7 @@ import org.apache.commons.math3.util.FastMath
 /**
  * Evaluates log(exp(a) + exp(b)) using the following trick
  *
- *     log(exp(a) + log(exp(b)) = a + log(1 + exp(b - a))
+ *     log(exp(a) + exp(b)) = a + log(1 + exp(b - a))
  *
  * assuming a >= b.
  */

@@ -14,9 +14,9 @@ open class DenseF64Vector protected constructor(data: DoubleArray, offset: Int, 
         data.fill(init, offset, offset + size)
     }
 
-    override fun copyTo(other: F64Vector) {
+    override fun copyTo(other: F64Array) {
         if (other is DenseF64Vector) {
-            checkSize(other)
+            checkShape(other)
             System.arraycopy(data, offset, other.data, other.offset, size)
         } else {
             super.copyTo(other)
@@ -59,8 +59,6 @@ class SmallDenseF64Vector(data: DoubleArray, offset: Int, size: Int) :
 class LargeDenseF64Vector(data: DoubleArray, offset: Int, size: Int) :
         DenseF64Vector(data, offset, size) {
 
-    override fun mean() = NativeSpeedups.sum(data, offset, size) / size
-
     override fun sd() = NativeSpeedups.sd(data, offset, size)
 
     override fun sum() = NativeSpeedups.sum(data, offset, size)
@@ -102,10 +100,10 @@ class LargeDenseF64Vector(data: DoubleArray, offset: Int, size: Int) :
 
     override fun logSumExp() = NativeSpeedups.unsafeLogSumExp(data, offset, size)
 
-    override fun logAddExp(other: F64Vector, dst: F64Vector) {
+    override fun logAddExp(other: F64Array, dst: F64Array) {
         if (other is DenseF64Vector && dst is DenseF64Vector) {
-            checkSize(other)
-            checkSize(dst)
+            checkShape(other)
+            checkShape(dst)
             NativeSpeedups.unsafeLogAddExp(data, offset,
                                            other.data, other.offset,
                                            dst.data, dst.offset, size)
@@ -124,9 +122,9 @@ class LargeDenseF64Vector(data: DoubleArray, offset: Int, size: Int) :
         NativeSpeedups.unsafePlusScalar(data, offset, update, data, offset, size)
     }
 
-    override fun plusAssign(other: F64Vector) {
+    override fun plusAssign(other: F64Array) {
         if (other is DenseF64Vector) {
-            checkSize(other)
+            checkShape(other)
             NativeSpeedups.unsafePlus(data, offset,
                                       other.data, other.offset,
                                       data, offset, size)
@@ -139,9 +137,9 @@ class LargeDenseF64Vector(data: DoubleArray, offset: Int, size: Int) :
         NativeSpeedups.unsafeMinusScalar(data, offset, update, data, offset, size)
     }
 
-    override fun minusAssign(other: F64Vector) {
+    override fun minusAssign(other: F64Array) {
         if (other is DenseF64Vector) {
-            checkSize(other)
+            checkShape(other)
             NativeSpeedups.unsafeMinus(data, offset,
                                        other.data, other.offset,
                                        data, offset, size)
@@ -154,7 +152,7 @@ class LargeDenseF64Vector(data: DoubleArray, offset: Int, size: Int) :
         NativeSpeedups.unsafeTimesScalar(data, offset, update, data, offset, size)
     }
 
-    override fun timesAssign(other: F64Vector) {
+    override fun timesAssign(other: F64Array) {
         if (other is DenseF64Vector) {
             NativeSpeedups.unsafeTimes(data, offset,
                                        other.data, other.offset,
@@ -168,7 +166,7 @@ class LargeDenseF64Vector(data: DoubleArray, offset: Int, size: Int) :
         NativeSpeedups.unsafeDivScalar(data, offset, update, data, offset, size)
     }
 
-    override fun divAssign(other: F64Vector) {
+    override fun divAssign(other: F64Array) {
         if (other is DenseF64Vector) {
             NativeSpeedups.unsafeDiv(data, offset,
                                      other.data, other.offset,
