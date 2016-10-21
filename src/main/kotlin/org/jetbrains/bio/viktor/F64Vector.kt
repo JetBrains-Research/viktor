@@ -8,7 +8,7 @@ import java.text.DecimalFormat
  * Wraps a given array of elements. The array will not be copied.
  */
 fun DoubleArray.asVector(offset: Int = 0, size: Int = this.size): F64Vector {
-    return F64Vector.create(this, offset, size, 1)
+    return F64Vector.create(this, offset, 1, size)
 }
 
 /**
@@ -46,10 +46,10 @@ open class F64Vector internal constructor(
         override val data: DoubleArray,
         /** Offset of the first vector element in the raw data array. */
         override val offset: Int,
-        /** Number of elements in the raw data array to use. */
-        override val size: Int,
         /** Indexing step. */
-        private val stride: Int) : F64Array.CastOps<F64Vector> {
+        private val stride: Int,
+        /** Number of elements in the raw data array to use. */
+        override val size: Int) : F64Array.CastOps<F64Vector> {
 
     override val strides: IntArray get() = intArrayOf(stride)
 
@@ -98,8 +98,8 @@ open class F64Vector internal constructor(
             throw IndexOutOfBoundsException()
         }
 
-        return F64Vector(data, offset + from, (to - from + step - 1) / step,
-                             stride * step)
+        return F64Vector(data, offset + from, stride * step,
+                         (to - from + step - 1) / step)
     }
 
     operator fun set(any: _I, init: Double) = fill(init)
@@ -144,7 +144,6 @@ open class F64Vector internal constructor(
         }
     }
 
-    /** An alias for [transpose]. */
     override val T: F64Matrix get() = transpose()
 
     /**
@@ -153,7 +152,7 @@ open class F64Vector internal constructor(
      * A column vector is a matrix with [size] rows and a single column,
      * e.g. `[1, 2, 3]^T` is `[[1], [2], [3]]`.
      */
-    override fun transpose(): F64Matrix = reshape(1, size) as F64Matrix
+    override fun transpose() = reshape(size, 1) as F64Matrix
 
     /**
      * Appends this vector to another vector.
@@ -383,8 +382,7 @@ open class F64Vector internal constructor(
         else -> format(value)
     }
 
-    fun toString(maxDisplay: Int,
-                 format: DecimalFormat = DecimalFormat("#.####")): String {
+    override fun toString(maxDisplay: Int, format: DecimalFormat): String {
         val sb = StringBuilder()
         sb.append('[')
 
@@ -435,7 +433,7 @@ open class F64Vector internal constructor(
         /**
          * Create a zero-filled vector of a given `size`.
          */
-        operator fun invoke(size: Int) = create(DoubleArray(size), 0, size, 1)
+        operator fun invoke(size: Int) = create(DoubleArray(size), 0, 1, size)
 
         operator inline fun invoke(size: Int, block: (Int) -> Double): F64Vector {
             val v = this(size)
@@ -487,12 +485,12 @@ open class F64Vector internal constructor(
         }
 
         internal fun create(data: DoubleArray, offset: Int = 0,
-                            size: Int = data.size, stride: Int = 1): F64Vector {
+                            stride: Int = 1, size: Int = data.size): F64Vector {
             require(offset + size <= data.size) { "not enough data" }
             return if (stride == 1) {
                 DenseF64Vector.create(data, offset, size)
             } else {
-                F64Vector(data, offset, size, stride)
+                F64Vector(data, offset, stride, size)
             }
         }
     }

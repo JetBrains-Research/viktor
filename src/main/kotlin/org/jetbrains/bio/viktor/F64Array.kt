@@ -1,6 +1,7 @@
 package org.jetbrains.bio.viktor
 
 import org.apache.commons.math3.util.Precision
+import java.text.DecimalFormat
 import java.util.*
 
 interface F64Array {
@@ -50,7 +51,7 @@ interface F64Array {
             reshaped[i] = reshaped[i + 1] * shape[i + 1]
         }
 
-        return F64Matrix(data, offset, reshaped, shape)
+        return F64Array(data, offset, reshaped, shape)
     }
 
     /**
@@ -65,12 +66,9 @@ interface F64Array {
     val T: F64Array get() = transpose()
 
     /** Constructs matrix transpose in O(1) time. */
-    fun transpose(): F64Array = if (nDim < 2) {
-        this
-    } else {
-        F64Matrix(data, offset, strides.reversedArray(), shape.reversedArray())
-    }
+    fun transpose(): F64Matrix
 
+    /** Fils this array with a given [init] value. */
     fun fill(init: Double)
 
     /**
@@ -240,6 +238,8 @@ interface F64Array {
     }
 
     fun toArray(): Any
+
+    fun toString(maxDisplay: Int, format: DecimalFormat = DecimalFormat("#.####")): String
 
     interface ViaFlatten<out SELF : F64Array> : F64Array.CastOps<SELF> {
         override fun fill(init: Double) = flatten().fill(init)

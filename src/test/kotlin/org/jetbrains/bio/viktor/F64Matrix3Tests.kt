@@ -41,7 +41,7 @@ class F64Matrix3Slicing {
     @Test fun reshapeWithStride() {
         val v = F64Vector.create(doubleArrayOf(0.0, 1.0, 2.0, 3.0,
                                                4.0, 5.0, 6.0, 7.0),
-                                 0, 4, stride = 2)
+                                 0, size = 4, stride = 2)
         assertArrayEquals(arrayOf(arrayOf(doubleArrayOf(0.0, 2.0)),
                                   arrayOf(doubleArrayOf(4.0, 6.0))),
                           (v.reshape(2, 1, 2) as F64Matrix).toArray())
@@ -103,10 +103,10 @@ class F64Matrix3GetSet {
     }
 
     @Test fun setMagicVector() {
-        val copy = m.copy() as F64Matrix
+        val copy = m.copy()
         val replacement = F64Vector.full(m.shape[2], 42.0)
         (copy.view(0) as F64Matrix)[0] = replacement
-        assertEquals(replacement, copy[0, 0])
+        assertEquals(replacement, (copy.view(0) as F64Matrix)[0])
 
         for (d in 1..m.shape[0] - 1) {
             for (r in 1..m.shape[1] - 1) {
@@ -118,13 +118,13 @@ class F64Matrix3GetSet {
         }
     }
 
-//    @Test fun setMagicVectorViaScalar() {
-//        val copy1 = m.copy()
-//        copy1[1, 0] = 42.0
-//        val copy2 = m.copy()
-//        copy2[1, 0] = F64Vector.full(m.columnsNumber, 42.0)
-//        assertEquals(copy1, copy2)
-//    }
+    @Test fun setMagicVectorViaScalar() {
+        val copy1 = m.copy()
+        (copy1.view(1) as F64Matrix)[0] = 42.0
+        val copy2 = m.copy()
+        (copy2.view(1) as F64Matrix)[0] = F64Vector.full(m.shape[2], 42.0)
+        assertEquals(copy1, copy2)
+    }
 
     @Test fun setMagicScalar() {
         val copy = m.copy()

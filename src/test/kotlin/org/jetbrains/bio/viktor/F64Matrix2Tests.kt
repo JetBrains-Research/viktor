@@ -55,7 +55,7 @@ class F64Matrix2Slicing {
     @Test fun reshapeWithStride() {
         val v = F64Vector.create(doubleArrayOf(0.0, 1.0, 2.0, 3.0,
                                                4.0, 5.0, 6.0, 7.0),
-                                 0, 4, stride = 2)
+                                 0, size = 4, stride = 2)
         assertArrayEquals(arrayOf(doubleArrayOf(0.0, 2.0),
                                   doubleArrayOf(4.0, 6.0)),
                           (v.reshape(2, 2) as F64Matrix).toArray())
@@ -151,17 +151,17 @@ class F64Matrix2OpsTest {
         assertNotEquals(m, m.T)
     }
 
-//    @Test fun _toString() {
-//        assertEquals("[]", F64Matrix(0, 0).toString())
-//        assertEquals("[[]]", F64Matrix(1, 0).toString())
-//        assertEquals("[[0], [0]]", F64Matrix(2, 1).toString())
-//    }
-//
-//    @Test fun toStringLarge() {
-//        val v = F64Vector(1024) { it.toDouble() }
-//        assertEquals("[[0, 1], [2, 3], ..., [1020, 1021], [1022, 1023]]",
-//                     v.reshape(512, 2).toString(4))
-//        assertEquals("[[0, 1, ..., 510, 511], [512, 513, ..., 1022, 1023]]",
-//                     v.reshape(2, 512).toString(4))
-//    }
+    @Test fun _toString() {
+        assertEquals("[]", F64Matrix(0, 0).toString())
+        assertEquals("[[]]", F64Matrix(1, 0).toString())
+        assertEquals("[[0], [0]]", F64Matrix(2, 1).toString())
+    }
+
+    @Test fun toStringLarge() {
+        val v = F64Vector(1024) { it.toDouble() }
+        assertEquals("[[0, 1], [2, 3], ..., [1020, 1021], [1022, 1023]]",
+                     v.reshape(512, 2).toString(4))
+        assertEquals("[[0, 1, ..., 510, 511], [512, 513, ..., 1022, 1023]]",
+                     v.reshape(2, 512).toString(4))
+    }
 }

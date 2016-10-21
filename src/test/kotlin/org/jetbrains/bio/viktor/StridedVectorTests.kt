@@ -141,7 +141,7 @@ class StridedVectorGetSet(private val values: DoubleArray,
                           size: Int,
                           private val stride: Int) {
 
-    private val v = F64Vector.create(values, offset, size, stride)
+    private val v = F64Vector.create(values, offset, stride, size)
 
     @Test fun get() {
         for (i in v.indices) {

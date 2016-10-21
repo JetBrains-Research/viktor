@@ -15,14 +15,12 @@ open class F64Matrix internal constructor(
         override val strides: IntArray,
         override val shape: IntArray) : F64Array.ViaFlatten<F64Matrix> {
 
-    /** Returns a copy of the elements in this matrix. */
     override fun copy(): F64Matrix {
         val copy = F64Matrix(*shape)
         copyTo(copy)
         return copy
     }
 
-    /** Copies elements in this matrix to [other] matrix. */
     override fun copyTo(other: F64Array) {
         checkShape(other)
         other as F64Matrix
@@ -36,15 +34,13 @@ open class F64Matrix internal constructor(
         }
     }
 
-    /**
-     * Flattens the matrix into a vector in O(1) time.
-     *
-     * No data copying is performed, thus the operation is only applicable
-     * to dense matrices.
-     */
     override fun flatten(): F64Vector {
         check(isDense) { "matrix is not dense" }
         return data.asVector(offset, shape.product())
+    }
+
+    override fun transpose(): F64Matrix {
+        return F64Matrix(data, offset, strides.reversedArray(), shape.reversedArray())
     }
 
     /**
@@ -70,14 +66,17 @@ open class F64Matrix internal constructor(
      * Note that it could be at least 1.5x slower than specialized versions.
      */
     operator fun set(vararg indices: Int, value: Double) {
+        require(indices.size == nDim) { "broadcasting set is not supported" }
         safeIndex({ indices }) { data[unsafeIndex(indices)] = value }
     }
 
     operator fun set(r: Int, c: Int, value: Double) {
+        require(nDim == 2) { "broadcasting set is not supported" }
         safeIndex({ intArrayOf(r, c) }) { data[unsafeIndex(r, c)] = value }
     }
 
     operator fun set(d: Int, r: Int, c: Int, value: Double) {
+        require(nDim == 3) { "broadcasting set is not supported" }
         safeIndex({ intArrayOf(d, r, c) }) { data[unsafeIndex(d, r, c)] = value }
     }
 
@@ -156,10 +155,37 @@ open class F64Matrix internal constructor(
 
     override fun toArray(): Array<*> = Array(size) { view(it).toArray() }
 
-    fun toString(maxDisplay: Int,
-                 format: DecimalFormat = DecimalFormat("#.####")): String {
-        TODO()
+    override fun toString(maxDisplay: Int, format: DecimalFormat): String {
+        val sb = StringBuilder()
+        sb.append('[')
+        if (maxDisplay < size) {
+            for (r in 0..maxDisplay / 2 - 1) {
+                sb.append(this[r].toString(maxDisplay, format)).append(", ")
+            }
+
+            sb.append("..., ")
+
+            val leftover = maxDisplay - maxDisplay / 2
+            for (r in size - leftover..size - 1) {
+                sb.append(this[r].toString(maxDisplay, format))
+                if (r < size - 1) {
+                    sb.append(", ")
+                }
+            }
+        } else {
+            for (r in 0..size - 1) {
+                sb.append(this[r].toString(maxDisplay, format))
+                if (r < size - 1) {
+                    sb.append(", ")
+                }
+            }
+        }
+
+        sb.append(']')
+        return sb.toString()
     }
+
+    override fun toString() = toString(8)
 
     override fun equals(other: Any?) = when {
         this === other -> true

@@ -7,7 +7,7 @@ package org.jetbrains.bio.viktor
  * @since 0.1.0
  */
 open class DenseF64Vector protected constructor(data: DoubleArray, offset: Int, size: Int) :
-        F64Vector(data, offset, size, 1) {
+        F64Vector(data, offset, 1, size) {
     override fun unsafeIndex(pos: Int) = offset + pos
 
     override fun fill(init: Double) {
