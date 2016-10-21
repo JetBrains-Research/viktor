@@ -4,6 +4,33 @@ import org.apache.commons.math3.util.Precision
 import java.text.DecimalFormat
 import java.util.*
 
+/**
+ * A strided n-dimensional array stored in a [DoubleArray].
+ *
+ * The term *strided* means that unlike regular [DoubleArray] the
+ * elements of an [F64Array] can be at arbitrary index intervals
+ * (strides) from each other. For example
+ *
+ * ```
+ * data = [0, 1, 2, 3, 4, 5]
+ * offset = 1
+ * shape = [2]
+ * strides = [3]
+ * ```
+ *
+ * corresponds to a 1-D array with elements
+ *
+ * ```
+ * [1, 4]
+ * ```
+ *
+ * Arrays with last stride equal to 1 are called called *dense*.
+ * The distinction is important because some of the operations
+ * can be significantly optimized for dense arrays.
+ *
+ * @author Sergei Lebedev
+ * @since 0.4.0
+ */
 interface F64Array {
     val data: DoubleArray
     val offset: Int
@@ -340,11 +367,4 @@ interface F64Array {
             }
         }
     }
-}
-
-fun main(args: Array<String>) {
-    val values = DoubleArray(1024)
-    val v = values.asVector(0, values.size)
-    v.reshape(2, 4, 128)
-    v.reshape(8, 128)
 }

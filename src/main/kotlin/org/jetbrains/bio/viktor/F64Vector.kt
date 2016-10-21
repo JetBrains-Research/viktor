@@ -4,43 +4,12 @@ import org.apache.commons.math3.util.FastMath
 import org.apache.commons.math3.util.Precision
 import java.text.DecimalFormat
 
-/**
- * Wraps a given array of elements. The array will not be copied.
- */
+/** Wraps a given array of elements. The array will not be copied. */
 fun DoubleArray.asVector(offset: Int = 0, size: Int = this.size): F64Vector {
     return F64Vector.create(this, offset, 1, size)
 }
 
-/**
- * A strided vector stored in a [DoubleArray].
- *
- * Vector is backed by the raw [data] array, which is guaranteed to
- * contain at least [size] elements starting from the [offset] index.
- *
- * The term *strided* means that unlike regular [DoubleArray] the
- * elements of a vector can be at arbitrary index intervals (strides)
- * from each other. For example
- *
- * ```
- * data = [0, 1, 2, 3, 4, 5]
- * offset = 1
- * size = 2
- * stride = 3
- * ```
- *
- * corresponds to a vector with elements
- *
- * ```
- * [1, 4]
- * ```
- *
- * Vectors with `stride` equal to 1 are called called *dense*. The
- * distinction is important because some of the operations can be
- * significantly optimized for dense vectors.
- *
- * @author Sergei Lebedev
- * @since 0.1.0
- */
+/** An 1-dimensional specialization of [F64Array]. */
 open class F64Vector internal constructor(
         /** Raw data array. */
         override val data: DoubleArray,

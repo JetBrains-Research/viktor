@@ -4,7 +4,7 @@ import java.text.DecimalFormat
 import java.util.*
 
 /**
- * An n-dimensional matrix stored in a flat [DoubleArray].
+ * An n-dimensional specialization of [F64Array].
  *
  * @author Sergei Lebedev
  * @since 0.4.0
