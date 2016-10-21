@@ -9,7 +9,11 @@ fun DoubleArray.asVector(offset: Int = 0, size: Int = this.size): F64Vector {
     return F64Vector.create(this, offset, 1, size)
 }
 
-/** An 1-dimensional specialization of [F64Array]. */
+/**
+ * An 1-dimensional specialization of [F64Array].
+ *
+ * @since 0.4.0
+ */
 open class F64Vector internal constructor(
         /** Raw data array. */
         override val data: DoubleArray,
@@ -29,31 +33,15 @@ open class F64Vector internal constructor(
 
     override fun flatten() = this
 
-    operator fun get(pos: Int): Double {
-        try {
-            return unsafeGet(pos)
-        } catch (ignored: ArrayIndexOutOfBoundsException) {
-            throw IndexOutOfBoundsException("index out of bounds: $pos")
-        }
-    }
+    override val T: F64Matrix get() = transpose()
 
-    protected open fun unsafeIndex(pos: Int) = offset + pos * stride
-
-    @Suppress("nothing_to_inline")
-    internal inline fun unsafeGet(pos: Int) = data[unsafeIndex(pos)]
-
-    operator fun set(pos: Int, value: Double) {
-        try {
-            unsafeSet(pos, value)
-        } catch (ignored: ArrayIndexOutOfBoundsException) {
-            throw IndexOutOfBoundsException("index out of bounds: $pos")
-        }
-    }
-
-    @Suppress("nothing_to_inline")
-    internal inline fun unsafeSet(pos: Int, value: Double) {
-        data[unsafeIndex(pos)] = value
-    }
+    /**
+     * Constructs a column-vector view of this vector in O(1) time.
+     *
+     * A column vector is a matrix with [size] rows and a single column,
+     * e.g. `[1, 2, 3]^T` is `[[1], [2], [3]]`.
+     */
+    override fun transpose() = reshape(size, 1) as F64Matrix
 
     /**
      * Creates a sliced view of this vector in O(1) time.
@@ -71,8 +59,53 @@ open class F64Vector internal constructor(
                          (to - from + step - 1) / step)
     }
 
+    /**
+     * An indexer for accessing individual array entries without broadcasting.
+     *
+     * This is only present for compatibility with [F64Matrix] API.
+     */
+    @Deprecated("", ReplaceWith("this"))
+    val ix: Indexer get() = Indexer(this)
+
+    class Indexer internal constructor(private val v: F64Vector) {
+        operator fun get(pos: Int) = v[pos]
+
+        operator fun set(pos: Int, value: Double) {
+            v[pos] = value
+        }
+    }
+
+    operator fun get(pos: Int): Double {
+        try {
+            return unsafeGet(pos)
+        } catch (ignored: ArrayIndexOutOfBoundsException) {
+            throw IndexOutOfBoundsException("index out of bounds: $pos")
+        }
+    }
+
+    operator fun set(pos: Int, value: Double) {
+        try {
+            unsafeSet(pos, value)
+        } catch (ignored: ArrayIndexOutOfBoundsException) {
+            throw IndexOutOfBoundsException("index out of bounds: $pos")
+        }
+    }
+
+    @Suppress("nothing_to_inline")
+    internal inline fun unsafeGet(pos: Int) = data[unsafeIndex(pos)]
+
+    @Suppress("nothing_to_inline")
+    internal inline fun unsafeSet(pos: Int, value: Double) {
+        data[unsafeIndex(pos)] = value
+    }
+
+    @Suppress("nothing_to_inline")
+    protected open fun unsafeIndex(pos: Int) = offset + pos * stride
+
+    @Suppress("unused_parameter")
     operator fun set(any: _I, init: Double) = fill(init)
 
+    @Suppress("unused_parameter")
     operator fun set(any: _I, other: F64Vector) = other.copyTo(this)
 
     operator fun contains(other: Double): Boolean {
@@ -112,16 +145,6 @@ open class F64Vector internal constructor(
             other.unsafeSet(pos, unsafeGet(pos))
         }
     }
-
-    override val T: F64Matrix get() = transpose()
-
-    /**
-     * Constructs a column-vector view of this vector in O(1) time.
-     *
-     * A column vector is a matrix with [size] rows and a single column,
-     * e.g. `[1, 2, 3]^T` is `[[1], [2], [3]]`.
-     */
-    override fun transpose() = reshape(size, 1) as F64Matrix
 
     /**
      * Appends this vector to another vector.

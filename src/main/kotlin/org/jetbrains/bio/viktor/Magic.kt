@@ -8,6 +8,12 @@ package org.jetbrains.bio.viktor
  */
 object _I {}
 
+/**
+ * Converts a multi-dimensional index to an index into the flattened array.
+ *
+ * @since 0.4.0
+ * @see unravelIndex
+ */
 fun ravelIndex(indices: IntArray, shape: IntArray): Int {
     var index = 0
     var stride = 1
@@ -19,6 +25,11 @@ fun ravelIndex(indices: IntArray, shape: IntArray): Int {
     return index
 }
 
+/**
+ * The inverse of [ravelIndex].
+ *
+ * @since 0.4.0
+ */
 fun unravelIndex(index: Int, shape: IntArray): IntArray {
     var remaining = index
     val indices = IntArray(shape.size)

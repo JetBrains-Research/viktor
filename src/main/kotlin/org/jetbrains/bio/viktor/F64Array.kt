@@ -95,7 +95,7 @@ interface F64Array {
     /** Constructs matrix transpose in O(1) time. */
     fun transpose(): F64Matrix
 
-    /** Fils this array with a given [init] value. */
+    /** Fills this array with a given [init] value. */
     fun fill(init: Double)
 
     /**
@@ -139,7 +139,7 @@ interface F64Array {
      * flattened array.
      *
      * See [ravelIndex] and [unravelIndex] for details.
-     */    
+     */
     fun argMin(): Int
 
     /**
@@ -157,7 +157,7 @@ interface F64Array {
      * Optimized for dense arrays.
      *
      * @since 0.3.0
-     */    
+     */
     fun expm1InPlace()
 
     fun expm1() = copy().apply { expm1InPlace() }
@@ -166,7 +166,7 @@ interface F64Array {
      * Computes the natural log of each element of this array.
      *
      * Optimized for dense arrays.
-     */    
+     */
     fun logInPlace()
 
     fun log() = copy().apply { logInPlace() }
@@ -177,7 +177,7 @@ interface F64Array {
      * Optimized for dense arrays.
      *
      * @since 0.3.0
-     */    
+     */
     fun log1pInPlace()
 
     fun log1p() = copy().apply { log1pInPlace() }
@@ -355,8 +355,8 @@ interface F64Array {
         override fun div(other: F64Array): SELF = copy().apply { this /= other }
 
         override fun div(update: Double): SELF = copy().apply { this /= update }
-    }    
-    
+    }
+
     companion object {
         internal operator fun invoke(data: DoubleArray, offset: Int,
                                      strides: IntArray, shape: IntArray): F64Array {

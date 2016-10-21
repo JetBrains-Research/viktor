@@ -12,13 +12,19 @@ class F64Matrix3Slicing {
                                  4.0, 5.0).reshape(3, 1, 2) as F64Matrix
 
     @Test fun view() {
-        assertEquals(F64Vector.of(0.0, 1.0).reshape(1, 2), m.view(0))
-        assertEquals(F64Vector.of(2.0, 3.0).reshape(1, 2), m.view(1))
-        assertEquals(F64Vector.of(4.0, 5.0).reshape(1, 2), m.view(2))
+        assertEquals(F64Vector.of(0.0, 1.0).reshape(1, 2), m[0])
+        assertEquals(F64Vector.of(2.0, 3.0).reshape(1, 2), m[1])
+        assertEquals(F64Vector.of(4.0, 5.0).reshape(1, 2), m[2])
+    }
+
+    @Test fun viewWithMagic() {
+        assertEquals(F64Vector.of(0.0, 1.0).reshape(1, 2), m[0])
+        assertEquals(F64Vector.of(2.0, 3.0).reshape(1, 2), m[1])
+        assertEquals(F64Vector.of(4.0, 5.0).reshape(1, 2), m[2])
     }
 
     @Test(expected = IndexOutOfBoundsException::class) fun viewOutOfBounds() {
-        m.view(42)
+        m[42]
     }
 
     @Test fun reshape() {
@@ -60,26 +66,26 @@ class F64Matrix3GetSet {
             .reshape(3, 1, 2) as F64Matrix
 
     @Test fun get() {
-        assertEquals(0.0, m[0, 0, 0], Precision.EPSILON)
-        assertEquals(1.0, m[0, 0, 1], Precision.EPSILON)
-        assertEquals(2.0, m[1, 0, 0], Precision.EPSILON)
-        assertEquals(3.0, m[1, 0, 1], Precision.EPSILON)
-        assertEquals(4.0, m[2, 0, 0], Precision.EPSILON)
-        assertEquals(5.0, m[2, 0, 1], Precision.EPSILON)
+        assertEquals(0.0, m.ix[0, 0, 0], Precision.EPSILON)
+        assertEquals(1.0, m.ix[0, 0, 1], Precision.EPSILON)
+        assertEquals(2.0, m.ix[1, 0, 0], Precision.EPSILON)
+        assertEquals(3.0, m.ix[1, 0, 1], Precision.EPSILON)
+        assertEquals(4.0, m.ix[2, 0, 0], Precision.EPSILON)
+        assertEquals(5.0, m.ix[2, 0, 1], Precision.EPSILON)
     }
 
     @Test(expected = IndexOutOfBoundsException::class) fun getOutOfBounds() {
-        m[42, 42, 42]
+        m.ix[42, 42, 42]
     }
 
     @Test fun set() {
         val copy = m.copy()
-        copy[1, 0, 1] = 42.0
-        assertEquals(42.0, copy[1, 0, 1], Precision.EPSILON)
+        copy.ix[1, 0, 1] = 42.0
+        assertEquals(42.0, copy.ix[1, 0, 1], Precision.EPSILON)
     }
 
     @Test(expected = IndexOutOfBoundsException::class) fun setOutOfBounds() {
-        m[42, 42, 42] = 100500.0
+        m.ix[42, 42, 42] = 100500.0
     }
 
     @Test fun setMagicMatrix() {
@@ -105,14 +111,14 @@ class F64Matrix3GetSet {
     @Test fun setMagicVector() {
         val copy = m.copy()
         val replacement = F64Vector.full(m.shape[2], 42.0)
-        (copy.view(0) as F64Matrix)[0] = replacement
-        assertEquals(replacement, (copy.view(0) as F64Matrix)[0])
+        copy[0, 0] = replacement
+        assertEquals(replacement, copy[0, 0])
 
         for (d in 1..m.shape[0] - 1) {
             for (r in 1..m.shape[1] - 1) {
                 for (c in 1..m.shape[2] - 1) {
-                    assertNotEquals(replacement[c], copy[d, r, c])
-                    assertEquals(m[d, r, c], copy[d, r, c])
+                    assertNotEquals(replacement[c], copy.ix[d, r, c])
+                    assertEquals(m.ix[d, r, c], copy.ix[d, r, c], Precision.EPSILON)
                 }
             }
         }
@@ -120,9 +126,9 @@ class F64Matrix3GetSet {
 
     @Test fun setMagicVectorViaScalar() {
         val copy1 = m.copy()
-        (copy1.view(1) as F64Matrix)[0] = 42.0
+        copy1[1, 0] = 42.0
         val copy2 = m.copy()
-        (copy2.view(1) as F64Matrix)[0] = F64Vector.full(m.shape[2], 42.0)
+        copy2[1, 0] = F64Vector.full(m.shape[2], 42.0)
         assertEquals(copy1, copy2)
     }
 

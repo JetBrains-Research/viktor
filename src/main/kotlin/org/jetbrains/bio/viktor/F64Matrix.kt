@@ -9,7 +9,7 @@ import java.util.*
  * @author Sergei Lebedev
  * @since 0.4.0
  */
-open class F64Matrix internal constructor(
+class F64Matrix internal constructor(
         override val data: DoubleArray,
         override val offset: Int,
         override val strides: IntArray,
@@ -44,73 +44,77 @@ open class F64Matrix internal constructor(
     }
 
     /**
-     * Generic getter.
-     *
-     * Note that it could be at least 1.5x slower than specialized versions.
+     * An indexer for accessing individual array entries without broadcasting.
      */
-    operator fun get(vararg indices: Int): Double {
-        return safeIndex({ indices }) { data[unsafeIndex(indices)] }
-    }
+    val ix: Indexer = Indexer(this)
 
-    operator fun get(r: Int, c: Int): Double {
-        return safeIndex({ intArrayOf(r, c) }) { data[unsafeIndex(r, c)] }
-    }
+    class Indexer internal constructor(private val m: F64Matrix) {
+        /**
+         * Generic getter.
+         *
+         * Note that it could be at least 1.5x slower than specialized versions.
+         */
+        operator fun get(vararg indices: Int): Double {
+            return safeIndex({ indices }) { m.data[unsafeIndex(indices)] }
+        }
 
-    operator fun get(d: Int, r: Int, c: Int): Double {
-        return safeIndex({ intArrayOf(d, r, c) }) { data[unsafeIndex(d, r, c)] }
-    }
+        operator fun get(r: Int, c: Int): Double {
+            return safeIndex({ intArrayOf(r, c) }) { m.data[unsafeIndex(r, c)] }
+        }
 
-    /**
-     * Generic setter.
-     *
-     * Note that it could be at least 1.5x slower than specialized versions.
-     */
-    operator fun set(vararg indices: Int, value: Double) {
-        require(indices.size == nDim) { "broadcasting set is not supported" }
-        safeIndex({ indices }) { data[unsafeIndex(indices)] = value }
-    }
+        operator fun get(d: Int, r: Int, c: Int): Double {
+            return safeIndex({ intArrayOf(d, r, c) }) { m.data[unsafeIndex(d, r, c)] }
+        }
 
-    operator fun set(r: Int, c: Int, value: Double) {
-        require(nDim == 2) { "broadcasting set is not supported" }
-        safeIndex({ intArrayOf(r, c) }) { data[unsafeIndex(r, c)] = value }
-    }
+        /**
+         * Generic setter.
+         *
+         * Note that it could be at least 1.5x slower than specialized versions.
+         */
+        operator fun set(vararg indices: Int, value: Double) {
+            require(indices.size == m.nDim) { "broadcasting set is not supported" }
+            safeIndex({ indices }) { m.data[unsafeIndex(indices)] = value }
+        }
 
-    operator fun set(d: Int, r: Int, c: Int, value: Double) {
-        require(nDim == 3) { "broadcasting set is not supported" }
-        safeIndex({ intArrayOf(d, r, c) }) { data[unsafeIndex(d, r, c)] = value }
-    }
+        operator fun set(r: Int, c: Int, value: Double) {
+            require(m.nDim == 2) { "broadcasting set is not supported" }
+            safeIndex({ intArrayOf(r, c) }) { m.data[unsafeIndex(r, c)] = value }
+        }
 
-    @Suppress("nothing_to_inline")
-    private inline fun unsafeIndex(pos: Int) = offset + pos * strides[0]
+        operator fun set(d: Int, r: Int, c: Int, value: Double) {
+            require(m.nDim == 3) { "broadcasting set is not supported" }
+            safeIndex({ intArrayOf(d, r, c) }) { m.data[unsafeIndex(d, r, c)] = value }
+        }
 
-    @Suppress("nothing_to_inline")
-    private inline fun unsafeIndex(r: Int, c: Int): Int {
-        return offset + r * strides[0] + c * strides[1]
-    }
+        @Suppress("nothing_to_inline")
+        private inline fun unsafeIndex(r: Int, c: Int): Int {
+            return m.offset + r * m.strides[0] + c * m.strides[1]
+        }
 
-    @Suppress("nothing_to_inline")
-    private inline fun unsafeIndex(d: Int, r: Int, c: Int): Int {
-        return offset + d * strides[0] + r * strides[1] + c * strides[2]
-    }
+        @Suppress("nothing_to_inline")
+        private inline fun unsafeIndex(d: Int, r: Int, c: Int): Int {
+            return m.offset + d * m.strides[0] + r * m.strides[1] + c * m.strides[2]
+        }
 
-    @Suppress("nothing_to_inline")
-    private inline fun unsafeIndex(indices: IntArray): Int {
-        return strides.foldIndexed(offset) { i, acc, stride -> acc + indices[i] * stride }
-    }
+        @Suppress("nothing_to_inline")
+        private inline fun unsafeIndex(indices: IntArray): Int {
+            return m.strides.foldIndexed(m.offset) { i, acc, stride -> acc + indices[i] * stride }
+        }
 
-    protected inline fun <T> safeIndex(indices: () -> IntArray, block: () -> T): T {
-        try {
-            return block()
-        } catch (e: IndexOutOfBoundsException) {
-            @Suppress("name_shadowing") val indices = indices()
-            val reason = when {
-                indices.size > nDim -> "too many indices"
-                indices.size < nDim -> "too few indices"
-                else -> "(${indices.joinToString(", ")}) out of bounds " +
-                        "for shape ${shape.joinToString(", ")}"
+        private inline fun <T> safeIndex(indices: () -> IntArray, block: () -> T): T {
+            try {
+                return block()
+            } catch (e: IndexOutOfBoundsException) {
+                @Suppress("name_shadowing") val indices = indices()
+                val reason = when {
+                    indices.size > m.nDim -> "too many indices"
+                    indices.size < m.nDim -> "too few indices"
+                    else -> "(${indices.joinToString(", ")}) out of bounds " +
+                            "for shape ${m.shape.joinToString(", ")}"
+                }
+
+                throw IndexOutOfBoundsException(reason)
             }
-
-            throw IndexOutOfBoundsException(reason)
         }
     }
 
@@ -120,29 +124,58 @@ open class F64Matrix internal constructor(
      * Please do NOT abuse this shortcut by double-indexing, i.e. don't
      * do `m[i][j]`, write `m[i, j]` instead.
      */
-    operator fun get(pos: Int) = view(pos)
+    operator fun get(vararg indices: Int) = view0(indices)
 
-    operator fun set(pos: Int, other: F64Array) = other.copyTo(view(pos))
+    operator fun set(vararg indices: Int, other: F64Array) {
+        other.copyTo(view0(indices))
+    }
 
-    operator fun set(pos: Int, init: Double) = view(pos).fill(init)
+    operator fun set(vararg indices: Int, init: Double) = view0(indices).fill(init)
 
     /**
      * A less-verbose alias to [view].
      *
      * Use in conjunction with [_I], e.g. `m[_I, i]`.
      */
+    // XXX we could generalize this in a way similar to the above method.
+    //     However, after the resulting methods could only be called via
+    //     method call syntax with explicit parameter names. E.g.
+    //
+    //         get(any: _I, vararg rest: _I, c: Int, other: F64Array)
+    //
+    //     should be called as get(_I, _I, c = 42) and not [_I, _I, 42].
+    @Suppress("unused_parameter")
     operator fun get(any: _I, c: Int) = view(c, along = 1)
 
-    operator fun set(any: _I, c: Int, other: F64Array) = other.copyTo(view(c, along = 1))
+    @Suppress("unused_parameter")
+    operator fun set(any: _I, c: Int, other: F64Array) {
+        other.copyTo(view(c, along = 1))
+    }
 
-    operator fun set(any: _I, c: Int, init: Double) = view(c, along = 1).fill(init)
+    @Suppress("unused_parameter")
+    operator fun set(any: _I, c: Int, init: Double) {
+        view(c, along = 1).fill(init)
+    }
 
     /** Returns a view of this matrix along the specified axis. */
-    open fun view(index: Int, along: Int = 0): F64Array {
+    fun view(index: Int, along: Int = 0): F64Array {
         checkIndex("along", along, nDim)
         checkIndex("index", index, shape[along])
         return F64Array(data, offset + strides[along] * index,
                         strides.remove(along), shape.remove(along))
+    }
+
+    /**
+     * Computes a nested view over the first axis.
+     *
+     * Here be dragons!
+     */
+    private fun view0(indices: IntArray): F64Array {
+        require(indices.size < nDim) { "too many indices" }
+        // XXX this never raises CCE because all the intermediate
+        //     results are guaranteed to be [F64Matrix] by the above
+        //     check.
+        return indices.fold(this as F64Array) { m, pos -> (m as F64Matrix).view(pos) }
     }
 
     /** Returns a view of the [r]-th row of this matrix. */
@@ -209,7 +242,7 @@ open class F64Matrix internal constructor(
             val m = F64Matrix(numRows, numColumns)
             for (r in 0..numRows - 1) {
                 for (c in 0..numColumns - 1) {
-                    m[r, c] = block(r, c)
+                    m.ix[r, c] = block(r, c)
                 }
             }
 
@@ -222,7 +255,7 @@ open class F64Matrix internal constructor(
             for (d in 0..depth - 1) {
                 for (r in 0..numRows - 1) {
                     for (c in 0..numColumns - 1) {
-                        m[d, r, c] = block(d, r, c)
+                        m.ix[d, r, c] = block(d, r, c)
                     }
                 }
             }

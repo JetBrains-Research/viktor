@@ -9,6 +9,10 @@ Version 0.4.0
 - Fixed serialization of non-dense matrices.
 - Allowed slicing a `StridedVector` with custom `step`.
 - Replaced `Strided` prefix with `F64`.
+- Removed specialcased `Matrix2` and `Matrix3` classes in faviour of
+  a more generic `F64Matrix`
+- Introduced a common interface for vectors and arrays called `F64Array`.
+- Added a special attribute for indexing an array without broadcasting.
 
 Version 0.3.5
 -------------

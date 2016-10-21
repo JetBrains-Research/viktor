@@ -89,11 +89,11 @@ class F64VectorCreationTest {
 class F64VectorSlicing {
     @Test fun transpose() {
         assertEquals(F64Vector.of(1.0),
-                     F64Vector.of(1.0).T.view(0, along = 1) as F64Vector)
+                     F64Vector.of(1.0).T[_I, 0] as F64Vector)
         assertEquals(F64Vector.of(1.0, 2.0),
-                     F64Vector.of(1.0, 2.0).T.view(0, along = 1) as F64Vector)
+                     F64Vector.of(1.0, 2.0).T[_I, 0] as F64Vector)
         assertEquals(F64Vector.of(1.0, 2.0, 3.0),
-                     F64Vector.of(1.0, 2.0, 3.0).T.view(0, along = 1) as F64Vector)
+                     F64Vector.of(1.0, 2.0, 3.0).T[_I, 0] as F64Vector)
     }
 
     @Test fun slice() {
