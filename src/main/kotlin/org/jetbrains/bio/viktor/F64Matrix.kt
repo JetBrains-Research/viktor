@@ -237,44 +237,40 @@ class F64Matrix internal constructor(
             return F64Vector(indices.product()).reshape(*indices) as F64Matrix
         }
 
+        fun full(vararg indices: Int, init: Double): F64Matrix {
+            return invoke(*indices).apply { fill(init) }
+        }
+
         operator inline fun invoke(numRows: Int, numColumns: Int,
                                    block: (Int, Int) -> Double): F64Matrix {
-            val m = F64Matrix(numRows, numColumns)
-            for (r in 0..numRows - 1) {
-                for (c in 0..numColumns - 1) {
-                    m.ix[r, c] = block(r, c)
+            return invoke(numRows, numColumns).apply {
+                for (r in 0..numRows - 1) {
+                    for (c in 0..numColumns - 1) {
+                        ix[r, c] = block(r, c)
+                    }
                 }
             }
-
-            return m
         }
 
         operator inline fun invoke(depth: Int, numRows: Int, numColumns: Int,
                                    block: (Int, Int, Int) -> Double): F64Matrix {
-            val m = invoke(depth, numRows, numColumns)
-            for (d in 0..depth - 1) {
-                for (r in 0..numRows - 1) {
-                    for (c in 0..numColumns - 1) {
-                        m.ix[d, r, c] = block(d, r, c)
+            return invoke(depth, numRows, numColumns).apply {
+                for (d in 0..depth - 1) {
+                    for (r in 0..numRows - 1) {
+                        for (c in 0..numColumns - 1) {
+                            ix[d, r, c] = block(d, r, c)
+                        }
                     }
                 }
             }
-
-            return m
-        }
-
-        fun full(numRows: Int, numColumns: Int, init: Double): F64Matrix {
-            return invoke(numRows, numColumns).apply { fill(init) }
-        }
-
-        fun full(depth: Int, numRows: Int, numColumns: Int, init: Double): F64Matrix {
-            return invoke(depth, numRows, numColumns).apply { fill(init) }
         }
 
         /** Creates a 2-D matrix with rows summing to one. */
-        fun stochastic(size: Int) = full(size, size, 1.0 / size)
+        fun stochastic(size: Int) = full(size, size, init = 1.0 / size)
 
-        /** Creates a 3-D matrix with [stochastic] submatrices. */
-        fun indexedStochastic(depth: Int, size: Int) = full(depth, size, size, 1.0 / size)
+        /** Creates a 3-D matrix with [stochastic] sub-matrices. */
+        fun indexedStochastic(depth: Int, size: Int): F64Matrix {
+            return full(depth, size, size, init = 1.0 / size)
+        }
     }
 }

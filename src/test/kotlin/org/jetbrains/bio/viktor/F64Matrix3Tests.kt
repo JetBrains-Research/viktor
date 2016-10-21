@@ -90,7 +90,7 @@ class F64Matrix3GetSet {
 
     @Test fun setMagicMatrix() {
         val copy = m.copy()
-        val replacement = F64Matrix.full(m.shape[1], m.shape[2], 42.0)
+        val replacement = F64Matrix.full(m.shape[1], m.shape[2], init = 42.0)
         copy[0] = replacement
         assertEquals(replacement, copy[0])
 
@@ -104,7 +104,7 @@ class F64Matrix3GetSet {
         val copy1 = m.copy()
         copy1[0] = 42.0
         val copy2 = m.copy()
-        copy2[0] = F64Matrix.full(m.shape[1], m.shape[2], 42.0)
+        copy2[0] = F64Matrix.full(m.shape[1], m.shape[2], init = 42.0)
         assertEquals(copy1, copy2)
     }
 
@@ -118,7 +118,8 @@ class F64Matrix3GetSet {
             for (r in 1..m.shape[1] - 1) {
                 for (c in 1..m.shape[2] - 1) {
                     assertNotEquals(replacement[c], copy.ix[d, r, c])
-                    assertEquals(m.ix[d, r, c], copy.ix[d, r, c], Precision.EPSILON)
+                    assertEquals(m.ix[d, r, c], copy.ix[d, r, c],
+                                 Precision.EPSILON)
                 }
             }
         }
@@ -134,7 +135,7 @@ class F64Matrix3GetSet {
 
     @Test fun setMagicScalar() {
         val copy = m.copy()
-        val replacement = F64Matrix.full(m.shape[1], m.shape[2], 42.0)
+        val replacement = F64Matrix.full(m.shape[1], m.shape[2], init = 42.0)
         copy[0] = 42.0
         assertEquals(replacement, copy[0])
 
