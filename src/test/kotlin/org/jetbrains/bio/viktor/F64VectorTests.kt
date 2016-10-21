@@ -17,23 +17,23 @@ import kotlin.test.assertTrue
 
 class F64VectorCreationTest {
     @Test fun createSpecialization() {
-        assertTrue(F64Vector.create(doubleArrayOf(1.0), stride = 10) !is DenseF64Vector)
-        assertTrue(F64Vector.create(doubleArrayOf(1.0)) is DenseF64Vector)
-        assertTrue(F64Vector.create(doubleArrayOf(1.0, 2.0), offset = 1, size = 1) is DenseF64Vector)
+        assertTrue(F64Vector(doubleArrayOf(1.0), stride = 10) !is DenseF64Vector)
+        assertTrue(F64Vector(doubleArrayOf(1.0)) is DenseF64Vector)
+        assertTrue(F64Vector(doubleArrayOf(1.0, 2.0), offset = 1, size = 1) is DenseF64Vector)
     }
 
     @Test fun of() {
         assertArrayEquals(doubleArrayOf(1.0),
-                          F64Vector.of(1.0).toArray(), Precision.EPSILON)
+                          F64Array.of(1.0).toArray(), Precision.EPSILON)
         assertArrayEquals(doubleArrayOf(1.0, 2.0),
-                          F64Vector.of(1.0, 2.0).toArray(), Precision.EPSILON)
+                          F64Array.of(1.0, 2.0).toArray(), Precision.EPSILON)
         assertArrayEquals(doubleArrayOf(1.0, 2.0, 3.0),
-                          F64Vector.of(1.0, 2.0, 3.0).toArray(), Precision.EPSILON)
+                          F64Array.of(1.0, 2.0, 3.0).toArray(), Precision.EPSILON)
     }
 
     @Test fun asStrided() {
-        assertEquals(F64Vector.of(1.0), doubleArrayOf(1.0).asVector())
-        assertEquals(F64Vector.of(3.0),
+        assertEquals(F64Array.of(1.0), doubleArrayOf(1.0).asVector())
+        assertEquals(F64Array.of(3.0),
                      doubleArrayOf(1.0, 2.0, 3.0).asVector(offset = 2, size = 1))
     }
 
@@ -45,40 +45,34 @@ class F64VectorCreationTest {
     }
 
     @Test fun invoke() {
-        assertEquals(F64Vector.of(1.0, 2.0, 3.0),
-                     F64Vector(3) { it + 1.0 })
-    }
-
-    @Test fun stochastic() {
-        val v = F64Vector.stochastic(2)
-        assertEquals(2, v.size)
-        assertEquals(F64Vector.of(.5, .5), v)
+        assertEquals(F64Array.of(1.0, 2.0, 3.0),
+                     F64Array(3) { it + 1.0 })
     }
 
     @Test fun full() {
-        val v = F64Vector.full(2, 42.0)
+        val v = F64Array.full(2, 42.0)
         assertEquals(2, v.size)
-        assertEquals(F64Vector.of(42.0, 42.0), v)
+        assertEquals(F64Array.of(42.0, 42.0), v)
     }
 
     @Test fun concatenate() {
-        assertEquals(F64Vector.of(1.0, 2.0, 3.0, 4.0, 5.0),
-                     F64Vector.concatenate(F64Vector.of(1.0, 2.0),
-                                           F64Vector.of(3.0),
-                                           F64Vector.of(4.0, 5.0)))
+        assertEquals(F64Array.of(1.0, 2.0, 3.0, 4.0, 5.0),
+                     F64Array.concatenate(F64Array.of(1.0, 2.0),
+                                          F64Array.of(3.0),
+                                          F64Array.of(4.0, 5.0)))
     }
 
     @Test fun append() {
-        assertEquals(F64Vector.of(1.0, 2.0),
-                     F64Vector.of(1.0, 2.0).append(F64Vector(0)))
-        assertEquals(F64Vector.of(1.0, 2.0),
-                     F64Vector(0).append(F64Vector.of(1.0, 2.0)))
-        assertEquals(F64Vector.of(1.0, 2.0, 3.0, 4.0, 5.0),
-                     F64Vector.of(1.0, 2.0).append(F64Vector.of(3.0, 4.0, 5.0)))
+        assertEquals(F64Array.of(1.0, 2.0),
+                     F64Array.of(1.0, 2.0).append(F64Array(0)))
+        assertEquals(F64Array.of(1.0, 2.0),
+                     F64Array(0).append(F64Array.of(1.0, 2.0)))
+        assertEquals(F64Array.of(1.0, 2.0, 3.0, 4.0, 5.0),
+                     F64Array.of(1.0, 2.0).append(F64Array.of(3.0, 4.0, 5.0)))
     }
 
     @Test fun copy() {
-        val v = F64Vector.of(1.0, 2.0, 3.0)
+        val v = F64Array.of(1.0, 2.0, 3.0)
         val copy = v.copy()
         assertEquals(v, copy)
         v[0] = 42.0
@@ -88,50 +82,50 @@ class F64VectorCreationTest {
 
 class F64VectorSlicing {
     @Test fun transpose() {
-        assertEquals(F64Vector.of(1.0),
-                     F64Vector.of(1.0).T[_I, 0] as F64Vector)
-        assertEquals(F64Vector.of(1.0, 2.0),
-                     F64Vector.of(1.0, 2.0).T[_I, 0] as F64Vector)
-        assertEquals(F64Vector.of(1.0, 2.0, 3.0),
-                     F64Vector.of(1.0, 2.0, 3.0).T[_I, 0] as F64Vector)
+        assertEquals(F64Array.of(1.0),
+                     F64Array.of(1.0).T[_I, 0] as F64Vector)
+        assertEquals(F64Array.of(1.0, 2.0),
+                     F64Array.of(1.0, 2.0).T[_I, 0] as F64Vector)
+        assertEquals(F64Array.of(1.0, 2.0, 3.0),
+                     F64Array.of(1.0, 2.0, 3.0).T[_I, 0] as F64Vector)
     }
 
     @Test fun slice() {
-        val v = F64Vector.of(1.0, 2.0, 3.0)
+        val v = F64Array.of(1.0, 2.0, 3.0)
         val slice = v.slice(1, 2)
         assertEquals(1, slice.size)
-        assertEquals(F64Vector.of(2.0), slice)
+        assertEquals(F64Array.of(2.0), slice)
 
         slice[0] = 42.0
-        assertEquals(F64Vector.of(1.0, 42.0, 3.0), v)
+        assertEquals(F64Array.of(1.0, 42.0, 3.0), v)
     }
 
     @Test fun sliceWithStep() {
-        val v = F64Vector.of(1.0, 2.0, 3.0, 4.0, 5.0, 6.0)
+        val v = F64Array.of(1.0, 2.0, 3.0, 4.0, 5.0, 6.0)
 
         v.slice(step = 2).let {
             assertEquals(3, it.size)
-            assertEquals(F64Vector.of(1.0, 3.0, 5.0), it)
+            assertEquals(F64Array.of(1.0, 3.0, 5.0), it)
         }
 
         v.slice(1, step = 2).let {
             assertEquals(3, it.size)
-            assertEquals(F64Vector.of(2.0, 4.0, 6.0), it)
+            assertEquals(F64Array.of(2.0, 4.0, 6.0), it)
         }
 
         v.slice(1, step = 3).let {
             assertEquals(2, it.size)
-            assertEquals(F64Vector.of(2.0, 5.0), it)
+            assertEquals(F64Array.of(2.0, 5.0), it)
         }
 
         v.slice(1, step = 4).let {
             assertEquals(2, it.size)
-            assertEquals(F64Vector.of(2.0, 6.0), it)
+            assertEquals(F64Array.of(2.0, 6.0), it)
         }
     }
 
     @Test(expected = IndexOutOfBoundsException::class) fun sliceOutOfBounds() {
-        F64Vector(0).slice(0, 42)
+        F64Array(0).slice(0, 42)
     }
 }
 
@@ -141,7 +135,7 @@ class StridedVectorGetSet(private val values: DoubleArray,
                           size: Int,
                           private val stride: Int) {
 
-    private val v = F64Vector.create(values, offset, stride, size)
+    private val v = F64Vector(values, offset, stride, size)
 
     @Test fun get() {
         for (i in v.indices) {
@@ -178,11 +172,11 @@ class StridedVectorGetSet(private val values: DoubleArray,
         val copy = v.copy()
         copy[_I] = 42.0
 
-        assertEquals(F64Vector.full(copy.size, 42.0), copy)
+        assertEquals(F64Array.full(copy.size, 42.0), copy)
     }
 
     @Test fun setMagicVector() {
-        val other = F64Vector.full(v.size, 42.0)
+        val other = F64Array.full(v.size, 42.0)
         val copy = v.copy()
         copy[_I] = other
 
@@ -225,8 +219,8 @@ class F64VectorOpsTest(private val v: F64Vector) {
     }
 
     @Test fun _toString() {
-        assertEquals("[]", F64Vector(0).toString())
-        assertEquals("[42]", F64Vector.of(42.0).toString())
+        assertEquals("[]", F64Array(0).toString())
+        assertEquals("[42]", F64Array.of(42.0).toString())
         assertEquals("[0, 1, 2, 3]", (0..3).toStrided().toString())
     }
 
@@ -238,15 +232,15 @@ class F64VectorOpsTest(private val v: F64Vector) {
     }
 
     @Test fun toStringNanInf() {
-        val v = F64Vector.of(Double.NaN, Double.POSITIVE_INFINITY,
-                             Double.NEGATIVE_INFINITY, 42.0)
+        val v = F64Array.of(Double.NaN, Double.POSITIVE_INFINITY,
+                            Double.NEGATIVE_INFINITY, 42.0)
         assertEquals("[nan, inf, -inf, 42]", v.toString())
     }
 
     @Test fun fill() {
         val copy = v.copy()
         copy.fill(42.0)
-        assertEquals(F64Vector.full(copy.size, 42.0), copy)
+        assertEquals(F64Array.full(copy.size, 42.0), copy)
     }
 
     @Test fun reverse() {
@@ -431,7 +425,7 @@ class F64VectorArithTest(private val v: F64Vector) {
     }
 
     @Test fun minus() {
-        val u = v - F64Vector.full(v.size, 42.0)
+        val u = v - F64Array.full(v.size, 42.0)
         for (pos in 0..v.size - 1) {
             assertEquals(v[pos] - 42.0, u[pos], Precision.EPSILON)
         }
@@ -459,7 +453,7 @@ class F64VectorArithTest(private val v: F64Vector) {
     }
 
     @Test fun div() {
-        val u = v / F64Vector.full(v.size, 42.0)
+        val u = v / F64Array.full(v.size, 42.0)
         for (pos in 0..v.size - 1) {
             assertEquals(v[pos] / 42.0, u[pos], Precision.EPSILON)
         }
@@ -487,6 +481,6 @@ private fun IntRange.toStrided(): F64Vector {
             .mapToDouble(Int::toDouble)
             .flatMap { DoubleStream.of(Double.NaN, it) }
             .toArray()
-    return F64Vector.create(values, offset = 1,
-                            size = endInclusive + 1 - start, stride = 2)
+    return F64Vector(values, offset = 1,
+                     size = endInclusive + 1 - start, stride = 2)
 }

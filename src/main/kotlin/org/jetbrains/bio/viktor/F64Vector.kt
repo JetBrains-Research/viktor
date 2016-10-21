@@ -6,7 +6,7 @@ import java.text.DecimalFormat
 
 /** Wraps a given array of elements. The array will not be copied. */
 fun DoubleArray.asVector(offset: Int = 0, size: Int = this.size): F64Vector {
-    return F64Vector.create(this, offset, 1, size)
+    return F64Vector(this, offset, 1, size)
 }
 
 /**
@@ -14,7 +14,7 @@ fun DoubleArray.asVector(offset: Int = 0, size: Int = this.size): F64Vector {
  *
  * @since 0.4.0
  */
-open class F64Vector internal constructor(
+open class F64Vector protected constructor(
         /** Raw data array. */
         override val data: DoubleArray,
         /** Offset of the first vector element in the raw data array. */
@@ -133,7 +133,7 @@ open class F64Vector internal constructor(
     }
 
     override fun copy(): F64Vector {
-        val copy = F64Vector(size)
+        val copy = F64Array(size)
         copyTo(copy)
         return copy
     }
@@ -151,7 +151,7 @@ open class F64Vector internal constructor(
      *
      * @since 0.2.3
      */
-    fun append(other: F64Vector) = concatenate(this, other)
+    fun append(other: F64Vector) = F64Array.concatenate(this, other)
 
     /**
      * Computes a dot product of this vector with an array.
@@ -422,62 +422,9 @@ open class F64Vector internal constructor(
     }
 
     companion object {
-        /**
-         * Create a zero-filled vector of a given `size`.
-         */
-        operator fun invoke(size: Int) = create(DoubleArray(size), 0, 1, size)
-
-        operator inline fun invoke(size: Int, block: (Int) -> Double): F64Vector {
-            val v = this(size)
-            for (i in 0..size - 1) {
-                v[i] = block(i)
-            }
-            return v
-        }
-
-        /**
-         * Creates a vector with given elements.
-         */
-        @JvmStatic fun of(first: Double, vararg rest: Double): F64Vector {
-            val data = DoubleArray(rest.size + 1)
-            data[0] = first
-            System.arraycopy(rest, 0, data, 1, rest.size)
-            return data.asVector()
-        }
-
-        /** Creates an array with elements summing to one. */
-        @JvmStatic fun stochastic(size: Int): F64Vector {
-            return full(size, 1.0 / size)
-        }
-
-        /** Creates an array filled with a given [init] element. */
-        @JvmStatic fun full(size: Int, init: Double): F64Vector {
-            val v = this(size)
-            v.fill(init)
-            return v
-        }
-
-        /**
-         * Joins a sequence of vectors into a single vector.
-         *
-         * @since 0.2.3
-         */
-        @JvmStatic fun concatenate(first: F64Vector, vararg rest: F64Vector): F64Vector {
-            val size = first.size + rest.sumBy { it.size }
-            val result = F64Vector(size)
-            var offset = 0
-            for (v in arrayOf(first, *rest)) {
-                if (v.isNotEmpty()) {
-                    v.copyTo(result.slice(offset, offset + v.size))
-                    offset += v.size
-                }
-            }
-
-            return result
-        }
-
-        internal fun create(data: DoubleArray, offset: Int = 0,
-                            stride: Int = 1, size: Int = data.size): F64Vector {
+        internal operator fun invoke(data: DoubleArray, offset: Int = 0,
+                                     stride: Int = 1,
+                                     size: Int = data.size): F64Vector {
             require(offset + size <= data.size) { "not enough data" }
             return if (stride == 1) {
                 DenseF64Vector.create(data, offset, size)

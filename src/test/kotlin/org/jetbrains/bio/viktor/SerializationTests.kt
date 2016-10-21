@@ -7,19 +7,19 @@ import kotlin.test.assertEquals
 
 class TestReadWriteNpy {
     @Test fun vector() = withTempFile("v", ".npy") { path ->
-        val v = F64Vector.of(1.0, 2.0, 3.0, 4.0)
+        val v = F64Array.of(1.0, 2.0, 3.0, 4.0)
         NpyFile.write(path, v)
         assertEquals(v, NpyFile.read(path).asF64Array())
     }
 
     @Test fun matrix2() = withTempFile("m2", ".npy") { path ->
-        val m = F64Vector.of(1.0, 2.0, 3.0, 4.0, 5.0, 6.0).reshape(2, 3)
+        val m = F64Array.of(1.0, 2.0, 3.0, 4.0, 5.0, 6.0).reshape(2, 3)
         NpyFile.write(path, m)
         assertEquals(m, NpyFile.read(path).asF64Array())
     }
 
     @Test fun matrix3() = withTempFile("m3", ".npy") { path ->
-        val m = F64Vector.of(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0)
+        val m = F64Array.of(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0)
                 .reshape(1, 4, 2)
         NpyFile.write(path, m)
         assertEquals(m, NpyFile.read(path).asF64Array())
@@ -28,9 +28,9 @@ class TestReadWriteNpy {
 
 class TestReadWriteNpz {
     @Test fun combined() {
-        val v = F64Vector.of(1.0, 2.0, 3.0, 4.0)
-        val m2 = F64Vector.of(1.0, 2.0, 3.0, 4.0, 5.0, 6.0).reshape(2, 3)
-        val m3 = F64Vector.of(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0)
+        val v = F64Array.of(1.0, 2.0, 3.0, 4.0)
+        val m2 = F64Array.of(1.0, 2.0, 3.0, 4.0, 5.0, 6.0).reshape(2, 3)
+        val m3 = F64Array.of(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0)
                 .reshape(1, 4, 2)
 
         withTempFile("vm2m3", ".npz") { path ->

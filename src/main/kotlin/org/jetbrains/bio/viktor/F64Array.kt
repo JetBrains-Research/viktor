@@ -308,28 +308,36 @@ interface F64Array {
             flatten() += other.flatten()
         }
 
-        override fun plusAssign(update: Double) { flatten() += update }
+        override fun plusAssign(update: Double) {
+            flatten() += update
+        }
 
         override fun minusAssign(other: F64Array) {
             checkShape(other)
             flatten() -= other.flatten()
         }
 
-        override fun minusAssign(update: Double) { flatten() -= update }
+        override fun minusAssign(update: Double) {
+            flatten() -= update
+        }
 
         override fun timesAssign(other: F64Array) {
             checkShape(other)
             flatten() *= other.flatten()
         }
 
-        override fun timesAssign(update: Double) { flatten() *= update }
+        override fun timesAssign(update: Double) {
+            flatten() *= update
+        }
 
         override fun divAssign(other: F64Array) {
             checkShape(other)
             flatten() /= other.flatten()
         }
 
-        override fun divAssign(update: Double) { flatten() /= update }
+        override fun divAssign(update: Double) {
+            flatten() /= update
+        }
 
     }
 
@@ -358,6 +366,84 @@ interface F64Array {
     }
 
     companion object {
+        /** Creates a zero-filled vector of a given [size]. */
+        operator fun invoke(size: Int) = F64Vector(DoubleArray(size), 0, 1, size)
+
+        /** Creates a zero-filled matrix of a given [size]. */
+        operator fun invoke(vararg indices: Int): F64Matrix {
+            require(indices.size >= 2)
+            return invoke(indices.product()).reshape(*indices) as F64Matrix
+        }
+
+        operator inline fun invoke(size: Int, block: (Int) -> Double): F64Vector {
+            return invoke(size).apply {
+                for (i in 0..size - 1) {
+                    this[i] = block(i)
+                }
+            }
+        }
+
+        operator inline fun invoke(numRows: Int, numColumns: Int,
+                                   block: (Int, Int) -> Double): F64Matrix {
+            return invoke(numRows, numColumns).apply {
+                for (r in 0..numRows - 1) {
+                    for (c in 0..numColumns - 1) {
+                        ix[r, c] = block(r, c)
+                    }
+                }
+            }
+        }
+
+        operator inline fun invoke(depth: Int, numRows: Int, numColumns: Int,
+                                   block: (Int, Int, Int) -> Double): F64Matrix {
+            return invoke(depth, numRows, numColumns).apply {
+                for (d in 0..depth - 1) {
+                    for (r in 0..numRows - 1) {
+                        for (c in 0..numColumns - 1) {
+                            ix[d, r, c] = block(d, r, c)
+                        }
+                    }
+                }
+            }
+        }
+
+        /** Creates a vector with given elements. */
+        fun of(first: Double, vararg rest: Double): F64Vector {
+            val data = DoubleArray(rest.size + 1)
+            data[0] = first
+            System.arraycopy(rest, 0, data, 1, rest.size)
+            return data.asVector()
+        }
+
+        /** Creates a vector filled with a given [init] element. */
+        fun full(size: Int, init: Double) = invoke(size).apply { fill(init) }
+
+        /** Creates a matrix filled with a given [init] element. */
+        fun full(vararg indices: Int, init: Double): F64Matrix {
+            return invoke(*indices).apply { fill(init) }
+        }
+
+        /**
+         * Joins a sequence of vectors into a single vector.
+         *
+         * @since 0.2.3
+         */
+        // TODO: generalize to n-d?
+        fun concatenate(first: F64Vector, vararg rest: F64Vector): F64Vector {
+            val size = first.size + rest.sumBy { it.size }
+            val result = invoke(size)
+            var offset = 0
+            for (v in arrayOf(first, *rest)) {
+                if (v.isNotEmpty()) {
+                    v.copyTo(result.slice(offset, offset + v.size))
+                    offset += v.size
+                }
+            }
+
+            return result
+        }
+
+        /** "Smart" constructor. */
         internal operator fun invoke(data: DoubleArray, offset: Int,
                                      strides: IntArray, shape: IntArray): F64Array {
             return if (shape.size == 1) {

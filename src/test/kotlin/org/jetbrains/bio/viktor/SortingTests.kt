@@ -10,12 +10,12 @@ import kotlin.test.assertTrue
 class SortingTests {
     @Test fun partition() {
         assertEquals(
-                F64Vector.of(1.0, 2.0, 3.0, 4.0),
-                F64Vector.of(3.0, 4.0, 2.0, 1.0).apply { partition(2) })
+                F64Array.of(1.0, 2.0, 3.0, 4.0),
+                F64Array.of(3.0, 4.0, 2.0, 1.0).apply { partition(2) })
     }
 
     @Test fun partitionInternal() {
-        val values = F64Vector.of(0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0)
+        val values = F64Array.of(0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0)
         val length = values.size
         for (p in 0..length - 1) {
             values.shuffle()
@@ -39,7 +39,7 @@ class SortingTests {
     }
 
     @Test fun argSort() {
-        val v = F64Vector.of(42.0, 2.0, -1.0, 0.0, 4.0, 2.0)
+        val v = F64Array.of(42.0, 2.0, -1.0, 0.0, 4.0, 2.0)
         val indices = v.argSort()
         val copy = v.toArray()
         copy.sort()
@@ -50,7 +50,7 @@ class SortingTests {
     }
 
     @Test fun argSortReverse() {
-        val v = F64Vector.of(42.0, 2.0, -1.0, 0.0, 4.0, 2.0)
+        val v = F64Array.of(42.0, 2.0, -1.0, 0.0, 4.0, 2.0)
         val indices = v.argSort(reverse = true)
         val copy = v.toArray()
         copy.sort()
@@ -65,13 +65,13 @@ class SortingTests {
         val indices = values.asVector().argSort()
         assertArrayEquals(intArrayOf(2, 3, 1, 5, 4, 0), indices)
 
-        val v = F64Vector.create(doubleArrayOf(Double.NaN, Double.NaN, // Prefix.
-                                               42.0, Double.NaN, 2.0,
-                                               Double.NaN, -1.0,
-                                               Double.NaN, 0.0,
-                                               Double.NaN, 4.0,
-                                               Double.NaN, 2.0),
-                                 offset = 2, size = values.size, stride = 2)
+        val v = F64Vector(doubleArrayOf(Double.NaN, Double.NaN,  // Prefix.
+                                        42.0, Double.NaN, 2.0,
+                                        Double.NaN, -1.0,
+                                        Double.NaN, 0.0,
+                                        Double.NaN, 4.0,
+                                        Double.NaN, 2.0),
+                          offset = 2, size = values.size, stride = 2)
         v.reorder(indices)
         assertArrayEquals(doubleArrayOf(-1.0, 0.0, 2.0, 2.0, 4.0, 42.0),
                           v.toArray(), Precision.EPSILON)

@@ -16,7 +16,7 @@ class F64Matrix internal constructor(
         override val shape: IntArray) : F64Array.ViaFlatten<F64Matrix> {
 
     override fun copy(): F64Matrix {
-        val copy = F64Matrix(*shape)
+        val copy = F64Array(*shape)
         copyTo(copy)
         return copy
     }
@@ -229,48 +229,5 @@ class F64Matrix internal constructor(
 
     override fun hashCode() = (0..size - 1).fold(1) { acc, r ->
         31 * acc + view(r).hashCode()
-    }
-
-    companion object {
-        operator fun invoke(vararg indices: Int): F64Matrix {
-            require(indices.size >= 2)
-            return F64Vector(indices.product()).reshape(*indices) as F64Matrix
-        }
-
-        fun full(vararg indices: Int, init: Double): F64Matrix {
-            return invoke(*indices).apply { fill(init) }
-        }
-
-        operator inline fun invoke(numRows: Int, numColumns: Int,
-                                   block: (Int, Int) -> Double): F64Matrix {
-            return invoke(numRows, numColumns).apply {
-                for (r in 0..numRows - 1) {
-                    for (c in 0..numColumns - 1) {
-                        ix[r, c] = block(r, c)
-                    }
-                }
-            }
-        }
-
-        operator inline fun invoke(depth: Int, numRows: Int, numColumns: Int,
-                                   block: (Int, Int, Int) -> Double): F64Matrix {
-            return invoke(depth, numRows, numColumns).apply {
-                for (d in 0..depth - 1) {
-                    for (r in 0..numRows - 1) {
-                        for (c in 0..numColumns - 1) {
-                            ix[d, r, c] = block(d, r, c)
-                        }
-                    }
-                }
-            }
-        }
-
-        /** Creates a 2-D matrix with rows summing to one. */
-        fun stochastic(size: Int) = full(size, size, init = 1.0 / size)
-
-        /** Creates a 3-D matrix with [stochastic] sub-matrices. */
-        fun indexedStochastic(depth: Int, size: Int): F64Matrix {
-            return full(depth, size, size, init = 1.0 / size)
-        }
     }
 }

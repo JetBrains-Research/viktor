@@ -7,25 +7,25 @@ import org.junit.Test
 import kotlin.test.assertNotEquals
 
 class F64Matrix2Slicing {
-    private val m = F64Vector.of(0.0, 1.0,
-                                 2.0, 3.0,
-                                 4.0, 5.0).reshape(3, 2) as F64Matrix
+    private val m = F64Array.of(0.0, 1.0,
+                                2.0, 3.0,
+                                4.0, 5.0).reshape(3, 2) as F64Matrix
 
     @Test fun transposeUnit() {
-        val m = F64Matrix(1, 1)
+        val m = F64Array(1, 1)
         assertEquals(m, m.T)
     }
 
     @Test fun transpose() {
-        assertEquals(F64Vector.of(0.0, 2.0, 4.0,
-                                  1.0, 3.0, 5.0).reshape(2, 3),
+        assertEquals(F64Array.of(0.0, 2.0, 4.0,
+                                 1.0, 3.0, 5.0).reshape(2, 3),
                      m.T)
     }
 
     @Test fun rowView() {
-        assertEquals(F64Vector.of(0.0, 1.0), m[0] as F64Vector)
-        assertEquals(F64Vector.of(2.0, 3.0), m[1] as F64Vector)
-        assertEquals(F64Vector.of(4.0, 5.0), m[2] as F64Vector)
+        assertEquals(F64Array.of(0.0, 1.0), m[0] as F64Vector)
+        assertEquals(F64Array.of(2.0, 3.0), m[1] as F64Vector)
+        assertEquals(F64Array.of(4.0, 5.0), m[2] as F64Vector)
     }
 
     @Test(expected = IndexOutOfBoundsException::class) fun rowViewOutOfBounds() {
@@ -33,8 +33,8 @@ class F64Matrix2Slicing {
     }
 
     @Test fun columnView() {
-        assertEquals(F64Vector.of(0.0, 2.0, 4.0), m[_I, 0] as F64Vector)
-        assertEquals(F64Vector.of(1.0, 3.0, 5.0), m[_I, 1] as F64Vector)
+        assertEquals(F64Array.of(0.0, 2.0, 4.0), m[_I, 0] as F64Vector)
+        assertEquals(F64Array.of(1.0, 3.0, 5.0), m[_I, 1] as F64Vector)
     }
 
     @Test(expected = IndexOutOfBoundsException::class) fun columnViewOutOfBounds() {
@@ -42,7 +42,7 @@ class F64Matrix2Slicing {
     }
 
     @Test fun reshape() {
-        val v = F64Vector.of(0.0, 1.0, 2.0, 3.0, 4.0, 5.0)
+        val v = F64Array.of(0.0, 1.0, 2.0, 3.0, 4.0, 5.0)
         assertArrayEquals(arrayOf(doubleArrayOf(0.0, 1.0, 2.0),
                                   doubleArrayOf(3.0, 4.0, 5.0)),
                           (v.reshape(2, 3) as F64Matrix).toArray())
@@ -53,9 +53,9 @@ class F64Matrix2Slicing {
     }
 
     @Test fun reshapeWithStride() {
-        val v = F64Vector.create(doubleArrayOf(0.0, 1.0, 2.0, 3.0,
-                                               4.0, 5.0, 6.0, 7.0),
-                                 0, size = 4, stride = 2)
+        val v = F64Vector(doubleArrayOf(0.0, 1.0, 2.0, 3.0,
+                                        4.0, 5.0, 6.0, 7.0),
+                          0, size = 4, stride = 2)
         assertArrayEquals(arrayOf(doubleArrayOf(0.0, 2.0),
                                   doubleArrayOf(4.0, 6.0)),
                           (v.reshape(2, 2) as F64Matrix).toArray())
@@ -63,9 +63,9 @@ class F64Matrix2Slicing {
 }
 
 class F64Matrix2GetSet {
-    private val m = F64Vector.of(0.0, 1.0,
-                                 2.0, 3.0,
-                                 4.0, 5.0).reshape(3, 2) as F64Matrix
+    private val m = F64Array.of(0.0, 1.0,
+                                2.0, 3.0,
+                                4.0, 5.0).reshape(3, 2) as F64Matrix
 
     @Test fun get() {
         assertEquals(0.0, m.ix[0, 0], Precision.EPSILON)
@@ -93,12 +93,12 @@ class F64Matrix2GetSet {
     @Test fun setMagicRowScalar() {
         val copy = m.copy()
         copy[0] = 42.0
-        assertEquals(F64Vector.full(copy.shape[1], 42.0), copy[0])
+        assertEquals(F64Array.full(copy.shape[1], 42.0), copy[0])
     }
 
     @Test fun setMagicRowVector() {
         val copy = m.copy()
-        val v = F64Vector.full(copy.shape[1], 42.0)
+        val v = F64Array.full(copy.shape[1], 42.0)
         copy[0] = v
         assertEquals(v, copy[0])
 
@@ -111,12 +111,12 @@ class F64Matrix2GetSet {
     @Test fun setMagicColumnScalar() {
         val copy = m.copy()
         copy[_I, 0] = 42.0
-        assertEquals(F64Vector.full(copy.shape[0], 42.0), copy[_I, 0])
+        assertEquals(F64Array.full(copy.shape[0], 42.0), copy[_I, 0])
     }
 
     @Test fun setMagicColumnVector() {
         val copy = m.copy()
-        val v = F64Vector.full(copy.shape[0], 42.0)
+        val v = F64Array.full(copy.shape[0], 42.0)
         copy[_I, 0] = v
         assertEquals(v, copy[_I, 0])
 
@@ -129,9 +129,9 @@ class F64Matrix2GetSet {
 
 class F64Matrix2OpsTest {
     @Test fun unaryMinus() {
-        val m = F64Vector.of(0.0, 1.0,
-                             2.0, 3.0,
-                             4.0, 5.0).reshape(3, 2) as F64Matrix
+        val m = F64Array.of(0.0, 1.0,
+                            2.0, 3.0,
+                            4.0, 5.0).reshape(3, 2) as F64Matrix
         val copy = m.copy()
 
         assertEquals(m, -(-m))
@@ -142,9 +142,9 @@ class F64Matrix2OpsTest {
     }
 
     @Test fun equals() {
-        val m = F64Vector.of(0.0, 1.0,
-                             2.0, 3.0,
-                             4.0, 5.0).reshape(3, 2)
+        val m = F64Array.of(0.0, 1.0,
+                            2.0, 3.0,
+                            4.0, 5.0).reshape(3, 2)
 
         assertEquals(m, m)
         assertEquals(m, m.copy())
@@ -152,13 +152,13 @@ class F64Matrix2OpsTest {
     }
 
     @Test fun _toString() {
-        assertEquals("[]", F64Matrix(0, 0).toString())
-        assertEquals("[[]]", F64Matrix(1, 0).toString())
-        assertEquals("[[0], [0]]", F64Matrix(2, 1).toString())
+        assertEquals("[]", F64Array(0, 0).toString())
+        assertEquals("[[]]", F64Array(1, 0).toString())
+        assertEquals("[[0], [0]]", F64Array(2, 1).toString())
     }
 
     @Test fun toStringLarge() {
-        val v = F64Vector(1024) { it.toDouble() }
+        val v = F64Array(1024) { it.toDouble() }
         assertEquals("[[0, 1], [2, 3], ..., [1020, 1021], [1022, 1023]]",
                      v.reshape(512, 2).toString(4))
         assertEquals("[[0, 1, ..., 510, 511], [512, 513, ..., 1022, 1023]]",
