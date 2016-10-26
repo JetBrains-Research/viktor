@@ -18,19 +18,19 @@ internal object QuickSelect {
      *
      * Invariant:  left <= n <= right
      */
-    tailrec fun select(values: F64Vector,
+    tailrec fun select(values: F64Array,
                        left: Int, right: Int, n: Int,
                        randomGenerator: RandomGenerator): Double {
         assert(left <= n && n <= right)
 
         if (left == right) {
-            return values[left]
+            return values.ix[left]
         }
 
         var split = left + randomGenerator.nextInt(right - left + 1)
         split = values.partition(split, left, right)
         return when {
-            split == n -> values[n]
+            split == n -> values.ix[n]
             split > n  -> select(values, left, split - 1, n, randomGenerator)
             else -> select(values, split + 1, right, n, randomGenerator)
         }
@@ -48,9 +48,10 @@ internal object QuickSelect {
  *
  * @since 0.2.0
  */
-fun F64Vector.quantile(q: Double = 0.5,
-                       randomGenerator: RandomGenerator = DEFAULT_RANDOM): Double {
-    require(isNotEmpty()) { "no data" }
+fun F64Array.quantile(q: Double = 0.5,
+                      randomGenerator: RandomGenerator = DEFAULT_RANDOM): Double {
+    require(size > 0) { "no data" }
+    require(nDim == 1) { "n-d arrays not supported" }
     val pos = (size + 1) * q
     val d = pos - Math.floor(pos)
     return when {
@@ -73,7 +74,7 @@ fun F64Vector.quantile(q: Double = 0.5,
  *
  * @since 0.2.0
  */
-fun F64Vector.shuffle(randomGenerator: RandomGenerator = DEFAULT_RANDOM) {
+fun F64Array.shuffle(randomGenerator: RandomGenerator = DEFAULT_RANDOM) {
     if (size <= 1) {
         return
     }

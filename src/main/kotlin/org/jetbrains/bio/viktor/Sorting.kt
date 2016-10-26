@@ -10,16 +10,16 @@ import java.util.*
  * @param reverse if `true` the elements are sorted in `ascending` order.
  *                Defaults to `false`.
  */
-fun F64Vector.sort(reverse: Boolean = false) = reorder(argSort(reverse))
+fun F64Array.sort(reverse: Boolean = false) = reorder(argSort(reverse))
 
 /**
  * Returns a permutation of indices which makes the vector sorted.
  *
  * @param reverse see [sort] for details.
  */
-fun F64Vector.argSort(reverse: Boolean = false): IntArray {
+fun F64Array.argSort(reverse: Boolean = false): IntArray {
     val comparator = Comparator(IndexedDoubleValue::compareTo)
-    val indexedValues = Array(size) { IndexedDoubleValue(it, unsafeGet(it)) }
+    val indexedValues = Array(size) { IndexedDoubleValue(it, ix.unsafeGet(it)) }
     indexedValues.sortWith(if (reverse) comparator.reversed() else comparator)
     return IntArray(size) { indexedValues[it].index }
 }
@@ -38,20 +38,20 @@ private data class IndexedDoubleValue(val index: Int, val value: Double) :
 }
 
 /** Applies a given permutation of indices to the elements in the vector. */
-fun F64Vector.reorder(indices: IntArray) {
+fun F64Array.reorder(indices: IntArray) {
     require(size == indices.size)
     val copy = indices.clone()
     for (pos in 0..size - 1) {
-        val value = unsafeGet(pos)
+        val value = ix.unsafeGet(pos)
         var j = pos
         while (true) {
             val k = copy[j]
             copy[j] = j
             if (k == pos) {
-                unsafeSet(j, value)
+                ix.unsafeSet(j, value)
                 break
             } else {
-                unsafeSet(j, unsafeGet(k))
+                ix.unsafeSet(j, ix.unsafeGet(k))
                 j = k
             }
         }
@@ -72,7 +72,7 @@ fun F64Vector.reorder(indices: IntArray) {
  * @param p the index of the element to partition by.
  * @since 0.2.3
  */
-fun F64Vector.partition(p: Int) {
+fun F64Array.partition(p: Int) {
     require(p >= 0 && p < size) { "p must be in [0, $size)" }
     partition(p, 0, size - 1)
 }
@@ -88,13 +88,13 @@ fun F64Vector.partition(p: Int) {
  * @param left start index (inclusive).
  * @param right end index (inclusive).
  */
-internal fun F64Vector.partition(p: Int, left: Int, right: Int): Int {
-    val pivot = this[p]
+internal fun F64Array.partition(p: Int, left: Int, right: Int): Int {
+    val pivot = ix[p]
     swap(p, right)  // move to end.
 
     var ptr = left
     for (i in left..right - 1) {
-        if (this[i] < pivot) {
+        if (ix[i] < pivot) {
             swap(i, ptr)
             ptr++
         }
@@ -105,8 +105,8 @@ internal fun F64Vector.partition(p: Int, left: Int, right: Int): Int {
 }
 
 @Suppress("nothing_to_inline")
-internal inline fun F64Vector.swap(i: Int, j: Int) {
-    val tmp = unsafeGet(i)
-    unsafeSet(i, unsafeGet(j))
-    unsafeSet(j, tmp)
+internal inline fun F64Array.swap(i: Int, j: Int) {
+    val tmp = ix.unsafeGet(i)
+    ix.unsafeSet(i, ix.unsafeGet(j))
+    ix.unsafeSet(j, tmp)
 }

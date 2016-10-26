@@ -10,11 +10,11 @@ import java.util.*
 @RunWith(Parameterized::class)
 class BalancedSumTest(private val size: Int) {
     @Test fun accuracy() {
-        val v = Random().doubles(size.toLong()).toArray().asVector()
+        val v = Random().doubles(size.toLong()).toArray().asF64Array()
 
         val expected = KahanSum()
-        for (value in v) {
-            expected.feed(value)
+        for (i in 0..v.size - 1) {
+            expected.feed(v.ix[i])
         }
 
         assertEquals(expected.result(), v.balancedSum(), 1e-8)
@@ -30,12 +30,12 @@ class BalancedSumTest(private val size: Int) {
 class BalancedDotTest(private val size: Int) {
     @Test fun accuracy() {
         val r = Random()
-        val v = r.doubles(size.toLong()).toArray().asVector()
-        val w = r.doubles(size.toLong()).toArray().asVector()
+        val v = r.doubles(size.toLong()).toArray().asF64Array()
+        val w = r.doubles(size.toLong()).toArray().asF64Array()
 
         val expected = KahanSum()
-        for (i in v.indices) {
-            expected.feed(v[i] * w[i])
+        for (i in 0..v.size - 1) {
+            expected.feed(v.ix[i] * w.ix[i])
         }
 
         assertEquals(expected.result(), v.dot(w), 1e-8)

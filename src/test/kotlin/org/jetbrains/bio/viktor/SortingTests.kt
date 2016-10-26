@@ -19,61 +19,62 @@ class SortingTests {
         val length = values.size
         for (p in 0..length - 1) {
             values.shuffle()
-            val pivot = values[p]
+            val pivot = values.ix[p]
             val split = values.partition(p, 0, length - 1)
             for (i in 0..split - 1) {
-                assertTrue(values[i] < pivot, "<")
+                assertTrue(values.ix[i] < pivot, "<")
             }
 
             for (i in split..length - 1) {
-                assertTrue(values[i] >= pivot, ">=")
+                assertTrue(values.ix[i] >= pivot, ">=")
             }
         }
     }
 
     @Test fun sort() {
         val values = Random().doubles().limit(100).toArray()
-        val v = values.clone().asVector()
+        val v = values.clone().asF64Array()
         v.sort()
-        assertArrayEquals(values.sortedArray(), v.toArray(), Precision.EPSILON)
+        assertArrayEquals(values.sortedArray(), v.toDoubleArray(),
+                          Precision.EPSILON)
     }
 
     @Test fun argSort() {
         val v = F64Array.of(42.0, 2.0, -1.0, 0.0, 4.0, 2.0)
         val indices = v.argSort()
-        val copy = v.toArray()
+        val copy = v.toDoubleArray()
         copy.sort()
 
         for ((i, j) in indices.withIndex()) {
-            assertEquals(copy[i], v[j], Precision.EPSILON)
+            assertEquals(copy[i], v.ix[j], Precision.EPSILON)
         }
     }
 
     @Test fun argSortReverse() {
         val v = F64Array.of(42.0, 2.0, -1.0, 0.0, 4.0, 2.0)
         val indices = v.argSort(reverse = true)
-        val copy = v.toArray()
+        val copy = v.toDoubleArray()
         copy.sort()
 
         for ((i, j) in indices.withIndex()) {
-            assertEquals(copy[copy.size - 1 - i], v[j], Precision.EPSILON)
+            assertEquals(copy[copy.size - 1 - i], v.ix[j], Precision.EPSILON)
         }
     }
 
     @Test fun argSortWithNaN() {
         val values = doubleArrayOf(42.0, 2.0, -1.0, 0.0, 4.0, 2.0)
-        val indices = values.asVector().argSort()
+        val indices = values.asF64Array().argSort()
         assertArrayEquals(intArrayOf(2, 3, 1, 5, 4, 0), indices)
 
-        val v = F64Vector(doubleArrayOf(Double.NaN, Double.NaN,  // Prefix.
-                                        42.0, Double.NaN, 2.0,
-                                        Double.NaN, -1.0,
-                                        Double.NaN, 0.0,
-                                        Double.NaN, 4.0,
-                                        Double.NaN, 2.0),
-                          offset = 2, size = values.size, stride = 2)
+        val v = F64FlatArray(doubleArrayOf(Double.NaN, Double.NaN,  // Prefix.
+                                           42.0, Double.NaN, 2.0,
+                                           Double.NaN, -1.0,
+                                           Double.NaN, 0.0,
+                                           Double.NaN, 4.0,
+                                           Double.NaN, 2.0),
+                             offset = 2, size = values.size, stride = 2)
         v.reorder(indices)
         assertArrayEquals(doubleArrayOf(-1.0, 0.0, 2.0, 2.0, 4.0, 42.0),
-                          v.toArray(), Precision.EPSILON)
+                          v.toDoubleArray(), Precision.EPSILON)
     }
 }

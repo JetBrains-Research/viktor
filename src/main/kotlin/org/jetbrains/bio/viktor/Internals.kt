@@ -15,3 +15,19 @@ inline fun checkIndex(label: String, pos: Int, size: Int) {
         throw IndexOutOfBoundsException("$label must be in [0, $size)")
     }
 }
+
+@Suppress("nothing_to_inline")
+inline fun unsupported(): Nothing = throw UnsupportedOperationException()
+
+@Suppress("nothing_to_inline")
+internal inline fun outOfBounds(indices: IntArray, shape: IntArray): Nothing {
+    val nDim = shape.size
+    val reason = when {
+        indices.size > nDim -> "too many indices"
+        indices.size < nDim -> "too few indices"
+        else -> "(${indices.joinToString(", ")}) out of bounds " +
+                "for shape ${shape.joinToString(", ")}"
+    }
+
+    throw IndexOutOfBoundsException(reason)
+}

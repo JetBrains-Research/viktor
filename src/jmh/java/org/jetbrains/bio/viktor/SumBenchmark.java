@@ -33,7 +33,7 @@ public class SumBenchmark {
 
 	@Benchmark
 	public double javaSum() {
-		return BalancedSumKt.balancedSum(F64VectorKt.asVector(values, 0, arraySize));
+		return F64ArrayKt.asF64Array(values, 0, arraySize).balancedSum();
 	}
 
 	@Benchmark

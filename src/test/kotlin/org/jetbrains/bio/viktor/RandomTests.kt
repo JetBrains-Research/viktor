@@ -12,8 +12,8 @@ import java.util.*
 
 class QuickSelectTest {
     @Test fun quantileRandom() {
-        val values = Random().doubles(1024).toArray().asVector()
-        for (i in values.indices) {
+        val values = Random().doubles(1024).toArray().asF64Array()
+        for (i in 0..values.size - 1) {
             val q = (i.toDouble() + 1) / values.size
             assertEquals(StatUtils.percentile(values.data, q * 100),
                          values.quantile(q), Precision.EPSILON)
@@ -21,18 +21,18 @@ class QuickSelectTest {
     }
 
     @Test(expected = IllegalArgumentException::class) fun quantileEmpty() {
-        doubleArrayOf().asVector().quantile(0.5)
+        doubleArrayOf().asF64Array().quantile(0.5)
     }
 
     @Test fun quantileSingleton() {
-        val values = doubleArrayOf(42.0).asVector()
+        val values = doubleArrayOf(42.0).asF64Array()
         assertEquals(42.0, values.quantile(0.0), Precision.EPSILON)
         assertEquals(42.0, values.quantile(0.6), Precision.EPSILON)
         assertEquals(42.0, values.quantile(1.0), Precision.EPSILON)
     }
 
     @Test fun quantileLarge() {
-        val values = Random().doubles(1 shl 16).toArray().asVector()
+        val values = Random().doubles(1 shl 16).toArray().asF64Array()
         assertEquals(values.max(), values.quantile(1.0), Precision.EPSILON)
     }
 }
@@ -62,7 +62,7 @@ class QuickSelectAgainstR(private val q: Double,
             -0.299061308130272, -0.305758044447607, 0.47688050755864,
             -0.323423915437573, -1.07443801087424, 1.01833105965806,
             0.106573790832308, -0.0368140390438757, -1.22410154910053,
-            -0.623308734987264).asVector()
+            -0.623308734987264).asF64Array()
 
     // R uses a different approximation scheme, so we can only compare
     // the first to significant digits.
@@ -82,8 +82,8 @@ class QuickSelectAgainstR(private val q: Double,
 
 class ShuffleTest {
     @Test fun distribution() {
-        val values = doubleArrayOf(0.0, 1.0, 2.0, 3.0).asVector()
-        val counts = HashMap<F64Vector, Int>()
+        val values = doubleArrayOf(0.0, 1.0, 2.0, 3.0).asF64Array()
+        val counts = HashMap<F64Array, Int>()
 
         val `n!` = CombinatoricsUtils.factorial(4).toInt()
         for (i in 0..5000 * `n!`) {
