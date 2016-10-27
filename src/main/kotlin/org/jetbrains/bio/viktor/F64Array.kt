@@ -212,7 +212,7 @@ open class F64Array protected constructor(
 
     /** Returns a copy of the elements in this array. */
     fun copy(): F64Array {
-        val copy = F64Array(*shape)
+        val copy = invoke(*shape)
         copyTo(copy)
         return copy
     }
@@ -243,17 +243,19 @@ open class F64Array protected constructor(
             "total size of the new matrix must be unchanged"
         }
 
-        if (nDim > 1) {
-            TODO()
-        }
+        return when {
+            nDim > 1 -> TODO()
+            Arrays.equals(this.shape, shape) -> this
+            else -> {
+                val reshaped = shape.clone()
+                reshaped[reshaped.lastIndex] = strides.single()
+                for (i in reshaped.lastIndex - 1 downTo 0) {
+                    reshaped[i] = reshaped[i + 1] * shape[i + 1]
+                }
 
-        val reshaped = shape.clone()
-        reshaped[reshaped.lastIndex] = strides.single()
-        for (i in reshaped.lastIndex - 1 downTo 0) {
-            reshaped[i] = reshaped[i + 1] * shape[i + 1]
+                invoke(data, offset, reshaped, shape)
+            }
         }
-
-        return invoke(data, offset, reshaped, shape)
     }
 
     /**
@@ -546,7 +548,10 @@ open class F64Array protected constructor(
     }
 
     // XXX must be overriden in flat array.
-    open fun toArray(): Array<*> = Array(size) { view(it).toArray() }
+    open fun toArray(): Any = toGenericArray()
+
+    // XXX must be overriden in flat array.
+    open fun toGenericArray(): Array<*> = Array(size) { view(it).toArray() }
 
     // XXX must be overriden in flat array.
     open fun toDoubleArray(): DoubleArray = throw UnsupportedOperationException()
@@ -599,21 +604,16 @@ open class F64Array protected constructor(
     }
 
     companion object {
-        /** Creates a zero-filled vector of a given [size]. */
-        operator fun invoke(size: Int): F64Array {
-            return F64FlatArray(DoubleArray(size), 0, 1, size)
-        }
-
-        /** Creates a zero-filled matrix of a given [size]. */
-        operator fun invoke(vararg indices: Int): F64Array {
-            require(indices.size >= 2)
-            return invoke(indices.product()).reshape(*indices)
+        /** Creates a zero-filled array of a given [shape]. */
+        operator fun invoke(vararg shape: Int): F64Array {
+            return F64FlatArray(DoubleArray(shape.product()))
+                    .reshape(*shape)
         }
 
         operator inline fun invoke(size: Int, block: (Int) -> Double): F64Array {
             return invoke(size).apply {
                 for (i in 0..size - 1) {
-                    this[i] = block(i)
+                    ix[i] = block(i)
                 }
             }
         }

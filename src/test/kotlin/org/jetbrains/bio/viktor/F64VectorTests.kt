@@ -171,7 +171,7 @@ class StridedVectorGetSet(private val values: DoubleArray,
     @Test fun set() {
         for (i in 0..v.size - 1) {
             val copy = v.copy()
-            copy[i] = 42.0
+            copy.ix[i] = 42.0
             assertEquals(42.0, copy.ix[i], Precision.EPSILON)
 
             // Ensure all other elements are unchanged.
@@ -228,7 +228,7 @@ private val CASES = listOf(
 class F64VectorOpsTest(private val v: F64Array) {
     @Test fun contains() {
         for (i in 0..v.size - 1) {
-            assertTrue(i.toDouble() in v)
+            assertTrue(v.ix[i] in v)
         }
     }
 

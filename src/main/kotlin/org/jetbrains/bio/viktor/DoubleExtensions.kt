@@ -27,7 +27,7 @@ private inline fun Double.minusInPlace(other: F64Array) {
 
 operator fun Double.minus(other: F64Array): F64Array {
     val v = other.copy()
-    minusInPlace(v)
+    minusInPlace(v.flatten())
     return v
 }
 
@@ -48,6 +48,6 @@ private inline fun Double.divInPlace(other: F64Array) {
 
 operator fun Double.div(other: F64Array): F64Array {
     val v = other.copy()
-    divInPlace(v)
+    divInPlace(v.flatten())
     return v
 }

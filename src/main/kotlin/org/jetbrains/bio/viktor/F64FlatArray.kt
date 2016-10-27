@@ -287,7 +287,9 @@ open class F64FlatArray protected constructor(data: DoubleArray, offset: Int,
         }
     }
 
-    override fun toArray() = unsupported()
+    override fun toArray() = toDoubleArray()
+
+    override fun toGenericArray() = unsupported()
 
     override fun toDoubleArray() = DoubleArray(size) { ix.unsafeGet(it) }
 

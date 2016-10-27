@@ -45,11 +45,11 @@ class F64Matrix2Slicing {
         val v = F64Array.of(0.0, 1.0, 2.0, 3.0, 4.0, 5.0)
         assertArrayEquals(arrayOf(doubleArrayOf(0.0, 1.0, 2.0),
                                   doubleArrayOf(3.0, 4.0, 5.0)),
-                          v.reshape(2, 3).toArray())
+                          v.reshape(2, 3).toGenericArray())
         assertArrayEquals(arrayOf(doubleArrayOf(0.0, 1.0),
                                   doubleArrayOf(2.0, 3.0),
                                   doubleArrayOf(4.0, 5.0)),
-                          v.reshape(3, 2).toArray())
+                          v.reshape(3, 2).toGenericArray())
     }
 
     @Test fun reshapeWithStride() {
@@ -58,7 +58,7 @@ class F64Matrix2Slicing {
                              0, size = 4, stride = 2)
         assertArrayEquals(arrayOf(doubleArrayOf(0.0, 2.0),
                                   doubleArrayOf(4.0, 6.0)),
-                          v.reshape(2, 2).toArray())
+                          v.reshape(2, 2).toGenericArray())
     }
 }
 

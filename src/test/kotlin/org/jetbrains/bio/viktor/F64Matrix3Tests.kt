@@ -34,14 +34,14 @@ class F64Matrix3Slicing {
         assertArrayEquals(arrayOf(arrayOf(doubleArrayOf(0.0, 1.0)),
                                   arrayOf(doubleArrayOf(2.0, 3.0)),
                                   arrayOf(doubleArrayOf(4.0, 5.0))),
-                          v.reshape(3, 1, 2).toArray())
+                          v.reshape(3, 1, 2).toGenericArray())
         assertArrayEquals(arrayOf(arrayOf(doubleArrayOf(0.0),
                                           doubleArrayOf(1.0)),
                                   arrayOf(doubleArrayOf(2.0),
                                           doubleArrayOf(3.0)),
                                   arrayOf(doubleArrayOf(4.0),
                                           doubleArrayOf(5.0))),
-                          v.reshape(3, 2, 1).toArray())
+                          v.reshape(3, 2, 1).toGenericArray())
     }
 
     @Test fun reshapeWithStride() {
@@ -50,12 +50,12 @@ class F64Matrix3Slicing {
                              0, size = 4, stride = 2)
         assertArrayEquals(arrayOf(arrayOf(doubleArrayOf(0.0, 2.0)),
                                   arrayOf(doubleArrayOf(4.0, 6.0))),
-                          v.reshape(2, 1, 2).toArray())
+                          v.reshape(2, 1, 2).toGenericArray())
         assertArrayEquals(arrayOf(arrayOf(doubleArrayOf(0.0),
                                           doubleArrayOf(2.0)),
                                   arrayOf(doubleArrayOf(4.0),
                                           doubleArrayOf(6.0))),
-                          v.reshape(2, 2, 1).toArray())
+                          v.reshape(2, 2, 1).toGenericArray())
     }
 }
 
