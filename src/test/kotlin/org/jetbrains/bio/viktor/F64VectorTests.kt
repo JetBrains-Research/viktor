@@ -62,21 +62,21 @@ class F64VectorCreationTest {
                                           F64Array.of(4.0, 5.0)))
     }
 
-//    @Test fun append() {
-//        assertEquals(F64Array.of(1.0, 2.0),
-//                     F64Array.of(1.0, 2.0).append(F64Array(0)))
-//        assertEquals(F64Array.of(1.0, 2.0),
-//                     F64Array(0).append(F64Array.of(1.0, 2.0)))
-//        assertEquals(F64Array.of(1.0, 2.0, 3.0, 4.0, 5.0),
-//                     F64Array.of(1.0, 2.0).append(F64Array.of(3.0, 4.0, 5.0)))
-//    }
-//
-//    @Test fun appendMatrix() {
-//        assertEquals(F64Array.of(1.0, 2.0),
-//                     F64Array.of(1.0, 2.0,
-//                                 3.0, 4.0).reshape(2, 2)
-//                             .append(F64Array.of(42.0, 42.0).reshape(1, 2)))
-//    }
+    @Test fun append() {
+        assertEquals(F64Array.of(1.0, 2.0),
+                     F64Array.of(1.0, 2.0).append(F64Array(0)))
+        assertEquals(F64Array.of(1.0, 2.0),
+                     F64Array(0).append(F64Array.of(1.0, 2.0)))
+        assertEquals(F64Array.of(1.0, 2.0, 3.0, 4.0, 5.0),
+                     F64Array.of(1.0, 2.0).append(F64Array.of(3.0, 4.0, 5.0)))
+    }
+
+    @Test fun appendMatrix() {
+        assertEquals(F64Array.of(1.0, 2.0),
+                     F64Array.of(1.0, 2.0,
+                                 3.0, 4.0).reshape(2, 2)
+                             .append(F64Array.of(42.0, 42.0).reshape(1, 2)))
+    }
 
     @Test fun copy() {
         val v = F64Array.of(1.0, 2.0, 3.0)
@@ -89,11 +89,11 @@ class F64VectorCreationTest {
 
 class F64VectorSlicing {
     @Test fun transpose() {
-        assertEquals(F64Array.of(1.0), F64Array.of(1.0).T.view[_I, 0])
+        assertEquals(F64Array.of(1.0), F64Array.of(1.0).T.V[_I, 0])
         assertEquals(F64Array.of(1.0, 2.0),
-                     F64Array.of(1.0, 2.0).T.view[_I, 0])
+                     F64Array.of(1.0, 2.0).T.V[_I, 0])
         assertEquals(F64Array.of(1.0, 2.0, 3.0),
-                     F64Array.of(1.0, 2.0, 3.0).T.view[_I, 0])
+                     F64Array.of(1.0, 2.0, 3.0).T.V[_I, 0])
     }
 
     @Test fun slice() {
@@ -299,16 +299,16 @@ class F64VectorOpsTest(private val v: F64Array) {
         assertEquals((0..v.size - 1).sumByDouble { v[it] }, v.sum(), 1e-10)
     }
 
-//    @Test fun cumSum() {
-//        val copy = v.copy()
-//        copy.cumSum()
-//
-//        var acc = 0.0
-//        for (i in v.indices) {
-//            acc += v[i]
-//            assertEquals(acc, copy[i], 1e-10)
-//        }
-//    }
+    @Test fun cumSum() {
+        val copy = v.copy()
+        copy.cumSum()
+
+        var acc = 0.0
+        for (i in 0..v.size - 1) {
+            acc += v[i]
+            assertEquals(acc, copy[i], 1e-10)
+        }
+    }
 
     @Test fun argMinMax() {
         val values = v.toDoubleArray()

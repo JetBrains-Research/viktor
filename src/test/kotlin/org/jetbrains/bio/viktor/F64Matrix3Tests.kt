@@ -12,9 +12,9 @@ class F64Matrix3Slicing {
                                 4.0, 5.0).reshape(3, 1, 2)
 
     @Test fun view() {
-        assertEquals(F64Array.of(0.0, 1.0).reshape(1, 2), m.view[0])
-        assertEquals(F64Array.of(2.0, 3.0).reshape(1, 2), m.view[1])
-        assertEquals(F64Array.of(4.0, 5.0).reshape(1, 2), m.view[2])
+        assertEquals(F64Array.of(0.0, 1.0).reshape(1, 2), m.V[0])
+        assertEquals(F64Array.of(2.0, 3.0).reshape(1, 2), m.V[1])
+        assertEquals(F64Array.of(4.0, 5.0).reshape(1, 2), m.V[2])
     }
 
     @Test(expected = IndexOutOfBoundsException::class) fun viewOutOfBounds() {
@@ -85,28 +85,28 @@ class F64Matrix3GetSet {
     @Test fun setMagicMatrix() {
         val copy = m.copy()
         val replacement = F64Array.full(m.shape[1], m.shape[2], init = 42.0)
-        copy.view[0] = replacement
-        assertEquals(replacement, copy.view[0])
+        copy.V[0] = replacement
+        assertEquals(replacement, copy.V[0])
 
         for (d in 1..m.shape[0] - 1) {
-            assertNotEquals(replacement, copy.view[d])
-            assertEquals(m.view[d], copy.view[d])
+            assertNotEquals(replacement, copy.V[d])
+            assertEquals(m.V[d], copy.V[d])
         }
     }
 
     @Test fun setMagicMatrixViaScalar() {
         val copy1 = m.copy()
-        copy1.view[0] = 42.0
+        copy1.V[0] = 42.0
         val copy2 = m.copy()
-        copy2.view[0] = F64Array.full(m.shape[1], m.shape[2], init = 42.0)
+        copy2.V[0] = F64Array.full(m.shape[1], m.shape[2], init = 42.0)
         assertEquals(copy1, copy2)
     }
 
     @Test fun setMagicVector() {
         val copy = m.copy()
         val replacement = F64Array.full(m.shape[2], 42.0)
-        copy.view[0, 0] = replacement
-        assertEquals(replacement, copy.view[0, 0])
+        copy.V[0, 0] = replacement
+        assertEquals(replacement, copy.V[0, 0])
 
         for (d in 1..m.shape[0] - 1) {
             for (r in 1..m.shape[1] - 1) {
@@ -121,21 +121,21 @@ class F64Matrix3GetSet {
 
     @Test fun setMagicVectorViaScalar() {
         val copy1 = m.copy()
-        copy1.view[1, 0] = 42.0
+        copy1.V[1, 0] = 42.0
         val copy2 = m.copy()
-        copy2.view[1, 0] = F64Array.full(m.shape[2], 42.0)
+        copy2.V[1, 0] = F64Array.full(m.shape[2], 42.0)
         assertEquals(copy1, copy2)
     }
 
     @Test fun setMagicScalar() {
         val copy = m.copy()
         val replacement = F64Array.full(m.shape[1], m.shape[2], init = 42.0)
-        copy.view[0] = 42.0
-        assertEquals(replacement, copy.view[0])
+        copy.V[0] = 42.0
+        assertEquals(replacement, copy.V[0])
 
         for (d in 1..m.shape[0] - 1) {
-            assertNotEquals(replacement, copy.view[d])
-            assertEquals(m.view[d], copy.view[d])
+            assertNotEquals(replacement, copy.V[d])
+            assertEquals(m.V[d], copy.V[d])
         }
     }
 }

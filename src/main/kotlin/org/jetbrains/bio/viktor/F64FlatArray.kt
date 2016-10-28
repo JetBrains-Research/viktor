@@ -134,20 +134,6 @@ open class F64FlatArray protected constructor(data: DoubleArray, offset: Int,
 
     override fun sum() = balancedSum()
 
-    /**
-     * Computes cumulative sum of the elements.
-     *
-     * The operation is done **in place**.
-     */
-    // TODO: generalize to n-d?
-    open fun cumSum() {
-        val acc = KahanSum()
-        for (pos in 0..size - 1) {
-            acc += unsafeGet(pos)
-            unsafeSet(pos, acc.result())
-        }
-    }
-
     override fun min() = unsafeGet(argMin())
 
     override fun argMin(): Int {

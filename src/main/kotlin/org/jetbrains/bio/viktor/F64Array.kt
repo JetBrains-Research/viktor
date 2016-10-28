@@ -91,6 +91,11 @@ open class F64Array protected constructor(
         safeIndex({ indices }) { data[unsafeIndex(indices)] = value }
     }
 
+    operator fun set(pos: Int, value: Double) {
+        require(nDim == 1) { "broadcasting set is not supported" }
+        safeIndex({ intArrayOf(pos) }) { data[unsafeIndex(pos)] = value }
+    }
+
     operator fun set(r: Int, c: Int, value: Double) {
         require(nDim == 2) { "broadcasting set is not supported" }
         safeIndex({ intArrayOf(r, c) }) { data[unsafeIndex(r, c)] = value }
@@ -138,12 +143,18 @@ open class F64Array protected constructor(
         }
     }
 
-    /** Returns a view of this matrix along the specified axis. */
-    fun view(index: Int, along: Int = 0): F64Array {
-        checkIndex("along", along, nDim)
-        checkIndex("index", index, shape[along])
-        return invoke(data, offset + strides[along] * index,
-                      strides.remove(along), shape.remove(along))
+    /** Returns a sequence of views along the specified [axis]. */
+    fun along(axis: Int): Sequence<F64Array> {
+        return (0..shape[axis] - 1).asSequence()
+                .map { view(it, axis) }
+    }
+
+    /** Returns a view of this array along the specified [axis]. */
+    fun view(index: Int, axis: Int = 0): F64Array {
+        checkIndex("axis", axis, nDim)
+        checkIndex("index", index, shape[axis])
+        return invoke(data, offset + strides[axis] * index,
+                      strides.remove(axis), shape.remove(axis))
     }
 
     /**
@@ -151,13 +162,14 @@ open class F64Array protected constructor(
      *
      * Here be dragons!
      */
-    private fun view0(indices: IntArray): F64Array {
+    @Suppress("nothing_to_inline")
+    private inline fun view0(indices: IntArray): F64Array {
         require(indices.size < nDim) { "too many indices" }
         return indices.fold(this) { m, pos -> m.view(pos) }
     }
 
-    /** An broadcasted viewer for this array. */
-    val view = Viewer(this)
+    /** A broadcasted viewer for this array. */
+    val V: Viewer = Viewer(this)
 
     class Viewer(private val a: F64Array) {
         /**
@@ -176,6 +188,13 @@ open class F64Array protected constructor(
             a.view0(indices).fill(init)
         }
 
+        /** A less-verbose alias to [copyTo]. */
+        @Suppress("unused_parameter")
+        operator fun set(vararg any: _I, other: F64Array) {
+            require(any.size < a.nDim) { "too many indices" }
+            other.copyTo(a)
+        }
+
         /**
          * A less-verbose alias to [view].
          *
@@ -189,26 +208,18 @@ open class F64Array protected constructor(
         //
         //     should be called as get(_I, _I, c = 42) and not [_I, _I, 42].
         @Suppress("unused_parameter")
-        operator fun get(any: _I, c: Int) = a.view(c, along = 1)
+        operator fun get(any: _I, c: Int) = a.view(c, axis = 1)
 
         @Suppress("unused_parameter")
         operator fun set(any: _I, c: Int, other: F64Array) {
-            other.copyTo(a.view(c, along = 1))
+            other.copyTo(a.view(c, axis = 1))
         }
 
         @Suppress("unused_parameter")
         operator fun set(any: _I, c: Int, init: Double) {
-            a.view(c, along = 1).fill(init)
+            a.view(c, axis = 1).fill(init)
         }
     }
-
-    /** Returns a view of the [r]-th row of this matrix. */
-    @Deprecated("", ReplaceWith("this[r]"))
-    fun rowView(r: Int) = view(r, along = 0)
-
-    /** Returns a view of the [c]-th column of this matrix. */
-    @Deprecated("", ReplaceWith("this[_I, c]"))
-    fun columnView(c: Int) = view(c, along = 1)
 
     /** Returns a copy of the elements in this array. */
     fun copy(): F64Array {
@@ -225,7 +236,7 @@ open class F64Array protected constructor(
                              shape.product())
         } else {
             for (r in 0..size - 1) {
-                view[r].copyTo(other.view[r])
+                V[r].copyTo(other.V[r])
             }
         }
     }
@@ -372,6 +383,22 @@ open class F64Array protected constructor(
      * Optimized for dense arrays.
      */
     open fun balancedSum(): Double = flatten().balancedSum()
+
+    /**
+     * Computes cumulative sum of the elements.
+     *
+     * The operation is done **in place**.
+     *
+     * Available only for 1-D arrays.
+     */
+    open fun cumSum() {
+        check(nDim == 1)
+        val acc = KahanSum()
+        for (pos in 0..size - 1) {
+            acc += unsafeGet(pos)
+            unsafeSet(pos, acc.result())
+        }
+    }
 
     /**
      * Returns the maximum element.
@@ -563,21 +590,21 @@ open class F64Array protected constructor(
         sb.append('[')
         if (maxDisplay < size) {
             for (r in 0..maxDisplay / 2 - 1) {
-                sb.append(view[r].toString(maxDisplay, format)).append(", ")
+                sb.append(V[r].toString(maxDisplay, format)).append(", ")
             }
 
             sb.append("..., ")
 
             val leftover = maxDisplay - maxDisplay / 2
             for (r in size - leftover..size - 1) {
-                sb.append(view[r].toString(maxDisplay, format))
+                sb.append(V[r].toString(maxDisplay, format))
                 if (r < size - 1) {
                     sb.append(", ")
                 }
             }
         } else {
             for (r in 0..size - 1) {
-                sb.append(view[r].toString(maxDisplay, format))
+                sb.append(V[r].toString(maxDisplay, format))
                 if (r < size - 1) {
                     sb.append(", ")
                 }

@@ -23,9 +23,9 @@ class F64Matrix2Slicing {
     }
 
     @Test fun rowView() {
-        assertEquals(F64Array.of(0.0, 1.0), m.view[0])
-        assertEquals(F64Array.of(2.0, 3.0), m.view[1])
-        assertEquals(F64Array.of(4.0, 5.0), m.view[2])
+        assertEquals(F64Array.of(0.0, 1.0), m.V[0])
+        assertEquals(F64Array.of(2.0, 3.0), m.V[1])
+        assertEquals(F64Array.of(4.0, 5.0), m.V[2])
     }
 
     @Test(expected = IndexOutOfBoundsException::class) fun rowViewOutOfBounds() {
@@ -33,12 +33,12 @@ class F64Matrix2Slicing {
     }
 
     @Test fun columnView() {
-        assertEquals(F64Array.of(0.0, 2.0, 4.0), m.view[_I, 0])
-        assertEquals(F64Array.of(1.0, 3.0, 5.0), m.view[_I, 1])
+        assertEquals(F64Array.of(0.0, 2.0, 4.0), m.V[_I, 0])
+        assertEquals(F64Array.of(1.0, 3.0, 5.0), m.V[_I, 1])
     }
 
     @Test(expected = IndexOutOfBoundsException::class) fun columnViewOutOfBounds() {
-        m.view[_I, 42]
+        m.V[_I, 42]
     }
 
     @Test fun reshape() {
@@ -92,37 +92,37 @@ class F64Matrix2GetSet {
 
     @Test fun setMagicRowScalar() {
         val copy = m.copy()
-        copy.view[0] = 42.0
-        assertEquals(F64Array.full(copy.shape[1], 42.0), copy.view[0])
+        copy.V[0] = 42.0
+        assertEquals(F64Array.full(copy.shape[1], 42.0), copy.V[0])
     }
 
     @Test fun setMagicRowVector() {
         val copy = m.copy()
         val v = F64Array.full(copy.shape[1], 42.0)
-        copy.view[0] = v
-        assertEquals(v, copy.view[0])
+        copy.V[0] = v
+        assertEquals(v, copy.V[0])
 
         for (r in 1..copy.shape[0] - 1) {
-            assertNotEquals(v, copy.view[r])
-            assertEquals(m.view[r], copy.view[r])
+            assertNotEquals(v, copy.V[r])
+            assertEquals(m.V[r], copy.V[r])
         }
     }
 
     @Test fun setMagicColumnScalar() {
         val copy = m.copy()
-        copy.view[_I, 0] = 42.0
-        assertEquals(F64Array.full(copy.shape[0], 42.0), copy.view[_I, 0])
+        copy.V[_I, 0] = 42.0
+        assertEquals(F64Array.full(copy.shape[0], 42.0), copy.V[_I, 0])
     }
 
     @Test fun setMagicColumnVector() {
         val copy = m.copy()
         val v = F64Array.full(copy.shape[0], 42.0)
-        copy.view[_I, 0] = v
-        assertEquals(v, copy.view[_I, 0])
+        copy.V[_I, 0] = v
+        assertEquals(v, copy.V[_I, 0])
 
         for (c in 1..copy.shape[1] - 1) {
-            assertNotEquals(v, copy.view[_I, c])
-            assertEquals(m.view[_I, c], copy.view[_I, c])
+            assertNotEquals(v, copy.V[_I, c])
+            assertEquals(m.V[_I, c], copy.V[_I, c])
         }
     }
 }
@@ -135,7 +135,7 @@ class F64Matrix2OpsTest {
         val copy = m.copy()
 
         assertEquals(m, -(-m))
-        assertEquals(-(m.view[0])[0], (-m)[0, 0], Precision.EPSILON)
+        assertEquals(-(m.V[0])[0], (-m)[0, 0], Precision.EPSILON)
 
         // Make sure [m] is unchanged!
         assertEquals(copy, m)
