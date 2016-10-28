@@ -40,7 +40,7 @@ class F64VectorCreationTest {
     @Test fun asStridedView() {
         val values = doubleArrayOf(1.0, 2.0, 3.0)
         val v = values.asF64Array(offset = 2, size = 1)
-        v.ix[0] = 42.0
+        v[0] = 42.0
         assertArrayEquals(doubleArrayOf(1.0, 2.0, 42.0), values, Precision.EPSILON)
     }
 
@@ -82,18 +82,18 @@ class F64VectorCreationTest {
         val v = F64Array.of(1.0, 2.0, 3.0)
         val copy = v.copy()
         assertEquals(v, copy)
-        v.ix[0] = 42.0
-        assertEquals(1.0, copy.ix[0], Precision.EPSILON)
+        v[0] = 42.0
+        assertEquals(1.0, copy[0], Precision.EPSILON)
     }
 }
 
 class F64VectorSlicing {
     @Test fun transpose() {
-        assertEquals(F64Array.of(1.0), F64Array.of(1.0).T[_I, 0])
+        assertEquals(F64Array.of(1.0), F64Array.of(1.0).T.view[_I, 0])
         assertEquals(F64Array.of(1.0, 2.0),
-                     F64Array.of(1.0, 2.0).T[_I, 0])
+                     F64Array.of(1.0, 2.0).T.view[_I, 0])
         assertEquals(F64Array.of(1.0, 2.0, 3.0),
-                     F64Array.of(1.0, 2.0, 3.0).T[_I, 0])
+                     F64Array.of(1.0, 2.0, 3.0).T.view[_I, 0])
     }
 
     @Test fun slice() {
@@ -102,7 +102,7 @@ class F64VectorSlicing {
         assertEquals(1, slice.size)
         assertEquals(F64Array.of(2.0), slice)
 
-        slice.ix[0] = 42.0
+        slice[0] = 42.0
         assertEquals(F64Array.of(1.0, 42.0, 3.0), v)
     }
 
@@ -160,19 +160,19 @@ class StridedVectorGetSet(private val values: DoubleArray,
 
     @Test fun get() {
         for (i in 0..v.size - 1) {
-            assertEquals(values[offset + i * stride], v.ix[i], Precision.EPSILON)
+            assertEquals(values[offset + i * stride], v[i], Precision.EPSILON)
         }
     }
 
     @Test(expected = IndexOutOfBoundsException::class) fun getOutOfBounds() {
-        v.ix[100500]
+        v[100500]
     }
 
     @Test fun set() {
         for (i in 0..v.size - 1) {
             val copy = v.copy()
-            copy.ix[i] = 42.0
-            assertEquals(42.0, copy.ix[i], Precision.EPSILON)
+            copy[i] = 42.0
+            assertEquals(42.0, copy[i], Precision.EPSILON)
 
             // Ensure all other elements are unchanged.
             for (j in 0..v.size - 1) {
@@ -180,13 +180,13 @@ class StridedVectorGetSet(private val values: DoubleArray,
                     continue
                 }
 
-                assertEquals("$i/$j", v.ix[j], copy.ix[j], Precision.EPSILON)
+                assertEquals("$i/$j", v[j], copy[j], Precision.EPSILON)
             }
         }
     }
 
     @Test(expected = IndexOutOfBoundsException::class) fun setOutOfBounds() {
-        v.ix[100500] = 42.0
+        v[100500] = 42.0
     }
 
     @Test fun setMagicScalar() {
@@ -228,7 +228,7 @@ private val CASES = listOf(
 class F64VectorOpsTest(private val v: F64Array) {
     @Test fun contains() {
         for (i in 0..v.size - 1) {
-            assertTrue(v.ix[i] in v)
+            assertTrue(v[i] in v)
         }
     }
 
@@ -283,11 +283,11 @@ class F64VectorOpsTest(private val v: F64Array) {
     }
 
     @Test fun dot() {
-        assertEquals((0..v.size - 1).sumByDouble { v.ix[it] * v.ix[it] }, v.dot(v), 1e-10)
+        assertEquals((0..v.size - 1).sumByDouble { v[it] * v[it] }, v.dot(v), 1e-10)
     }
 
     @Test fun mean() {
-        assertEquals((0..v.size - 1).sumByDouble { v.ix[it] } / v.size, v.mean(),
+        assertEquals((0..v.size - 1).sumByDouble { v[it] } / v.size, v.mean(),
                      Precision.EPSILON)
     }
 
@@ -296,7 +296,7 @@ class F64VectorOpsTest(private val v: F64Array) {
     }
 
     @Test fun sum() {
-        assertEquals((0..v.size - 1).sumByDouble { v.ix[it] }, v.sum(), 1e-10)
+        assertEquals((0..v.size - 1).sumByDouble { v[it] }, v.sum(), 1e-10)
     }
 
 //    @Test fun cumSum() {
@@ -305,7 +305,7 @@ class F64VectorOpsTest(private val v: F64Array) {
 //
 //        var acc = 0.0
 //        for (i in v.indices) {
-//            acc += v.ix[i]
+//            acc += v[i]
 //            assertEquals(acc, copy[i], 1e-10)
 //        }
 //    }
@@ -376,28 +376,28 @@ class F64VectorMathTest(private val v: F64Array) {
     @Test fun exp() {
         val expV = (v / v.max()).exp()
         for (i in 0..v.size - 1) {
-            assertEquals(FastMath.exp(v.ix[i] / v.max()), expV.ix[i], 1e-8)
+            assertEquals(FastMath.exp(v[i] / v.max()), expV[i], 1e-8)
         }
     }
 
     @Test fun expm1() {
         val expm1V = (v / v.max()).expm1()
         for (i in 0..v.size - 1) {
-            assertEquals(FastMath.expm1(v.ix[i] / v.max()), expm1V.ix[i], 1e-8)
+            assertEquals(FastMath.expm1(v[i] / v.max()), expm1V[i], 1e-8)
         }
     }
 
     @Test fun log() {
         val logV = v.log()
         for (i in 0..v.size - 1) {
-            assertEquals(FastMath.log(v.ix[i]), logV.ix[i], 1e-8)
+            assertEquals(FastMath.log(v[i]), logV[i], 1e-8)
         }
     }
 
     @Test fun log1p() {
         val log1pV = v.log1p()
         for (i in 0..v.size - 1) {
-            assertEquals(FastMath.log1p(v.ix[i]), log1pV.ix[i], 1e-8)
+            assertEquals(FastMath.log1p(v[i]), log1pV[i], 1e-8)
         }
     }
 
@@ -416,12 +416,12 @@ class F64VectorMathTest(private val v: F64Array) {
     @Test fun logAddExp() {
         val vLaeV = v logAddExp v
         for (i in 0..v.size - 1) {
-            assertEquals(v.ix[i] logAddExp v.ix[i], vLaeV.ix[i], 1e-8)
+            assertEquals(v[i] logAddExp v[i], vLaeV[i], 1e-8)
         }
     }
 
     @Test fun logSumExp() {
-        assertEquals((0..v.size - 1).sumByDouble { FastMath.exp(v.ix[it]) },
+        assertEquals((0..v.size - 1).sumByDouble { FastMath.exp(v[it]) },
                      FastMath.exp(v.logSumExp()), 1e-6)
     }
 
@@ -440,56 +440,56 @@ class F64VectorArithTest(private val v: F64Array) {
     @Test fun plus() {
         val u = v + v
         for (pos in 0..v.size - 1) {
-            assertEquals(v.ix[pos] + v.ix[pos], u.ix[pos], Precision.EPSILON)
+            assertEquals(v[pos] + v[pos], u[pos], Precision.EPSILON)
         }
     }
 
     @Test fun plusScalar() {
         val u = v + 42.0
         for (pos in 0..v.size - 1) {
-            assertEquals(v.ix[pos] + 42, u.ix[pos], Precision.EPSILON)
+            assertEquals(v[pos] + 42, u[pos], Precision.EPSILON)
         }
     }
 
     @Test fun minus() {
         val u = v - F64Array.full(v.size, 42.0)
         for (pos in 0..v.size - 1) {
-            assertEquals(v.ix[pos] - 42.0, u.ix[pos], Precision.EPSILON)
+            assertEquals(v[pos] - 42.0, u[pos], Precision.EPSILON)
         }
     }
 
     @Test fun minusScalar() {
         val u = v - 42.0
         for (pos in 0..v.size - 1) {
-            assertEquals(v.ix[pos] - 42.0, u.ix[pos], Precision.EPSILON)
+            assertEquals(v[pos] - 42.0, u[pos], Precision.EPSILON)
         }
     }
 
     @Test fun times() {
         val u = v * v
         for (pos in 0..v.size - 1) {
-            assertEquals(v.ix[pos] * v.ix[pos], u.ix[pos], Precision.EPSILON)
+            assertEquals(v[pos] * v[pos], u[pos], Precision.EPSILON)
         }
     }
 
     @Test fun timesScalar() {
         val u = v * 42.0
         for (pos in 0..v.size - 1) {
-            assertEquals(v.ix[pos] * 42, u.ix[pos], Precision.EPSILON)
+            assertEquals(v[pos] * 42, u[pos], Precision.EPSILON)
         }
     }
 
     @Test fun div() {
         val u = v / F64Array.full(v.size, 42.0)
         for (pos in 0..v.size - 1) {
-            assertEquals(v.ix[pos] / 42.0, u.ix[pos], Precision.EPSILON)
+            assertEquals(v[pos] / 42.0, u[pos], Precision.EPSILON)
         }
     }
 
     @Test fun divScalar() {
         val u = v / 42.0
         for (pos in 0..v.size - 1) {
-            assertEquals(v.ix[pos] / 42.0, u.ix[pos], Precision.EPSILON)
+            assertEquals(v[pos] / 42.0, u[pos], Precision.EPSILON)
         }
     }
 

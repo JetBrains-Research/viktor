@@ -20,7 +20,7 @@ private inline fun Double.minusInPlace(other: F64Array) {
                          other.data, other.offset, other.size)
     } else {
         for (pos in 0..other.size - 1) {
-            other.ix.unsafeSet(pos, this - other.ix.unsafeGet(pos))
+            other.unsafeSet(pos, this - other.unsafeGet(pos))
         }
     }
 }
@@ -41,7 +41,7 @@ private inline fun Double.divInPlace(other: F64Array) {
                         other.data, other.offset, other.size)
     } else {
         for (pos in 0..other.size - 1) {
-            other.ix.unsafeSet(pos, this / other.ix.unsafeGet(pos))
+            other.unsafeSet(pos, this / other.unsafeGet(pos))
         }
     }
 }

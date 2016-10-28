@@ -19,7 +19,7 @@ fun F64Array.sort(reverse: Boolean = false) = reorder(argSort(reverse))
  */
 fun F64Array.argSort(reverse: Boolean = false): IntArray {
     val comparator = Comparator(IndexedDoubleValue::compareTo)
-    val indexedValues = Array(size) { IndexedDoubleValue(it, ix.unsafeGet(it)) }
+    val indexedValues = Array(size) { IndexedDoubleValue(it, unsafeGet(it)) }
     indexedValues.sortWith(if (reverse) comparator.reversed() else comparator)
     return IntArray(size) { indexedValues[it].index }
 }
@@ -42,16 +42,16 @@ fun F64Array.reorder(indices: IntArray) {
     require(size == indices.size)
     val copy = indices.clone()
     for (pos in 0..size - 1) {
-        val value = ix.unsafeGet(pos)
+        val value = unsafeGet(pos)
         var j = pos
         while (true) {
             val k = copy[j]
             copy[j] = j
             if (k == pos) {
-                ix.unsafeSet(j, value)
+                unsafeSet(j, value)
                 break
             } else {
-                ix.unsafeSet(j, ix.unsafeGet(k))
+                unsafeSet(j, unsafeGet(k))
                 j = k
             }
         }
@@ -89,12 +89,12 @@ fun F64Array.partition(p: Int) {
  * @param right end index (inclusive).
  */
 internal fun F64Array.partition(p: Int, left: Int, right: Int): Int {
-    val pivot = ix[p]
+    val pivot = this[p]
     swap(p, right)  // move to end.
 
     var ptr = left
     for (i in left..right - 1) {
-        if (ix[i] < pivot) {
+        if (this[i] < pivot) {
             swap(i, ptr)
             ptr++
         }
@@ -106,7 +106,7 @@ internal fun F64Array.partition(p: Int, left: Int, right: Int): Int {
 
 @Suppress("nothing_to_inline")
 internal inline fun F64Array.swap(i: Int, j: Int) {
-    val tmp = ix.unsafeGet(i)
-    ix.unsafeSet(i, ix.unsafeGet(j))
-    ix.unsafeSet(j, tmp)
+    val tmp = unsafeGet(i)
+    unsafeSet(i, unsafeGet(j))
+    unsafeSet(j, tmp)
 }

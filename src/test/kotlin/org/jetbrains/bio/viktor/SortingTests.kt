@@ -19,14 +19,14 @@ class SortingTests {
         val length = values.size
         for (p in 0..length - 1) {
             values.shuffle()
-            val pivot = values.ix[p]
+            val pivot = values[p]
             val split = values.partition(p, 0, length - 1)
             for (i in 0..split - 1) {
-                assertTrue(values.ix[i] < pivot, "<")
+                assertTrue(values[i] < pivot, "<")
             }
 
             for (i in split..length - 1) {
-                assertTrue(values.ix[i] >= pivot, ">=")
+                assertTrue(values[i] >= pivot, ">=")
             }
         }
     }
@@ -46,7 +46,7 @@ class SortingTests {
         copy.sort()
 
         for ((i, j) in indices.withIndex()) {
-            assertEquals(copy[i], v.ix[j], Precision.EPSILON)
+            assertEquals(copy[i], v[j], Precision.EPSILON)
         }
     }
 
@@ -57,7 +57,7 @@ class SortingTests {
         copy.sort()
 
         for ((i, j) in indices.withIndex()) {
-            assertEquals(copy[copy.size - 1 - i], v.ix[j], Precision.EPSILON)
+            assertEquals(copy[copy.size - 1 - i], v[j], Precision.EPSILON)
         }
     }
 

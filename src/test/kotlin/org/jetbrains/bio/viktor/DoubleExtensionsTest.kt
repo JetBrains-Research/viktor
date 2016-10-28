@@ -12,7 +12,7 @@ class DoubleExtensionsTest {
 
     @Test fun plusMatrix() {
         val m = F64Array(10, 2) { i, j -> i + 2.0 * j }
-        val incremented = F64Array(10, 2) { i, j -> m.ix[i, j] + 1.0 }
+        val incremented = F64Array(10, 2) { i, j -> m[i, j] + 1.0 }
         assertEquals(incremented, 1.0 + m)
     }
 
@@ -24,7 +24,7 @@ class DoubleExtensionsTest {
 
     @Test fun minusMatrix() {
         val m = F64Array(10, 2) { i, j -> i + 2.0 * j }
-        val decremented = F64Array(10, 2) { i, j -> 42.0 - m.ix[i, j] }
+        val decremented = F64Array(10, 2) { i, j -> 42.0 - m[i, j] }
         assertEquals(decremented, 42.0 - m)
     }
 
@@ -36,7 +36,7 @@ class DoubleExtensionsTest {
 
     @Test fun timesMatrix() {
         val m = F64Array(10, 2) { i, j -> i + 2.0 * j }
-        val decremented = F64Array(10, 2) { i, j -> 42.0 * m.ix[i, j] }
+        val decremented = F64Array(10, 2) { i, j -> 42.0 * m[i, j] }
         assertEquals(decremented, 42.0 * m)
     }
 
@@ -48,7 +48,7 @@ class DoubleExtensionsTest {
 
     @Test fun divMatrix() {
         val m = F64Array(10, 2) { i, j -> i + 2.0 * j }
-        val decremented = F64Array(10, 2) { i, j -> 42.0 / m.ix[i, j] }
+        val decremented = F64Array(10, 2) { i, j -> 42.0 / m[i, j] }
         assertEquals(decremented, 42.0 / m)
     }
 }

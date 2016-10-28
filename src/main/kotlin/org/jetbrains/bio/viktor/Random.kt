@@ -24,13 +24,13 @@ internal object QuickSelect {
         assert(left <= n && n <= right)
 
         if (left == right) {
-            return values.ix[left]
+            return values[left]
         }
 
         var split = left + randomGenerator.nextInt(right - left + 1)
         split = values.partition(split, left, right)
         return when {
-            split == n -> values.ix[n]
+            split == n -> values[n]
             split > n  -> select(values, left, split - 1, n, randomGenerator)
             else -> select(values, split + 1, right, n, randomGenerator)
         }

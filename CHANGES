@@ -11,7 +11,7 @@ Version 0.4.0
 - Replaced `Strided` prefix with `F64`.
 - Removed specialcased 'Vector', `Matrix2` and `Matrix3` classes in
   faviour of a more generic `F64Array`.
-- Added a special attribute `ix` for indexing an array without broadcasting.
+- Added a special attribute `view` for slicing the array.
 - Removed `stochastic` and `indexedStochastic`.
 
 Version 0.3.5

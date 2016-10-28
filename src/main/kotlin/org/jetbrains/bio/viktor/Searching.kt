@@ -14,8 +14,8 @@ fun F64Array.searchSorted(target: Double): Int {
     while (lo < hi) {
         val mid = (lo + hi) ushr 1
         when {
-            target <= ix[mid] -> hi = mid
-            else              -> lo = mid + 1
+            target <= this[mid] -> hi = mid
+            else                -> lo = mid + 1
         }
     }
 

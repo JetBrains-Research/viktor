@@ -14,7 +14,7 @@ class BalancedSumTest(private val size: Int) {
 
         val expected = KahanSum()
         for (i in 0..v.size - 1) {
-            expected.feed(v.ix[i])
+            expected.feed(v[i])
         }
 
         assertEquals(expected.result(), v.balancedSum(), 1e-8)
@@ -35,7 +35,7 @@ class BalancedDotTest(private val size: Int) {
 
         val expected = KahanSum()
         for (i in 0..v.size - 1) {
-            expected.feed(v.ix[i] * w.ix[i])
+            expected.feed(v[i] * w[i])
         }
 
         assertEquals(expected.result(), v.dot(w), 1e-8)

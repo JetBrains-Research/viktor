@@ -23,9 +23,9 @@ class F64Matrix2Slicing {
     }
 
     @Test fun rowView() {
-        assertEquals(F64Array.of(0.0, 1.0), m[0])
-        assertEquals(F64Array.of(2.0, 3.0), m[1])
-        assertEquals(F64Array.of(4.0, 5.0), m[2])
+        assertEquals(F64Array.of(0.0, 1.0), m.view[0])
+        assertEquals(F64Array.of(2.0, 3.0), m.view[1])
+        assertEquals(F64Array.of(4.0, 5.0), m.view[2])
     }
 
     @Test(expected = IndexOutOfBoundsException::class) fun rowViewOutOfBounds() {
@@ -33,12 +33,12 @@ class F64Matrix2Slicing {
     }
 
     @Test fun columnView() {
-        assertEquals(F64Array.of(0.0, 2.0, 4.0), m[_I, 0])
-        assertEquals(F64Array.of(1.0, 3.0, 5.0), m[_I, 1])
+        assertEquals(F64Array.of(0.0, 2.0, 4.0), m.view[_I, 0])
+        assertEquals(F64Array.of(1.0, 3.0, 5.0), m.view[_I, 1])
     }
 
     @Test(expected = IndexOutOfBoundsException::class) fun columnViewOutOfBounds() {
-        m[_I, 42]
+        m.view[_I, 42]
     }
 
     @Test fun reshape() {
@@ -68,61 +68,61 @@ class F64Matrix2GetSet {
                                 4.0, 5.0).reshape(3, 2)
 
     @Test fun get() {
-        assertEquals(0.0, m.ix[0, 0], Precision.EPSILON)
-        assertEquals(1.0, m.ix[0, 1], Precision.EPSILON)
-        assertEquals(2.0, m.ix[1, 0], Precision.EPSILON)
-        assertEquals(3.0, m.ix[1, 1], Precision.EPSILON)
-        assertEquals(4.0, m.ix[2, 0], Precision.EPSILON)
-        assertEquals(5.0, m.ix[2, 1], Precision.EPSILON)
+        assertEquals(0.0, m[0, 0], Precision.EPSILON)
+        assertEquals(1.0, m[0, 1], Precision.EPSILON)
+        assertEquals(2.0, m[1, 0], Precision.EPSILON)
+        assertEquals(3.0, m[1, 1], Precision.EPSILON)
+        assertEquals(4.0, m[2, 0], Precision.EPSILON)
+        assertEquals(5.0, m[2, 1], Precision.EPSILON)
     }
 
     @Test(expected = IndexOutOfBoundsException::class) fun getOutOfBounds() {
-        m.ix[42, 42]
+        m[42, 42]
     }
 
     @Test fun set() {
         val copy = m.copy()
-        copy.ix[0, 1] = 42.0
-        assertEquals(42.0, copy.ix[0, 1], Precision.EPSILON)
+        copy[0, 1] = 42.0
+        assertEquals(42.0, copy[0, 1], Precision.EPSILON)
     }
 
     @Test(expected = IndexOutOfBoundsException::class) fun setOutOfBounds() {
-        m.ix[42, 42] = 100500.0
+        m[42, 42] = 100500.0
     }
 
     @Test fun setMagicRowScalar() {
         val copy = m.copy()
-        copy[0] = 42.0
-        assertEquals(F64Array.full(copy.shape[1], 42.0), copy[0])
+        copy.view[0] = 42.0
+        assertEquals(F64Array.full(copy.shape[1], 42.0), copy.view[0])
     }
 
     @Test fun setMagicRowVector() {
         val copy = m.copy()
         val v = F64Array.full(copy.shape[1], 42.0)
-        copy[0] = v
-        assertEquals(v, copy[0])
+        copy.view[0] = v
+        assertEquals(v, copy.view[0])
 
         for (r in 1..copy.shape[0] - 1) {
-            assertNotEquals(v, copy[r])
-            assertEquals(m[r], copy[r])
+            assertNotEquals(v, copy.view[r])
+            assertEquals(m.view[r], copy.view[r])
         }
     }
 
     @Test fun setMagicColumnScalar() {
         val copy = m.copy()
-        copy[_I, 0] = 42.0
-        assertEquals(F64Array.full(copy.shape[0], 42.0), copy[_I, 0])
+        copy.view[_I, 0] = 42.0
+        assertEquals(F64Array.full(copy.shape[0], 42.0), copy.view[_I, 0])
     }
 
     @Test fun setMagicColumnVector() {
         val copy = m.copy()
         val v = F64Array.full(copy.shape[0], 42.0)
-        copy[_I, 0] = v
-        assertEquals(v, copy[_I, 0])
+        copy.view[_I, 0] = v
+        assertEquals(v, copy.view[_I, 0])
 
         for (c in 1..copy.shape[1] - 1) {
-            assertNotEquals(v, copy[_I, c])
-            assertEquals(m[_I, c], copy[_I, c])
+            assertNotEquals(v, copy.view[_I, c])
+            assertEquals(m.view[_I, c], copy.view[_I, c])
         }
     }
 }
@@ -135,7 +135,7 @@ class F64Matrix2OpsTest {
         val copy = m.copy()
 
         assertEquals(m, -(-m))
-        assertEquals(-(m[0]).ix[0], (-m).ix[0, 0], Precision.EPSILON)
+        assertEquals(-(m.view[0])[0], (-m)[0, 0], Precision.EPSILON)
 
         // Make sure [m] is unchanged!
         assertEquals(copy, m)
