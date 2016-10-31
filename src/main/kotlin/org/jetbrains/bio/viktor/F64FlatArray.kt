@@ -49,24 +49,14 @@ open class F64FlatArray protected constructor(data: DoubleArray, offset: Int,
         }
     }
 
-    override fun reorder(indices: IntArray) {
-        require(size == indices.size)
-
-        val copy = indices.clone()
-        for (pos in 0..size - 1) {
-            val value = unsafeGet(pos)
-            var j = pos
-            while (true) {
-                val k = copy[j]
-                copy[j] = j
-                if (k == pos) {
-                    unsafeSet(j, value)
-                    break
-                } else {
-                    unsafeSet(j, unsafeGet(k))
-                    j = k
-                }
-            }
+    override fun reorder(indices: IntArray, axis: Int) {
+        if (axis == 0) {
+            require(indices.size == size)
+            reorderInternal(this, indices,
+                            get = { pos -> unsafeGet(pos) },
+                            set = { pos, value -> unsafeSet(pos, value) })
+        } else {
+            unsupported()
         }
     }
 

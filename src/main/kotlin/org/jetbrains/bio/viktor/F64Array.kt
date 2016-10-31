@@ -335,26 +335,11 @@ open class F64Array protected constructor(
     }
 
     /** Applies a given permutation of indices to the elements in the array. */
-    // TODO add axis?
-    open fun reorder(indices: IntArray) {
-        require(size == indices.size)
-
-        val copy = indices.clone()
-        for (pos in 0..size - 1) {
-            val value = V[pos] .copy()
-            var j = pos
-            while (true) {
-                val k = copy[j]
-                copy[j] = j
-                if (k == pos) {
-                    V[j] = value
-                    break
-                } else {
-                    V[j] = V[k]
-                    j = k
-                }
-            }
-        }
+    open fun reorder(indices: IntArray, axis: Int = 0) {
+        require(indices.size == shape[axis])
+        reorderInternal(this, indices,
+                        get = { pos -> view(pos, axis).copy() },
+                        set = { pos, value -> value.copyTo(view(pos, axis)) })
     }
 
     /** A less verbose alternative to [fill]. */

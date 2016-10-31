@@ -84,12 +84,21 @@ class SortingTests {
         assertEquals(F64Array.of(3.0, 2.0, 1.0), v)
     }
 
-    @Test fun reorderMatrix() {
+    @Test fun reorderMatrix0() {
         val m = F64Array.of(1.0, 2.0, 3.0,
                             4.0, 5.0, 6.0).reshape(2, 3)
         m.reorder(intArrayOf(1, 0))
         assertEquals(F64Array.of(4.0, 5.0, 6.0,
                                  1.0, 2.0, 3.0).reshape(2, 3),
+                     m)
+    }
+
+    @Test fun reorderMatrix1() {
+        val m = F64Array.of(1.0, 2.0, 3.0,
+                            4.0, 5.0, 6.0).reshape(2, 3)
+        m.reorder(intArrayOf(2, 1, 0), axis = 1)
+        assertEquals(F64Array.of(3.0, 2.0, 1.0,
+                                 6.0, 5.0, 4.0).reshape(2, 3),
                      m)
     }
 }

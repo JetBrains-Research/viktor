@@ -38,6 +38,27 @@ private data class IndexedDoubleValue(val index: Int, val value: Double) :
     }
 }
 
+internal inline fun <T> reorderInternal(
+        a: F64Array, indices: IntArray,
+        get: (Int) -> T, set: (Int, T) -> Unit) {
+    val copy = indices.clone()
+    for (pos in 0..a.size - 1) {
+        val value = get(pos)
+        var j = pos
+        while (true) {
+            val k = copy[j]
+            copy[j] = j
+            if (k == pos) {
+                set(j, value)
+                break
+            } else {
+                set(j, get(k))
+                j = k
+            }
+        }
+    }
+}
+
 /**
  * Partitions the array.
  *
