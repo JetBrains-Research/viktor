@@ -336,8 +336,7 @@ open class F64Array protected constructor(
 
     /** Applies a given permutation of indices to the elements in the array. */
     open fun reorder(indices: IntArray, axis: Int = 0) {
-        require(indices.size == shape[axis])
-        reorderInternal(this, indices,
+        reorderInternal(this, indices, axis,
                         get = { pos -> view(pos, axis).copy() },
                         set = { pos, value -> value.copyTo(view(pos, axis)) })
     }

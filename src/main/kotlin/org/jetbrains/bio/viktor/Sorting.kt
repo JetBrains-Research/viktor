@@ -39,10 +39,12 @@ private data class IndexedDoubleValue(val index: Int, val value: Double) :
 }
 
 internal inline fun <T> reorderInternal(
-        a: F64Array, indices: IntArray,
+        a: F64Array, indices: IntArray, axis: Int,
         get: (Int) -> T, set: (Int, T) -> Unit) {
+    require(indices.size == a.shape[axis])
+
     val copy = indices.clone()
-    for (pos in 0..a.size - 1) {
+    for (pos in 0..a.shape[axis] - 1) {
         val value = get(pos)
         var j = pos
         while (true) {

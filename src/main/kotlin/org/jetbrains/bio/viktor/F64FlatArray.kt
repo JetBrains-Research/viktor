@@ -51,8 +51,7 @@ open class F64FlatArray protected constructor(data: DoubleArray, offset: Int,
 
     override fun reorder(indices: IntArray, axis: Int) {
         if (axis == 0) {
-            require(indices.size == size)
-            reorderInternal(this, indices,
+            reorderInternal(this, indices, axis,
                             get = { pos -> unsafeGet(pos) },
                             set = { pos, value -> unsafeSet(pos, value) })
         } else {
