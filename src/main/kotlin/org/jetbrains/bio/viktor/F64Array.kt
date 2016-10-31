@@ -66,18 +66,22 @@ open class F64Array protected constructor(
      * Note that it could be at least 1.5x slower than specialized versions.
      */
     operator fun get(vararg indices: Int): Double {
+        require(indices.size == nDim) { "broadcasting get is not supported" }
         return safeIndex({ indices }) { data[unsafeIndex(indices)] }
     }
 
     operator fun get(pos: Int): Double {
+        require(nDim == 1) { "broadcasting get is not supported" }
         return safeIndex({ intArrayOf(pos) }) { data[unsafeIndex(pos)] }
     }
 
     operator fun get(r: Int, c: Int): Double {
+        require(nDim == 2) { "broadcasting get is not supported" }
         return safeIndex({ intArrayOf(r, c) }) { data[unsafeIndex(r, c)] }
     }
 
     operator fun get(d: Int, r: Int, c: Int): Double {
+        require(nDim == 3) { "broadcasting get is not supported" }
         return safeIndex({ intArrayOf(d, r, c) }) { data[unsafeIndex(d, r, c)] }
     }
 
@@ -196,7 +200,7 @@ open class F64Array protected constructor(
         /** A less-verbose alias to [copyTo]. */
         @Suppress("unused_parameter")
         operator fun set(vararg any: _I, other: F64Array) {
-            require(any.size < a.nDim) { "too many indices" }
+            require(any.size < a.nDim) { "too many axes" }
             other.copyTo(a)
         }
 
