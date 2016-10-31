@@ -279,7 +279,9 @@ open class F64Array protected constructor(
      *
      * @since 0.2.3
      */
-    fun append(other: F64Array) = F64Array.concatenate(this, other)
+    fun append(other: F64Array, axis: Int = 0): F64Array {
+        return F64Array.concatenate(this, other, axis = axis)
+    }
 
     /**
      * Flattens the array into a 1-D view in O(1) time.
@@ -575,7 +577,10 @@ open class F64Array protected constructor(
     /** Ensures a given array has the same dimensions as this array. */
     fun checkShape(other: F64Array): F64Array {
         // Could relax this to "broadcastable".
-        require(this === other || Arrays.equals(shape, other.shape))
+        require(this === other || Arrays.equals(shape, other.shape)) {
+            "operands shapes do not match " +
+            "${Arrays.toString(shape)} ${Arrays.toString(other.shape)}"
+        }
         return other
     }
 
@@ -691,20 +696,29 @@ open class F64Array protected constructor(
         }
 
         /**
-         * Joins a sequence of vectors into a single vector.
+         * Joins a sequence of arrays into a single array.
          *
          * @since 0.2.3
          */
-        // TODO: generalize to n-d?
         fun concatenate(first: F64Array, vararg rest: F64Array, axis: Int = 0): F64Array {
-            // rest.forEach { first.checkShape(it) }
+            for (other in rest) {
+                if (!Arrays.equals(other.shape.remove(axis),
+                                   first.shape.remove(axis))) {
+                    throw IllegalArgumentException(
+                            "input array shapes must be exactly equal " +
+                            "for all dimensions except $axis")
+                }
+            }
 
-            val size = first.size + rest.sumBy { it.size }
-            val result = invoke(size) as F64FlatArray
+            val shape = first.shape.clone().apply {
+                this[axis] = first.shape[axis] + rest.sumBy { it.shape[axis] }
+            }
+
+            val result = invoke(*shape)
             var offset = 0
             for (a in arrayOf(first, *rest)) {
                 if (a.size > 0) {
-                    a.copyTo(result.slice(offset, offset + a.size, axis = axis))
+                    a.copyTo(result.slice(offset, offset + a.shape[axis], axis = axis))
                     offset += a.shape[axis]
                 }
             }

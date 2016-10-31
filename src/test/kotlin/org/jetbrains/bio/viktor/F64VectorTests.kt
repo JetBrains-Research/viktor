@@ -71,11 +71,28 @@ class F64VectorCreationTest {
                      F64Array.of(1.0, 2.0).append(F64Array.of(3.0, 4.0, 5.0)))
     }
 
-    @Test fun appendMatrix() {
-        assertEquals(F64Array.of(1.0, 2.0),
+    @Test fun appendMatrix0() {
+        assertEquals(F64Array.of(1.0, 2.0,
+                                 3.0, 4.0,
+                                 42.0, 42.0),
                      F64Array.of(1.0, 2.0,
                                  3.0, 4.0).reshape(2, 2)
                              .append(F64Array.of(42.0, 42.0).reshape(1, 2)))
+    }
+
+    @Test fun appendMatrix1() {
+        assertEquals(F64Array.of(1.0, 2.0, 42.0,
+                                 3.0, 4.0, 42.0).reshape(2, 3),
+                     F64Array.of(1.0, 2.0,
+                                 3.0, 4.0).reshape(2, 2)
+                             .append(F64Array.of(42.0, 42.0).reshape(2, 1),
+                                     axis = 1))
+    }
+
+    @Test(expected = IllegalArgumentException::class) fun appendMismatch() {
+        F64Array.of(1.0, 2.0,
+                    3.0, 4.0).reshape(2, 2)
+                .append(F64Array.of(42.0, 42.0).reshape(2, 1), axis = 0)
     }
 
     @Test fun copy() {
