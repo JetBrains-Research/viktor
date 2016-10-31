@@ -418,7 +418,7 @@ open class F64Array protected constructor(
      * Returns the unravelled index of the maximum element in the
      * flattened array.
      *
-     * See [ravelIndex] and [unravelIndex] for details.
+     * See [ravelMultiIndex] and [unravelIndex] for details.
      */
     open fun argMax(): Int = flatten().argMax()
 
@@ -433,7 +433,7 @@ open class F64Array protected constructor(
      * Returns the unravelled index of the minimum element in the
      * flattened array.
      *
-     * See [ravelIndex] and [unravelIndex] for details.
+     * See [ravelMultiIndex] and [unravelIndex] for details.
      */
     open fun argMin(): Int = flatten().argMin()
 

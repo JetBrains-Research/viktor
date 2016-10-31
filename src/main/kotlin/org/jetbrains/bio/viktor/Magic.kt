@@ -1,5 +1,7 @@
 package org.jetbrains.bio.viktor
 
+import java.util.*
+
 /**
  * A special object used to denote all indices.
  *
@@ -14,7 +16,7 @@ object _I {}
  * @since 0.4.0
  * @see unravelIndex
  */
-fun ravelIndex(indices: IntArray, shape: IntArray): Int {
+fun ravelMultiIndex(indices: IntArray, shape: IntArray): Int {
     var index = 0
     var stride = 1
     for (i in shape.indices.reversed()) {
@@ -26,16 +28,21 @@ fun ravelIndex(indices: IntArray, shape: IntArray): Int {
 }
 
 /**
- * The inverse of [ravelIndex].
+ * The inverse of [ravelMultiIndex].
  *
  * @since 0.4.0
  */
 fun unravelIndex(index: Int, shape: IntArray): IntArray {
+    if (index < 0 || index >= shape.product()) {
+        throw IndexOutOfBoundsException(
+                "invalid index for shape ${Arrays.toString(shape)}")
+    }
+
     var remaining = index
     val indices = IntArray(shape.size)
     for (i in shape.indices.reversed()) {
         indices[i] = remaining % shape[i]
-        remaining = (remaining / shape[i]) * shape[i]
+        remaining /= shape[i]
     }
 
     return indices
