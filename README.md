@@ -12,11 +12,11 @@ Kotlin. Here're some of the highlights:
 
     ```kotlin
     val m = F64Array(4, 3)
-    m.view[0] = F64Array.full(3, 42.0)  // row-view.
-    m.view[_I, 0]                       // column-view.
-    m.view[0] = 42.0                    // broadcasting.
-    m + 0.5 * m                         // arithmetic operations.
-    m.view[0].exp() + 1.0               // math functions.
+    m.V[0] = F64Array.full(3, 42.0)  // row-view.
+    m.V[_I, 0]                       // column-view.
+    m.V[0] = 42.0                    // broadcasting.
+    m + 0.5 * m                      // arithmetic operations.
+    m.V[0].exp() + 1.0               // math functions.
     ```
 
 [ndarray]: http://docs.scipy.org/doc/numpy/reference/arrays.ndarray.html

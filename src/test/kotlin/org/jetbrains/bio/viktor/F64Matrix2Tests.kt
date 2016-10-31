@@ -60,6 +60,28 @@ class F64Matrix2Slicing {
                                   doubleArrayOf(4.0, 6.0)),
                           v.reshape(2, 2).toGenericArray())
     }
+
+    @Test fun along0() {
+        val a = F64Array.of(1.0, 2.0, 3.0,
+                            4.0, 5.0, 6.0).reshape(2, 3)
+
+        a.along(0).forEach { it /= it[0] }
+        assertEquals(F64Array.of(1.0, 2.0, 3.0,
+                                 1.0, 5.0 / 4.0, 6.0 / 4.0)
+                             .reshape(2, 3),
+                     a)
+    }
+
+    @Test fun along1() {
+        val a = F64Array.of(1.0, 2.0, 3.0,
+                            4.0, 5.0, 6.0).reshape(2, 3)
+
+        a.along(1).forEach { it /= it[1] }
+        assertEquals(F64Array.of(1.0 / 4.0, 2.0 / 5.0, 3.0 / 6.0,
+                                 1.0, 1.0, 1.0)
+                             .reshape(2, 3),
+                     a)
+    }
 }
 
 class F64Matrix2GetSet {

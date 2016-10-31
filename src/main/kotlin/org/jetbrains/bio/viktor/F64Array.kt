@@ -143,8 +143,13 @@ open class F64Array protected constructor(
         }
     }
 
-    /** Returns a sequence of views along the specified [axis]. */
-    fun along(axis: Int): Sequence<F64Array> {
+    /**
+     * Returns a sequence of views along the specified [axis].
+     *
+     * For example, for a 2-D array `axis = 0` means "for each row",
+     * and `axis = 1` "for each column".
+     */
+    open fun along(axis: Int): Sequence<F64Array> {
         return (0..shape[axis] - 1).asSequence()
                 .map { view(it, axis) }
     }

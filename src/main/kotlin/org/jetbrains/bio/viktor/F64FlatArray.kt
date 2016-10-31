@@ -34,6 +34,8 @@ open class F64FlatArray protected constructor(data: DoubleArray, offset: Int,
         return false
     }
 
+    override fun along(axis: Int) = unsupported()
+
     override fun copyTo(other: F64Array) {
         checkShape(other)
         for (pos in 0..size - 1) {
