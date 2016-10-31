@@ -77,4 +77,19 @@ class SortingTests {
         assertArrayEquals(doubleArrayOf(-1.0, 0.0, 2.0, 2.0, 4.0, 42.0),
                           v.toDoubleArray(), Precision.EPSILON)
     }
+
+    @Test fun reorderFlat() {
+        val v = F64Array.of(1.0, 2.0, 3.0)
+        v.reorder(intArrayOf(2, 1, 0))
+        assertEquals(F64Array.of(3.0, 2.0, 1.0), v)
+    }
+
+    @Test fun reorderMatrix() {
+        val m = F64Array.of(1.0, 2.0, 3.0,
+                            4.0, 5.0, 6.0).reshape(2, 3)
+        m.reorder(intArrayOf(1, 0))
+        assertEquals(F64Array.of(4.0, 5.0, 6.0,
+                                 1.0, 2.0, 3.0).reshape(2, 3),
+                     m)
+    }
 }

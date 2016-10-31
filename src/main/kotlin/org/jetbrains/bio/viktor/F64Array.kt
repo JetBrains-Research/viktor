@@ -334,6 +334,29 @@ open class F64Array protected constructor(
                       shape)
     }
 
+    /** Applies a given permutation of indices to the elements in the array. */
+    // TODO add axis?
+    open fun reorder(indices: IntArray) {
+        require(size == indices.size)
+
+        val copy = indices.clone()
+        for (pos in 0..size - 1) {
+            val value = V[pos] .copy()
+            var j = pos
+            while (true) {
+                val k = copy[j]
+                copy[j] = j
+                if (k == pos) {
+                    V[j] = value
+                    break
+                } else {
+                    V[j] = V[k]
+                    j = k
+                }
+            }
+        }
+    }
+
     /** A less verbose alternative to [fill]. */
     operator fun set(vararg any: _I, value: Double) = when {
         any.size > nDim -> throw IllegalArgumentException("too many axes")
@@ -348,7 +371,7 @@ open class F64Array protected constructor(
     open infix fun dot(other: IntArray): Double = unsupported()
 
     /** Computes a dot product between two 1-D arrays. */
-    infix fun dot(other: DoubleArray) = dot(other.asF64Array())
+    infix fun dot(other: DoubleArray): Double = dot(other.asF64Array())
 
     /**
      * Computes a dot product between two 1-D arrays.

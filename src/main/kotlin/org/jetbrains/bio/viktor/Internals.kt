@@ -17,6 +17,11 @@ inline fun checkIndex(label: String, pos: Int, size: Int) {
 }
 
 @Suppress("nothing_to_inline")
+inline fun check1D(a: F64Array) {
+    check(a.nDim == 1) { "expected a 1-D array" }
+}
+
+@Suppress("nothing_to_inline")
 inline fun unsupported(): Nothing = throw UnsupportedOperationException()
 
 @Suppress("nothing_to_inline")
