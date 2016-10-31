@@ -38,12 +38,12 @@ internal object QuickSelect {
 }
 
 /**
- * Computes the [q]-th order statistic over this vector.
+ * Computes the [q]-th order statistic over this 1-D array.
  *
  * The implementation follows that of Commons Math. See JavaDoc of
  * [Percentile] for computational details.
  *
- * The vector is modified in-place. Do a [copy] of the vector
+ * The array is modified in-place. Do a [copy] of the array
  * to avoid mutation if necessary.
  *
  * @since 0.2.0
@@ -51,7 +51,8 @@ internal object QuickSelect {
 fun F64Array.quantile(q: Double = 0.5,
                       randomGenerator: RandomGenerator = DEFAULT_RANDOM): Double {
     require(size > 0) { "no data" }
-    require(nDim == 1) { "n-d arrays not supported" }
+    check1D(this)
+
     val pos = (size + 1) * q
     val d = pos - Math.floor(pos)
     return when {
@@ -68,13 +69,15 @@ fun F64Array.quantile(q: Double = 0.5,
 }
 
 /**
- * Randomly permutes the elements of this vector.
+ * Randomly permutes the elements of this 1-D array.
  *
  * See https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle.
  *
  * @since 0.2.0
  */
 fun F64Array.shuffle(randomGenerator: RandomGenerator = DEFAULT_RANDOM) {
+    check1D(this)
+
     if (size <= 1) {
         return
     }
