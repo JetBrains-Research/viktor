@@ -147,6 +147,19 @@ open class F64Array protected constructor(
         }
     }
 
+    @Suppress("nothing_to_inline")
+    private inline fun outOfBounds(indices: IntArray, shape: IntArray): Nothing {
+        val nDim = shape.size
+        val reason = when {
+            indices.size > nDim -> "too many indices"
+            indices.size < nDim -> "too few indices"
+            else -> "(${indices.joinToString(", ")}) out of bounds " +
+                    "for shape ${shape.joinToString(", ")}"
+        }
+
+        throw IndexOutOfBoundsException(reason)
+    }
+
     /**
      * Returns a sequence of views along the specified [axis].
      *

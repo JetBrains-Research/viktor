@@ -10,29 +10,16 @@ internal fun IntArray.remove(pos: Int) = when (pos) {
 }
 
 @Suppress("nothing_to_inline")
-inline fun checkIndex(label: String, pos: Int, size: Int) {
+internal inline fun checkIndex(label: String, pos: Int, size: Int) {
     if (pos < 0 || pos >= size) {
         throw IndexOutOfBoundsException("$label must be in [0, $size)")
     }
 }
 
 @Suppress("nothing_to_inline")
-inline fun check1D(a: F64Array) {
+internal inline fun check1D(a: F64Array) {
     check(a.nDim == 1) { "expected a 1-D array" }
 }
 
 @Suppress("nothing_to_inline")
-inline fun unsupported(): Nothing = throw UnsupportedOperationException()
-
-@Suppress("nothing_to_inline")
-internal inline fun outOfBounds(indices: IntArray, shape: IntArray): Nothing {
-    val nDim = shape.size
-    val reason = when {
-        indices.size > nDim -> "too many indices"
-        indices.size < nDim -> "too few indices"
-        else -> "(${indices.joinToString(", ")}) out of bounds " +
-                "for shape ${shape.joinToString(", ")}"
-    }
-
-    throw IndexOutOfBoundsException(reason)
-}
+internal inline fun unsupported(): Nothing = throw UnsupportedOperationException()
