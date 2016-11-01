@@ -757,26 +757,18 @@ fun DoubleArray.asF64Array(offset: Int = 0, size: Int = this.size): F64Array {
 /** Copies the elements of this nested array into [F64Array] of the same shape. */
 fun Array<*>.toF64Array(): F64Array {
     val shape = guessShape()
-    val a = F64Array(shape.product())
+    return flatten(this).asF64Array().reshape(*shape)
+}
 
-    var ptr = 0
-    val q = ArrayDeque<Any>()
-    q.add(this)
-
-    do {
-        val tip = q.removeFirst()
-        when (tip) {
-            is DoubleArray -> {
-                tip.asF64Array().copyTo(a.slice(ptr, ptr + tip.size))
-                ptr += tip.size
-            }
-            is Array<*> -> q.addAll(tip)
+/** Flattens a nested [DoubleArray]. */
+private fun flatten(a: Array<*>): DoubleArray {
+    return Arrays.stream(a).flatMapToDouble {
+        when (it) {
+            is DoubleArray -> Arrays.stream(it)
+            is Array<*> -> Arrays.stream(flatten(a))
             else -> unsupported()
         }
-
-    } while (q.isNotEmpty())
-
-    return a.reshape(*shape)
+    }.toArray()
 }
 
 /** No validation, therefore "check". */
