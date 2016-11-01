@@ -191,7 +191,8 @@ open class F64Array protected constructor(
     }
 
     /** A broadcasted viewer for this array. */
-    @Transient val V: Viewer = Viewer(this)
+    @delegate:Transient
+    val V: Viewer by lazy(LazyThreadSafetyMode.NONE) { Viewer(this) }
 
     class Viewer(private val a: F64Array) {
         /**

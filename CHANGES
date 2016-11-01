@@ -3,6 +3,11 @@ viktor Changelog
 
 Here you can see the full list of changes between each viktor release.
 
+Version 0.4.1
+-------------
+
+- Fixed `F64Array.V` serialization.
+
 Version 0.4.0
 -------------
 

@@ -78,7 +78,7 @@ the IDE. The following Java command line option should work for IDEA
 Publishing
 ----------
 
-You can do it with a one-liner
+You can publish a new release with a one-liner
 
 ```bash
 ./gradlew clean assemble test generatePomFileForMavenJavaPublication bintrayUpload
