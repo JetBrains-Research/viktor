@@ -8,12 +8,11 @@ Version 0.4.0
 
 Released on November 1st 2016
 
-- Fixed serialization of non-dense matrices.
-- Allowed slicing a `StridedVector` with custom `step`.
-- Replaced `Strided` prefix with `F64`.
-- Removed specialcased 'Vector', `Matrix2` and `Matrix3` classes in
-  favour of a more generic `F64Array`.
-- Added a special attribute `V` for slicing the array.
+- Removed special cased `Vector`, `Matrix2` and `Matrix3` classes in
+  favor of a more generic `F64Array`.
+- Fixed serialization of non-dense arrays.
+- Allowed slicing an `F64Array` with a custom `step`.
+- Added a special attribute `V` for n-d slicing the array.
 - Removed `stochastic` and `indexedStochastic`.
 - Added `axis` to `F64Array.append`, `F64Array.slice` and `F64Array.reorder`.
 - Added `Array<*>.toF64Array` for converting nested arrays to strided ones.
