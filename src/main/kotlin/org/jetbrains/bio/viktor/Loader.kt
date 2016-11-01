@@ -69,8 +69,10 @@ internal object Loader {
             }
         } catch (e: Throwable) {
             System.err.println(listOf(
-                    "Native SIMD optimization of vector operations is not available.",
-                    "Fallback Kotlin implementation will be used instead.").joinToString("\n"))
+                    "Native SIMD optimization of array operations is not available.",
+                    "Fallback Kotlin implementation will be used instead.",
+                    "Build viktor for your system from source as described in " +
+                    "https://github.com/JetBrains-Research/viktor").joinToString("\n"))
             e.printStackTrace(System.err)
         }
     }

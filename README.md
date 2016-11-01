@@ -4,8 +4,7 @@ viktor [![Build Status](https://travis-ci.org/JetBrains-Research/viktor.svg?bran
 `viktor` implements a restricted subset of NumPy [ndarray] [ndarray] features in
 Kotlin. Here're some of the highlights:
 
-* A single core data type --- `F64Array` which is backed by either `F64Vector`
-  or `F64Matrix`.
+* A single core data type --- `F64Array`, an n-dimensional primitive array.
 * Efficient vectorized operations, which are accelerated using SIMD whenever
   possible.
 * Semi-sweet syntax.
@@ -29,15 +28,12 @@ Gradle just add the following to your `build.gradle`:
 
 ```gradle
 repositories {
-    maven {
-        url 'https://dl.bintray.com/jetbrains-research/maven'
-    }
+    jCenter()
 }
 
 dependencies {
-    compile 'org.jetbrains.bio:viktor:0.3.5'
+    compile 'org.jetbrains.bio:viktor:0.4.0'
 }
-
 ```
 
 [bintray]: https://bintray.com/jetbrains-research/maven/viktor/view
@@ -85,7 +81,7 @@ Publishing
 You can do it with a one-liner
 
 ```bash
-./gradlew clean assemble generatePomFileForMavenJavaPublication bintrayUpload
+./gradlew clean assemble test generatePomFileForMavenJavaPublication bintrayUpload
 ```
 
 Make sure to set Bintray credentials (see API key section
