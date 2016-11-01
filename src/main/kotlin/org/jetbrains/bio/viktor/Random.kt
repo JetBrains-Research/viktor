@@ -76,7 +76,7 @@ fun F64Array.quantile(q: Double = 0.5,
  * @since 0.2.0
  */
 fun F64Array.shuffle(randomGenerator: RandomGenerator = DEFAULT_RANDOM) {
-    check1D(this)
+    check1D(this)  // although this could be generalized.
 
     if (size <= 1) {
         return

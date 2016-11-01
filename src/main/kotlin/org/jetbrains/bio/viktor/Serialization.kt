@@ -10,7 +10,7 @@ fun NpyArray.asF64Array() = asDoubleArray().asF64Array().reshape(*shape)
 
 /** Writes a given matrix to [path] in NPY format. */
 fun NpyFile.write(path: Path, a: F64Array) {
-    // We could getaway without doing a double copy of tranposed
+    // We could getaway without doing a double copy of transposed
     // matrices here once `npy` supports Fortran order.
     val dense = if (a.isDense) a else a.copy()
     write(path, dense.flatten().toDoubleArray(), shape = a.shape)
