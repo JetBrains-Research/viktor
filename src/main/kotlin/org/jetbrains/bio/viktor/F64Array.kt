@@ -178,7 +178,7 @@ open class F64Array protected constructor(
     }
 
     /** A broadcasted viewer for this array. */
-    val V: Viewer = Viewer(this)
+    @Transient val V: Viewer = Viewer(this)
 
     class Viewer(private val a: F64Array) {
         /**
@@ -752,4 +752,40 @@ open class F64Array protected constructor(
 /** Wraps a given array of elements. The array will not be copied. */
 fun DoubleArray.asF64Array(offset: Int = 0, size: Int = this.size): F64Array {
     return F64FlatArray(this, offset, 1, size)
+}
+
+/** Copies the elements of this nested array into [F64Array] of the same shape. */
+fun Array<*>.toF64Array(): F64Array {
+    val shape = guessShape()
+    val a = F64Array(shape.product())
+
+    var ptr = 0
+    val q = ArrayDeque<Any>()
+    q.add(this)
+
+    do {
+        val tip = q.removeFirst()
+        when (tip) {
+            is DoubleArray -> {
+                tip.asF64Array().copyTo(a.slice(ptr, ptr + tip.size))
+                ptr += tip.size
+            }
+            is Array<*> -> q.addAll(tip)
+            else -> unsupported()
+        }
+
+    } while (q.isNotEmpty())
+
+    return a.reshape(*shape)
+}
+
+/** No validation, therefore "check". */
+private fun Array<*>.guessShape(): IntArray {
+    check(isNotEmpty())
+    val tip = first()
+    return when (tip) {
+        is DoubleArray -> intArrayOf(size, tip.size)
+        is Array<*> -> intArrayOf(size, tip.size) + tip.guessShape()
+        else -> unsupported()
+    }
 }

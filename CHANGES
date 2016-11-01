@@ -14,6 +14,7 @@ Version 0.4.0
 - Added a special attribute `V` for slicing the array.
 - Removed `stochastic` and `indexedStochastic`.
 - Added `axis` to `F64Array.append`, `F64Array.slice` and `F64Array.reorder`.
+- Added `Array<*>.toF64Array` for converting nested arrays to strided ones.
 
 Version 0.3.5
 -------------

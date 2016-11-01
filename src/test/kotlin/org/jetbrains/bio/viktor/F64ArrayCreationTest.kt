@@ -35,6 +35,24 @@ class F64ArrayCreationTest {
         assertArrayEquals(doubleArrayOf(1.0, 2.0, 42.0), values, Precision.EPSILON)
     }
 
+    @Test fun toF64Array() {
+        assertEquals(F64Array.of(1.0, 2.0).reshape(1, 2),
+                     arrayOf(doubleArrayOf(1.0, 2.0)).toF64Array())
+        assertEquals(F64Array.of(1.0, 2.0).reshape(2, 1),
+                     arrayOf(doubleArrayOf(1.0),
+                             doubleArrayOf(2.0)).toF64Array())
+
+        assertEquals(F64Array.of(1.0, 2.0, 3.0,
+                                 4.0, 5.0, 6.0).reshape(2, 3),
+                     arrayOf(doubleArrayOf(1.0, 2.0, 3.0),
+                             doubleArrayOf(4.0, 5.0, 6.0)).toF64Array())
+        assertEquals(F64Array.of(1.0, 2.0, 3.0,
+                                 4.0, 5.0, 6.0).reshape(3, 2),
+                     arrayOf(doubleArrayOf(1.0, 2.0),
+                             doubleArrayOf(3.0, 4.0),
+                             doubleArrayOf(5.0, 6.0)).toF64Array())
+    }
+
     @Test fun invoke() {
         assertEquals(F64Array.of(1.0, 2.0, 3.0),
                      F64Array(3) { it + 1.0 })
