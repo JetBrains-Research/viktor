@@ -779,7 +779,7 @@ private fun flatten(a: Array<*>): DoubleArray {
     return Arrays.stream(a).flatMapToDouble {
         when (it) {
             is DoubleArray -> Arrays.stream(it)
-            is Array<*> -> Arrays.stream(flatten(a))
+            is Array<*> -> Arrays.stream(flatten(it))
             else -> unsupported()
         }
     }.toArray()
