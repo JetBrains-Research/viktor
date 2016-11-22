@@ -51,6 +51,13 @@ class F64ArrayCreationTest {
                      arrayOf(doubleArrayOf(1.0, 2.0),
                              doubleArrayOf(3.0, 4.0),
                              doubleArrayOf(5.0, 6.0)).toF64Array())
+
+        assertEquals(F64Array.of(1.0, 2.0, 3.0,
+                4.0, 5.0, 6.0, 7.0, 8.0).reshape(2, 2, 2),
+                arrayOf(arrayOf(doubleArrayOf(1.0, 2.0),
+                                doubleArrayOf(3.0, 4.0)),
+                        arrayOf(doubleArrayOf(5.0, 6.0),
+                                doubleArrayOf(7.0, 8.0))).toF64Array())
     }
 
     @Test fun invoke() {

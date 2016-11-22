@@ -791,7 +791,7 @@ private fun Array<*>.guessShape(): IntArray {
     val tip = first()
     return when (tip) {
         is DoubleArray -> intArrayOf(size, tip.size)
-        is Array<*> -> intArrayOf(size, tip.size) + tip.guessShape()
+        is Array<*> -> intArrayOf(size) + tip.guessShape()
         else -> unsupported()
     }
 }
