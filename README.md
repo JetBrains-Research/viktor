@@ -1,7 +1,7 @@
 viktor [![Build Status](https://travis-ci.org/JetBrains-Research/viktor.svg?branch=master)](https://travis-ci.org/JetBrains-Research/viktor)
 ======
 
-`viktor` implements a restricted subset of NumPy [ndarray] [ndarray] features in
+`viktor` implements a restricted subset of NumPy [ndarray] features in
 Kotlin. Here're some of the highlights:
 
 * A single core data type --- `F64Array`, an n-dimensional primitive array.
