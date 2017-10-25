@@ -23,7 +23,7 @@ Kotlin. Here're some of the highlights:
 Installation
 ------------
 
-The latest version of `viktor` is available on [Bintray] [bintray]. If you're using
+The latest version of `viktor` is available on [Bintray]. If you're using
 Gradle just add the following to your `build.gradle`:
 
 ```gradle
@@ -36,20 +36,20 @@ dependencies {
 }
 ```
 
-[bintray]: https://bintray.com/jetbrains-research/maven/viktor/view
+[Bintray]: https://bintray.com/jetbrains-research/maven/viktor/view
 
 The version available on Bintray currently targets only SSE2 and AVX on x64
 Linux. For any other setup `viktor` would fall back to pure-Kotlin
 implementations. If you are interested in SIMD accelerations for a different
 instruction set or operating system feel free to file an issue to the
-[bug tracker] [issues].
+[bug tracker].
 
-[issues]: https://github.com/JetBrains-Research/viktor/issues
+[bug tracker]: https://github.com/JetBrains-Research/viktor/issues
 
 Building from source
 --------------------
 
-`viktor` relies on [boost.simd] [boost.simd] for implementing SIMD
+`viktor` relies on [boost.simd] for implementing SIMD
 accelerations. Therefore, you would need CMake and a C++11 compiler,
 but otherwise the build process is as simple as
 
