@@ -66,15 +66,19 @@ internal object Loader {
                     ResourceLibrary("simd.sse2.$arch").install()
                     useNative = true
                 }
+                else -> warnNoOptimization()
             }
         } catch (e: Throwable) {
-            System.err.println(listOf(
-                    "Native SIMD optimization of array operations is not available.",
-                    "Fallback Kotlin implementation will be used instead.",
-                    "Build viktor for your system from source as described in " +
-                    "https://github.com/JetBrains-Research/viktor").joinToString("\n"))
-            e.printStackTrace(System.err)
+            warnNoOptimization()
         }
+    }
+
+    private fun warnNoOptimization() {
+        System.err.println(listOf(
+                "Native SIMD optimization of array operations is not available.",
+                "Fallback Kotlin implementation will be used instead.",
+                "Build viktor for your system from source as described in " +
+                        "https://github.com/JetBrains-Research/viktor").joinToString("\n"))
     }
 }
 
