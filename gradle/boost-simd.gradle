@@ -1,6 +1,6 @@
 ext {
-    boostSimdBranch = 'v4.16.9.0'
-    boostSimdRoot = '4.16.9.0'
+    boostSimdBranch = 'v4.16.9.1'
+    boostSimdRoot = '4.16.9.1'
 }
 
 buildscript {
@@ -30,7 +30,7 @@ model {
 }
 
 task downloadBoostSimd(type: de.undercouch.gradle.tasks.download.Download) {
-    src "https://github.com/NumScale/boost.simd/archive/${boostSimdBranch}.zip"
+    src "https://github.com/JetBrains-Research/boost.simd/archive/${boostSimdBranch}.zip"
     dest new File(buildDir, 'boost.simd.zip')
     overwrite false
 }
