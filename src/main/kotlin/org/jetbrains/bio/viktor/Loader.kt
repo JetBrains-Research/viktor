@@ -1,5 +1,6 @@
 package org.jetbrains.bio.viktor
 
+import org.apache.log4j.Logger
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption.REPLACE_EXISTING
@@ -40,6 +41,9 @@ internal class ResourceLibrary(private val name: String) {
 }
 
 internal object Loader {
+
+    private val LOG = Logger.getLogger(Loader::class.java)
+
     /** If `true` vector operations will be SIMD-optimized. */
     internal var useNative = false
 
@@ -74,11 +78,12 @@ internal object Loader {
     }
 
     private fun warnNoOptimization() {
-        System.err.println(listOf(
-                "Native SIMD optimization of array operations is not available.",
-                "Fallback Kotlin implementation will be used instead.",
+        LOG.info("SIMD optimization is not available for your system, use --debug for details.")
+        LOG.debug("No supported SIMD instruction sets were detected on your system.\n" +
+                "Currently supported SIMD instruction sets: SSE2, AVX.\n" +
+                "Fallback Kotlin implementation will be used.\n" +
                 "Build viktor for your system from source as described in " +
-                        "https://github.com/JetBrains-Research/viktor").joinToString("\n"))
+                "https://github.com/JetBrains-Research/viktor")
     }
 }
 
