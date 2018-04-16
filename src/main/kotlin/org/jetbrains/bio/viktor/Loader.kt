@@ -1,6 +1,8 @@
 package org.jetbrains.bio.viktor
 
+import org.apache.log4j.ConsoleAppender
 import org.apache.log4j.Logger
+import org.apache.log4j.SimpleLayout
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption.REPLACE_EXISTING
@@ -58,6 +60,8 @@ internal object Loader {
     }
 
     init {
+        LOG.addAppender(ConsoleAppender(SimpleLayout()))
+
         try {
             ResourceLibrary("simd.$arch").install()
 
@@ -89,3 +93,7 @@ internal object Loader {
 
 internal external fun isAvxSupported(): Boolean
 internal external fun isSse2Supported(): Boolean
+
+fun main(args: Array<String>) {
+    Loader.ensureLoaded()
+}
