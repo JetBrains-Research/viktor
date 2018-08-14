@@ -35,6 +35,9 @@ model {
         osx {
             operatingSystem 'osx'
         }
+        windows {
+            operatingSystem 'windows'
+        }
     }
 
     components {
@@ -44,6 +47,7 @@ model {
             }
 
             targetPlatform 'linux'
+            targetPlatform 'windows'
             targetPlatform 'osx'
 
             binaries.withType(SharedLibraryBinarySpec) {
@@ -64,6 +68,7 @@ model {
             }
 
             targetPlatform 'linux'
+            targetPlatform 'windows'
             targetPlatform 'osx'
             targetFlavors 'sse2', 'avx'
 

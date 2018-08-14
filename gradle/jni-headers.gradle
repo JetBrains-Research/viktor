@@ -17,6 +17,8 @@ model {
                     cppCompiler.args "-I$javaHome/include/linux"
                 } else if (os.macOsX) {
                     cppCompiler.args "-I$javaHome/include/darwin"
+                } else if (os.windows) {
+                    cppCompiler.args "-I$javaHome/include/win32"
                 }
             }
         }
