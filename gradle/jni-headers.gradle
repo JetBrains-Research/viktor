@@ -11,10 +11,6 @@ model {
 
         all {
             binaries.all {
-                if (org.gradle.internal.os.OperatingSystem.current().isWindows()) {
-                    // a sad hack to determine whether TeamCity gradle detects Windows SDK
-                    println (toolChain as VisualCpp).windowsSdkDir
-                }
                 def javaHome = org.gradle.internal.jvm.Jvm.current().javaHome
                 def os = targetPlatform.operatingSystem
                 if (os.linux) {
@@ -24,6 +20,10 @@ model {
                     cppCompiler.args "-I$javaHome/include"
                     cppCompiler.args "-I$javaHome/include/darwin"
                 } else if (os.windows) {
+                    if (org.gradle.internal.os.OperatingSystem.current().isWindows()) {
+                        // a sad hack to determine whether TeamCity gradle detects Windows SDK
+                        println toolChain.windowsSdkDir
+                    }
                     cppCompiler.args "/I$javaHome/include"
                     cppCompiler.args "/I$javaHome/include/win32"
                 }
