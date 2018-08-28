@@ -97,9 +97,14 @@ model {
             binaries.all {
                 cppCompiler.define 'BOOST_DISABLE_ASSERTS'
                 cppCompiler.define 'NDEBUG'
-                cppCompiler.args('-std=c++11', '-fno-rtti', '-fno-exceptions',
-                                 '-O3', '-Wno-narrowing')
 
+                if (toolChain in Gcc) {
+                    cppCompiler.args('-std=c++11', '-fno-rtti', '-fno-exceptions',
+                            '-O3', '-Wno-narrowing')
+                }
+                if (toolChain in VisualCpp) {
+                    cppCompiler.args('/GR-', '/O2')
+                }
                 if (toolChain in Clang) {
                     cppCompiler.args '-stdlib=libc++'
                 }
