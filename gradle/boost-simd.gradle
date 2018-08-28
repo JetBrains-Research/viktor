@@ -61,7 +61,12 @@ task installBoostSimd(dependsOn: unzipBoostSimd) {
         exec {
             workingDir cmakeDir
             standardOutput = nullOutputStream
-            commandLine 'make', 'update.boost-header-only', 'install'
+            commandLine('cmake', '--build', '.', '--target', 'update.boost-header-only')
+        }
+        exec {
+            workingDir cmakeDir
+            standardOutput = nullOutputStream
+            commandLine('cmake', '--build', '.', '--target', 'install')
         }
     }
 }
