@@ -74,8 +74,16 @@ model {
 
             binaries.withType(SharedLibraryBinarySpec) {
                 switch (flavor) {
-                    case flavors.sse2: cppCompiler.args '-msse2'; break
-                    case flavors.avx: cppCompiler.args '-mavx'; break
+                    case flavors.sse2: if (targetPlatform == 'windows') {
+                        cppCompiler.args '/arch:SSE2'
+                    } else {
+                        cppCompiler.args '-msse2'
+                    }; break
+                    case flavors.avx: if (targetPlatform == 'windows') {
+                        cppCompiler.args '/arch:AVX'
+                    } else {
+                        cppCompiler.args '-mavx'
+                    }; break
                 }
 
                 def libraryName = System.mapLibraryName("simd.${flavor.name}.x86_64")
