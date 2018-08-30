@@ -20,14 +20,6 @@ model {
                     cppCompiler.args "-I$javaHome/include"
                     cppCompiler.args "-I$javaHome/include/darwin"
                 } else if (os.windows) {
-                    // let's try to detect Windows SDK
-                    def currentOs = org.gradle.internal.os.OperatingSystem.current()
-                    if (currentOs.isWindows()) {
-                        def sdkLocator = new org.gradle.nativeplatform.toolchain.internal.msvcpp.DefaultWindowsSdkLocator(
-                                currentOs, org.gradle.internal.nativeintegration.services.NativeServices.instance.createWindowsRegistry(currentOs))
-                        def sdks = sdkLocator.locateWindowsSdks(null).sdk.includeDirs
-                        println sdks.join('\n')
-                    }
                     cppCompiler.args "/I$javaHome/include"
                     cppCompiler.args "/I$javaHome/include/win32"
                 }
