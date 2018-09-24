@@ -1,6 +1,24 @@
 ext {
     boostSimdBranch = 'v4.16.9.1'
     boostSimdRoot = '4.16.9.1'
+    def os = org.gradle.internal.os.OperatingSystem.current()
+    if (os.isMacOsX()) {
+        cmakeURL = "https://cmake.org/files/v3.7/cmake-3.7.0-Darwin-x86_64.tar.gz"
+        cmakeFile = "cmake-3.7.0.tar.gz"
+        cmakeFolder = "cmake-3.7.0-Darwin-x86_64"
+        cmakeTarGz = true
+    } else if (os.isWindows()) {
+        cmakeURL = "https://cmake.org/files/v3.7/cmake-3.7.0-win32-x86.zip"
+        cmakeFile = "cmake-3.7.0.zip"
+        cmakeFolder = "cmake-3.7.0-win32-x86"
+        cmakeTarGz = false
+    } else {
+        // assume it's Linux
+        cmakeURL = "https://cmake.org/files/v3.7/cmake-3.7.0-Linux-x86_64.tar.gz"
+        cmakeFile = "cmake-3.7.0.tar.gz"
+        cmakeFolder = "cmake-3.7.0-Linux-x86_64"
+        cmakeTarGz = true
+    }
 }
 
 buildscript {
@@ -9,7 +27,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'de.undercouch:gradle-download-task:3.0.0'
+        classpath 'de.undercouch:gradle-download-task:3.4.3'
     }
 }
 
@@ -29,16 +47,33 @@ model {
     }
 }
 
+task downloadCmake(type: de.undercouch.gradle.tasks.download.Download) {
+    src cmakeURL
+    dest new File(buildDir, cmakeFile)     
+    acceptAnyCertificate true // for some reason cmake.org certificate can't be verified
+    overwrite false
+}
+
+task unzipCmake(dependsOn: downloadCmake, type: Copy) {
+    if (cmakeTarGz) {
+        from tarTree(resources.gzip(downloadCmake.dest))
+    } else {
+        from zipTree(downloadCmake.dest)
+    }
+    into buildDir
+    outputs.dir new File(buildDir, cmakeFolder)
+}
+
 task downloadBoostSimd(type: de.undercouch.gradle.tasks.download.Download) {
     src "https://github.com/JetBrains-Research/boost.simd/archive/${boostSimdBranch}.zip"
-    dest new File(buildDir, 'boost.simd.zip')
+    dest new File(buildDir, "boost.simd.${boostSimdBranch}.zip")
     overwrite false
 }
 
 task unzipBoostSimd(dependsOn: downloadBoostSimd, type: Copy) {
     from zipTree(downloadBoostSimd.dest)
     into buildDir
-    outputs.dir new File(buildDir, "$boostSimdRoot")
+    outputs.dir new File(buildDir, "boost.simd-$boostSimdRoot")
 }
 
 def nullOutputStream = new OutputStream() {
@@ -46,27 +81,28 @@ def nullOutputStream = new OutputStream() {
     public void write(int b) {}
 }
 
-task installBoostSimd(dependsOn: unzipBoostSimd) {
+task installBoostSimd(dependsOn: [unzipBoostSimd, unzipCmake]) {
     def cmakeDir = new File(
         buildDir, "boost.simd-$boostSimdRoot/build")
+    def cmakeExec = "$buildDir/$cmakeFolder/bin/cmake"
     outputs.dir new File(buildDir, 'include/boost')
     doLast {
         cmakeDir.mkdirs()
 
         exec {
             workingDir cmakeDir
-            commandLine('cmake', '..', '-DUSE_SELF_BOOST=1',
+            commandLine(cmakeExec, '..', '-DUSE_SELF_BOOST=1',
                         "-DCMAKE_INSTALL_PREFIX=$buildDir")
         }
         exec {
             workingDir cmakeDir
             standardOutput = nullOutputStream
-            commandLine('cmake', '--build', '.', '--target', 'update.boost-header-only')
+            commandLine(cmakeExec, '--build', '.', '--target', 'update.boost-header-only')
         }
         exec {
             workingDir cmakeDir
             standardOutput = nullOutputStream
-            commandLine('cmake', '--build', '.', '--target', 'install')
+            commandLine(cmakeExec, '--build', '.', '--target', 'install')
         }
     }
 }
