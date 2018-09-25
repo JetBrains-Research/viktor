@@ -3,20 +3,20 @@ ext {
     boostSimdRoot = '4.16.9.1'
     def os = org.gradle.internal.os.OperatingSystem.current()
     if (os.isMacOsX()) {
-        cmakeURL = "https://cmake.org/files/v3.7/cmake-3.7.0-Darwin-x86_64.tar.gz"
-        cmakeFile = "cmake-3.7.0.tar.gz"
-        cmakeFolder = "cmake-3.7.0-Darwin-x86_64/CMake.app/Contents/bin"
+        cmakeURL = "https://cmake.org/files/v3.12/cmake-3.12.0-Darwin-x86_64.tar.gz"
+        cmakeFile = "cmake-3.12.0.tar.gz"
+        cmakeFolder = "cmake-3.12.0-Darwin-x86_64/CMake.app/Contents/bin"
         cmakeTarGz = true
     } else if (os.isWindows()) {
-        cmakeURL = "https://cmake.org/files/v3.7/cmake-3.7.0-win32-x86.zip"
-        cmakeFile = "cmake-3.7.0.zip"
-        cmakeFolder = "cmake-3.7.0-win32-x86/bin"
+        cmakeURL = "https://cmake.org/files/v3.12/cmake-3.12.0-win64-x64.zip"
+        cmakeFile = "cmake-3.12.0.zip"
+        cmakeFolder = "cmake-3.12.0-win64-x64/bin"
         cmakeTarGz = false
     } else {
         // assume it's Linux
-        cmakeURL = "https://cmake.org/files/v3.7/cmake-3.7.0-Linux-x86_64.tar.gz"
-        cmakeFile = "cmake-3.7.0.tar.gz"
-        cmakeFolder = "cmake-3.7.0-Linux-x86_64/bin"
+        cmakeURL = "https://cmake.org/files/v3.12/cmake-3.12.0-Linux-x86_64.tar.gz"
+        cmakeFile = "cmake-3.12.0.tar.gz"
+        cmakeFolder = "cmake-3.12.0-Linux-x86_64/bin"
         cmakeTarGz = true
     }
 }
