@@ -106,7 +106,7 @@ model {
                     cppCompiler.args('/GR-', '/O2')
                 }
                 if (toolChain in Clang) {
-                    cppCompiler.args '-stdlib=libc++'
+                    cppCompiler.args('-stdlib=libc++', '-std=c++1y')
                 }
             }
         }
