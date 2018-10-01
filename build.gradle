@@ -204,6 +204,7 @@ idea {
 }
 
 jar {
+    archivesBaseName = 'viktor'
     dependsOn 'buildAllVariants'
     from "$buildDir/libs"
     exclude '*.jar'
