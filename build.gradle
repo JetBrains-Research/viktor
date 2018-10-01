@@ -226,7 +226,7 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
             from components.java
-
+            artifactId 'viktor'
             artifact sourcesJar
         }
     }
