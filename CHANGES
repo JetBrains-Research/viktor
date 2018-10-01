@@ -3,6 +3,13 @@ viktor Changelog
 
 Here you can see the full list of changes between each viktor release.
 
+Version 0.5.0
+-------------
+
+Released on October 1, 2018
+
+- Cross-platform build for 64 bit Linux, Windows and MacOS.
+
 Version 0.4.2
 -------------
 
