@@ -3,6 +3,14 @@ viktor Changelog
 
 Here you can see the full list of changes between each viktor release.
 
+-------------
+Version 0.5.1
+-------------
+
+Released on December 12, 2018
+
+- Library dependencies containing '+' symbol replaced with exact versions. This gives more predictable runtime behaviour.
+
 Version 0.5.0
 -------------
 
