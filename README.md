@@ -1,7 +1,7 @@
 viktor [![tests](http://teamcity.jetbrains.com/app/rest/builds/buildType:(id:Epigenome_Tools_Viktor)/statusIcon.svg)](http://teamcity.jetbrains.com/viewType.html?buildTypeId=Epigenome_Tools_Viktor&guest=1)
 ======
 
-`viktor` implements a restricted subset of NumPy [ndarray] [ndarray] features in
+`viktor` implements a restricted subset of NumPy [ndarray][ndarray] features in
 Kotlin. Here're some of the highlights:
 
 * A single core data type --- `F64Array`, an n-dimensional primitive array.
@@ -23,7 +23,7 @@ Kotlin. Here're some of the highlights:
 Installation
 ------------
 
-The latest version of `viktor` is available on [Bintray] [bintray]. If you're using
+The latest version of `viktor` is available on [Bintray][bintray]. If you're using
 Gradle just add the following to your `build.gradle`:
 
 ```gradle
@@ -32,25 +32,29 @@ repositories {
 }
 
 dependencies {
-    compile 'org.jetbrains.bio:viktor:0.5.0'
+    compile 'org.jetbrains.bio:viktor:0.5.2'
 }
 ```
 
 [bintray]: https://bintray.com/jetbrains-research/maven/viktor/view
 
-The version available on Bintray currently targets only SSE2 and AVX on x64
-Linux. For any other setup `viktor` would fall back to pure-Kotlin
+The version available on Bintray currently targets only:
+- SSE2 and AVX,
+- amd64 and x86-64,
+- Linux, Windows and MacOS.
+
+For any other setup `viktor` would fall back to pure-Kotlin
 implementations. If you are interested in SIMD accelerations for a different
 instruction set or operating system feel free to file an issue to the
-[bug tracker] [issues].
+[bug tracker][issues].
 
 [issues]: https://github.com/JetBrains-Research/viktor/issues
 
 Building from source
 --------------------
 
-`viktor` relies on [boost.simd] [boost.simd] for implementing SIMD
-accelerations. Therefore, you would need CMake and a C++11 compiler,
+`viktor` relies on [boost.simd][boost.simd] for implementing SIMD
+accelerations. Therefore, you would need a C++11 compiler,
 but otherwise the build process is as simple as
 
 ```bash
@@ -78,17 +82,6 @@ the IDE. The following Java command line option should work for IDEA
 Publishing
 ----------
 
-You can publish a new release with a one-liner
-
-```bash
-./gradlew clean assemble test generatePomFileForMavenJavaPublication bintrayUpload
-```
-
-Make sure to set Bintray credentials (see API key section
-[here](https://bintray.com/profile/edit)) in `$HOME/.gradle/gradle.properties`.
-
-```
-$ cat $HOME/.gradle/gradle.properties
-bintrayUser=CHANGEME
-bintrayKey=CHANGEME
-```
+Publishing to [Bintray][bintray] is currently done via a dedicated
+build configuration of an internal TeamCity server. This allows us
+to deploy a cross-platform version.
