@@ -1,6 +1,6 @@
 ext {
-    boostSimdBranch = 'v4.16.9.1'
-    boostSimdRoot = '4.16.9.1'
+    boostSimdBranch = 'v4.16.9.2'
+    boostSimdRoot = '4.16.9.2'
     def os = org.gradle.internal.os.OperatingSystem.current()
     if (os.isMacOsX()) {
         cmakeURL = "https://cmake.org/files/v3.12/cmake-3.12.0-Darwin-x86_64.tar.gz"
