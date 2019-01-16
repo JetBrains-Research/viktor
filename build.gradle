@@ -250,6 +250,12 @@ bintray {
     }
 }
 
+bintrayUpload.doFirst {
+    assert file("./build/libs/libsimd.x86_64.so").exists()
+    assert file("./build/libs/libsimd.x86_64.dylib").exists()
+    assert file("./build/libs/simd.x86_64.dll").exists()
+}
+
 task wrapper(type: Wrapper) {
     gradleVersion = '4.10'
 }
