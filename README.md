@@ -61,7 +61,7 @@ but otherwise the build process is as simple as
 $ ./gradlew assemble
 ```
 
-[boost.simd]: https://github.com/NumScale/boost.simd
+[boost.simd]: https://github.com/JetBrains-Research/boost.simd
 
 Testing
 -------
