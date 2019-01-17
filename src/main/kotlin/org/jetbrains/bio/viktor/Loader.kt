@@ -15,20 +15,8 @@ internal class ResourceLibrary(private val name: String) {
         if (inputStream != null) {
             val libraryPath = LIBRARY_DIR.resolve(resource)
             Files.copy(inputStream, libraryPath, REPLACE_EXISTING)
-
-            // See http://stackoverflow.com/a/15409446 for explanation.
-            val usrPathsField = ClassLoader::class.java.getDeclaredField("usr_paths")
-            usrPathsField.isAccessible = true
-
-            val usrPaths = usrPathsField.get(null) as Array<String>
-            if (LIBRARY_DIR.toString() !in usrPaths) {
-                val newPaths = usrPaths.copyOf(usrPaths.size + 1)
-                newPaths[newPaths.size - 1] = LIBRARY_DIR.toString()
-                usrPathsField.set(null, newPaths)
-            }
+            System.load(libraryPath.toString())
         }
-
-        System.loadLibrary(name)
     }
 
     companion object {
