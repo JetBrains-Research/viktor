@@ -16,7 +16,7 @@ buildscript {
 plugins {
     id 'com.jfrog.bintray' version '1.8.4'
     id 'me.champeau.gradle.jmh' version '0.3.1'
-    
+
     // Plugin which shows tasks dependencies, useful for debug:
     // id "com.dorongold.task-tree" version "1.3"
 }
@@ -180,6 +180,11 @@ dependencies {
 compileKotlin {
     kotlinOptions.jvmTarget = "1.8"
 }
+
+compileJmhKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+
 compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
 }
@@ -263,6 +268,6 @@ bintrayUpload.doFirst {
     assert file("./build/libs/simd.x86_64.dll").exists()
 }
 
-task wrapper(type: Wrapper) {
+wrapper {
     gradleVersion = '4.10'
 }
