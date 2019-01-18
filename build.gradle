@@ -137,7 +137,7 @@ model {
     }
 }
 
-task jniHeaders(dependsOn: compileJava) {
+task jniHeaders(dependsOn: compileKotlin) {
     def outputDir = file("$buildDir/include")
     def jniClasses = [
         'org.jetbrains.bio.viktor.NativeSpeedups',
