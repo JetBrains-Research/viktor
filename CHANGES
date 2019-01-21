@@ -3,6 +3,15 @@ viktor Changelog
 
 Here you can see the full list of changes between each viktor release.
 
+Version 0.5.3
+-------------
+
+Released on January 21, 2019
+
+- Use the latest Kotlin version
+- No more illegal reflective access in Loader
+
+
 Version 0.5.2
 -------------
 
