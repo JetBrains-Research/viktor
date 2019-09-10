@@ -16,6 +16,8 @@ internal class ResourceLibrary(private val name: String) {
             val libraryPath = LIBRARY_DIR.resolve(resource)
             Files.copy(inputStream, libraryPath, REPLACE_EXISTING)
             System.load(libraryPath.toString())
+        } else {
+            System.loadLibrary(name)
         }
     }
 
