@@ -259,6 +259,15 @@ class F64VectorMathTest(private val v: F64Array) {
                      FastMath.exp(v.logSumExp()), 1e-6)
     }
 
+    @Test fun logExp() {
+        val copy = v.copy()
+        v.expInPlace()
+        v.logInPlace()
+        (0 until v.size).forEach { i ->
+            assertEquals(copy[i], v[i], 1e-6)
+        }
+    }
+
     companion object {
         @Parameters(name = "{0}")
         @JvmStatic fun `data`() = CASES
@@ -334,12 +343,16 @@ class F64FlatVectorArithTest(private val v: F64Array) {
 }
 
 private val CASES = listOf(
-        // Gapped.
-        gappedArray(1..3),
-        // Dense small.
-        doubleArrayOf(1.0, 2.0, 3.0).asF64Array(),
-        // Dense large.
-        Random().doubles(F64DenseFlatArray.DENSE_SPLIT_SIZE + 1L).toArray().asF64Array())
+    // Gapped.
+    gappedArray(1..3),
+    // Dense small.
+    doubleArrayOf(1.0, 2.0, 3.0).asF64Array(),
+    // Dense large.
+    Random().doubles(F64DenseFlatArray.DENSE_SPLIT_SIZE + 1L).toArray().asF64Array(),
+    // Dense large subarray.
+    Random().doubles(3 * (F64DenseFlatArray.DENSE_SPLIT_SIZE + 1L)).toArray()
+            .asF64Array(F64DenseFlatArray.DENSE_SPLIT_SIZE + 1, F64DenseFlatArray.DENSE_SPLIT_SIZE + 1)
+)
 
 private fun gappedArray(r: IntRange): F64Array {
     // The NaN gaps are there for two reasons:
