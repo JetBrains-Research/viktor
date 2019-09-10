@@ -75,19 +75,19 @@ class F64LargeDenseArray(data: DoubleArray, offset: Int, size: Int) :
     }
 
     override fun expInPlace() {
-        NativeSpeedups.unsafeExp(data, offset, data, 0, data.size)
+        NativeSpeedups.unsafeExp(data, offset, data, offset, size)
     }
 
     override fun expm1InPlace() {
-        NativeSpeedups.unsafeExpm1(data, offset, data, 0, data.size)
+        NativeSpeedups.unsafeExpm1(data, offset, data, offset, size)
     }
 
     override fun logInPlace() {
-        NativeSpeedups.unsafeLog(data, offset, data, 0, data.size)
+        NativeSpeedups.unsafeLog(data, offset, data, offset, size)
     }
 
     override fun log1pInPlace() {
-        NativeSpeedups.unsafeLog1p(data, offset, data, 0, data.size)
+        NativeSpeedups.unsafeLog1p(data, offset, data, offset, size)
     }
 
     override fun logRescale() {
