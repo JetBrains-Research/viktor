@@ -72,13 +72,14 @@ internal object Loader {
                 else -> warnNoOptimization()
             }
         } catch (e: Throwable) {
+            LOG.info(e.message)
             warnNoOptimization()
         }
     }
 
     private fun warnNoOptimization() {
         if (!architectureSupported) {
-            LOG.info("SIMD optimization is not available for your system, use --debug for details.")
+            LOG.info("SIMD optimization is not available for your architecture, use --debug for details.")
             LOG.debug(
 """Currently supported architectures: x86_64, amd64.
 Fallback Kotlin implementation will be used.
