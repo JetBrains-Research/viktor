@@ -32,7 +32,7 @@ open class F64DenseFlatArray protected constructor(
         const val DENSE_SPLIT_SIZE = 16
 
         internal fun create(data: DoubleArray, offset: Int, size: Int): F64DenseFlatArray {
-            return if (size <= DENSE_SPLIT_SIZE || !Loader.useNative) {
+            return if (size <= DENSE_SPLIT_SIZE || !Loader.optimizationSupported) {
                 F64SmallDenseArray(data, offset, size)
             } else {
                 F64LargeDenseArray(data, offset, size)

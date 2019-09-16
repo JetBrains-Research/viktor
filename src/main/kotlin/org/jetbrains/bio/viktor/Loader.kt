@@ -37,7 +37,10 @@ internal object Loader {
     private val LOG = Logger.getLogger(Loader::class.java)
 
     /** If `true` vector operations will be SIMD-optimized. */
-    internal var useNative = false
+    internal var nativeLibraryLoaded = false
+
+    internal var optimizationSupported = false
+    internal var architectureSupported = false
 
     fun ensureLoaded() {}
 
@@ -53,16 +56,18 @@ internal object Loader {
         LOG.addAppender(ConsoleAppender(SimpleLayout()))
 
         try {
+            architectureSupported = arch.let { true }
             ResourceLibrary("simd.$arch").install()
+            nativeLibraryLoaded = true
 
             when {
                 isAvxSupported() -> {
                     ResourceLibrary("simd.avx.$arch").install()
-                    useNative = true
+                    optimizationSupported = true
                 }
                 isSse2Supported() -> {
                     ResourceLibrary("simd.sse2.$arch").install()
-                    useNative = true
+                    optimizationSupported = true
                 }
                 else -> warnNoOptimization()
             }
@@ -72,12 +77,31 @@ internal object Loader {
     }
 
     private fun warnNoOptimization() {
-        LOG.info("SIMD optimization is not available for your system, use --debug for details.")
-        LOG.debug("No supported SIMD instruction sets were detected on your system.\n" +
-                "Currently supported SIMD instruction sets: SSE2, AVX.\n" +
-                "Fallback Kotlin implementation will be used.\n" +
-                "Build viktor for your system from source as described in " +
-                "https://github.com/JetBrains-Research/viktor")
+        if (!architectureSupported) {
+            LOG.info("SIMD optimization is not available for your system, use --debug for details.")
+            LOG.debug(
+"""Currently supported architectures: x86_64, amd64.
+Fallback Kotlin implementation will be used.
+Build viktor for your system from source as described in https://github.com/JetBrains-Research/viktor"""
+            )
+        } else if (!nativeLibraryLoaded) {
+            LOG.info("Couldn't load native SIMD library, use --debug for details.")
+            LOG.debug(
+"""Native SIMD library couldn't be loaded.
+Currently supported operational systems: Linux, Windows, MacOS.
+Fallback Kotlin implementation will be used.
+Build viktor for your system from source as described in https://github.com/JetBrains-Research/viktor"""
+            )
+        }
+        else if (!optimizationSupported) {
+            LOG.info("SIMD optimization is not available for your system, use --debug for details.")
+            LOG.debug(
+"""No supported SIMD instruction sets were detected on your system.
+Currently supported SIMD instruction sets: SSE2, AVX.
+Fallback Kotlin implementation will be used.
+Build viktor for your system from source as described in https://github.com/JetBrains-Research/viktor"""
+            )
+        }
     }
 }
 
