@@ -2,9 +2,9 @@
 
 package org.jetbrains.bio.viktor
 
-import org.jetbrains.bio.viktor.NativeSpeedups.unsafeNegate
-import org.jetbrains.bio.viktor.NativeSpeedups.unsafePlusScalar
-import org.jetbrains.bio.viktor.NativeSpeedups.unsafeScalarDiv
+import org.jetbrains.bio.viktor.NativeSpeedups.unsafeNegateInPlace
+import org.jetbrains.bio.viktor.NativeSpeedups.unsafePlusScalarAssign
+import org.jetbrains.bio.viktor.NativeSpeedups.unsafeScalarDivAssign
 
 /**
  * Operator overloads for [Double] and [F64Array].
@@ -14,12 +14,10 @@ import org.jetbrains.bio.viktor.NativeSpeedups.unsafeScalarDiv
 
 private inline fun Double.minusInPlace(other: F64Array) {
     if (other is F64LargeDenseArray) {
-        unsafeNegate(other.data, other.offset,
-                     other.data, other.offset, other.size)
-        unsafePlusScalar(other.data, other.offset, this,
-                         other.data, other.offset, other.size)
+        unsafeNegateInPlace(other.data, other.offset, other.size)
+        unsafePlusScalarAssign(other.data, other.offset, other.size, this)
     } else {
-        for (pos in 0..other.size - 1) {
+        for (pos in 0 until other.size) {
             other.unsafeSet(pos, this - other.unsafeGet(pos))
         }
     }
@@ -37,10 +35,9 @@ inline operator fun Double.times(other: F64Array) = other * this
 
 private inline fun Double.divInPlace(other: F64Array) {
     if (other is F64LargeDenseArray) {
-        unsafeScalarDiv(this, other.data, other.offset,
-                        other.data, other.offset, other.size)
+        unsafeScalarDivAssign(other.data, other.offset, other.size, this)
     } else {
-        for (pos in 0..other.size - 1) {
+        for (pos in 0 until other.size) {
             other.unsafeSet(pos, this / other.unsafeGet(pos))
         }
     }

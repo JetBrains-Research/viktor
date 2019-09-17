@@ -1,75 +1,42 @@
 package org.jetbrains.bio.viktor
 
 internal object NativeSpeedups {
+
     init {
         Loader.ensureLoaded()
     }
 
-    external fun unsafePlusAssign(
-            dst: DoubleArray, dstOffset: Int,
-            src: DoubleArray, srcOffset: Int, length: Int
-    )
+    external fun unsafePlusAssign(dst: DoubleArray, dstOffset: Int, src: DoubleArray, srcOffset: Int, length: Int)
 
-    external fun unsafeMinusAssign(
-            dst: DoubleArray, dstOffset: Int,
-            src: DoubleArray, srcOffset: Int, length: Int
-    )
+    external fun unsafeMinusAssign(dst: DoubleArray, dstOffset: Int, src: DoubleArray, srcOffset: Int, length: Int)
 
-    external fun unsafeTimesAssign(
-            dst: DoubleArray, dstOffset: Int,
-            src: DoubleArray, srcOffset: Int, length: Int
-    )
+    external fun unsafeTimesAssign(dst: DoubleArray, dstOffset: Int, src: DoubleArray, srcOffset: Int, length: Int)
 
-    external fun unsafeDivAssign(
-            dst: DoubleArray, dstOffset: Int,
-            src: DoubleArray, srcOffset: Int, length: Int
-    )
+    external fun unsafeDivAssign(dst: DoubleArray, dstOffset: Int, src: DoubleArray, srcOffset: Int, length: Int)
 
-    external fun unsafeNegate(src1: DoubleArray, srcOffset1: Int,
-            dst: DoubleArray, dstOffset: Int, length: Int)
+    external fun unsafeNegateInPlace(dst: DoubleArray, dstOffset: Int, length: Int)
 
-    external fun unsafePlusScalar(src1: DoubleArray, srcOffset1: Int, update: Double,
-            dst: DoubleArray, dstOffset: Int, length: Int)
+    external fun unsafePlusScalarAssign(dst: DoubleArray, dstOffset: Int, length: Int, update: Double)
 
-    external fun unsafeMinusScalar(src1: DoubleArray, srcOffset1: Int, update: Double,
-            dst: DoubleArray, dstOffset: Int, length: Int)
+    external fun unsafeMinusScalarAssign(dst: DoubleArray, dstOffset: Int, length: Int, update: Double)
 
-    external fun unsafeTimesScalar(src1: DoubleArray, srcOffset1: Int, update: Double,
-            dst: DoubleArray, dstOffset: Int, length: Int)
+    external fun unsafeTimesScalarAssign(dst: DoubleArray, dstOffset: Int, length: Int, update: Double)
 
-    external fun unsafeDivScalar(src1: DoubleArray, srcOffset1: Int, update: Double,
-            dst: DoubleArray, dstOffset: Int, length: Int)
+    external fun unsafeDivScalarAssign(dst: DoubleArray, dstOffset: Int, length: Int, update: Double)
 
-    external fun unsafeScalarDiv(update: Double, src1: DoubleArray, srcOffset1: Int,
-            dst: DoubleArray, dstOffset: Int, length: Int)
+    external fun unsafeScalarDivAssign(dst: DoubleArray, dstOffset: Int, length: Int, update: Double)
 
     external fun unsafeMin(values: DoubleArray, offset: Int, length: Int): Double
 
     external fun unsafeMax(values: DoubleArray, offset: Int, length: Int): Double
 
-    external fun unsafeExpInPlace(
-            dst: DoubleArray,
-            dstOffset: Int,
-            length: Int
-    )
+    external fun unsafeExpInPlace(dst: DoubleArray, dstOffset: Int, length: Int)
 
-    external fun unsafeExpm1InPlace(
-            dst: DoubleArray,
-            dstOffset: Int,
-            length: Int
-    )
+    external fun unsafeExpm1InPlace(dst: DoubleArray, dstOffset: Int, length: Int)
 
-    external fun unsafeLogInPlace(
-            dst: DoubleArray,
-            dstOffset: Int,
-            length: Int
-    )
+    external fun unsafeLogInPlace(dst: DoubleArray, dstOffset: Int, length: Int)
 
-    external fun unsafeLog1pInPlace(
-            dst: DoubleArray,
-            dstOffset: Int,
-            length: Int
-    )
+    external fun unsafeLog1pInPlace(dst: DoubleArray, dstOffset: Int, length: Int)
 
     external fun unsafeLogSumExp(src: DoubleArray, srcOffset: Int, length: Int): Double
 

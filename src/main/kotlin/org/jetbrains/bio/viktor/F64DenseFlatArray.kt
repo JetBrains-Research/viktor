@@ -110,14 +110,11 @@ class F64LargeDenseArray(
         }
     }
 
-    override fun unaryMinus(): F64Array {
-        val v = copy()
-        NativeSpeedups.unsafeNegate(data, offset, v.data, v.offset, v.size)
-        return v
-    }
+    override fun unaryMinus() =
+            copy().apply { NativeSpeedups.unsafeNegateInPlace(data, offset, size) }
 
     override fun plusAssign(update: Double) =
-            NativeSpeedups.unsafePlusScalar(data, offset, update, data, offset, size)
+            NativeSpeedups.unsafePlusScalarAssign(data, offset, size, update)
 
     override fun plusAssign(other: F64Array) {
         if (other is F64DenseFlatArray) {
@@ -129,7 +126,7 @@ class F64LargeDenseArray(
     }
 
     override fun minusAssign(update: Double) =
-            NativeSpeedups.unsafeMinusScalar(data, offset, update, data, offset, size)
+            NativeSpeedups.unsafeMinusScalarAssign(data, offset, size, update)
 
     override fun minusAssign(other: F64Array) {
         if (other is F64DenseFlatArray) {
@@ -141,7 +138,7 @@ class F64LargeDenseArray(
     }
 
     override fun timesAssign(update: Double) =
-            NativeSpeedups.unsafeTimesScalar(data, offset, update, data, offset, size)
+            NativeSpeedups.unsafeTimesScalarAssign(data, offset, size, update)
 
     override fun timesAssign(other: F64Array) {
         if (other is F64DenseFlatArray) {
@@ -151,7 +148,7 @@ class F64LargeDenseArray(
         }
     }
 
-    override fun divAssign(update: Double) = NativeSpeedups.unsafeDivScalar(data, offset, update, data, offset, size)
+    override fun divAssign(update: Double) = NativeSpeedups.unsafeDivScalarAssign(data, offset, size, update)
 
     override fun divAssign(other: F64Array) {
         if (other is F64DenseFlatArray) {
