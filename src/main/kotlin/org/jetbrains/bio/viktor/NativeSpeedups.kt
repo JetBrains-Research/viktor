@@ -5,21 +5,25 @@ internal object NativeSpeedups {
         Loader.ensureLoaded()
     }
 
-    external fun unsafePlus(src1: DoubleArray, srcOffset1: Int,
-            src2: DoubleArray, srcOffset2: Int,
-            dst: DoubleArray, dstOffset: Int, length: Int)
+    external fun unsafePlusAssign(
+            dst: DoubleArray, dstOffset: Int,
+            src: DoubleArray, srcOffset: Int, length: Int
+    )
 
-    external fun unsafeMinus(src1: DoubleArray, srcOffset1: Int,
-            src2: DoubleArray, srcOffset2: Int,
-            dst: DoubleArray, dstOffset: Int, length: Int)
+    external fun unsafeMinusAssign(
+            dst: DoubleArray, dstOffset: Int,
+            src: DoubleArray, srcOffset: Int, length: Int
+    )
 
-    external fun unsafeTimes(src1: DoubleArray, srcOffset1: Int,
-            src2: DoubleArray, srcOffset2: Int,
-            dst: DoubleArray, dstOffset: Int, length: Int)
+    external fun unsafeTimesAssign(
+            dst: DoubleArray, dstOffset: Int,
+            src: DoubleArray, srcOffset: Int, length: Int
+    )
 
-    external fun unsafeDiv(src1: DoubleArray, srcOffset1: Int,
-            src2: DoubleArray, srcOffset2: Int,
-            dst: DoubleArray, dstOffset: Int, length: Int)
+    external fun unsafeDivAssign(
+            dst: DoubleArray, dstOffset: Int,
+            src: DoubleArray, srcOffset: Int, length: Int
+    )
 
     external fun unsafeNegate(src1: DoubleArray, srcOffset1: Int,
             dst: DoubleArray, dstOffset: Int, length: Int)

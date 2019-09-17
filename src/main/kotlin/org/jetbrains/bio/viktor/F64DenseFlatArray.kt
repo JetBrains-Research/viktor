@@ -122,9 +122,7 @@ class F64LargeDenseArray(
     override fun plusAssign(other: F64Array) {
         if (other is F64DenseFlatArray) {
             checkShape(other)
-            NativeSpeedups.unsafePlus(data, offset,
-                other.data, other.offset,
-                data, offset, size)
+            NativeSpeedups.unsafePlusAssign(data, offset, other.data, other.offset, size)
         } else {
             super.plusAssign(other)
         }
@@ -136,9 +134,7 @@ class F64LargeDenseArray(
     override fun minusAssign(other: F64Array) {
         if (other is F64DenseFlatArray) {
             checkShape(other)
-            NativeSpeedups.unsafeMinus(data, offset,
-                other.data, other.offset,
-                data, offset, size)
+            NativeSpeedups.unsafeMinusAssign(data, offset, other.data, other.offset, size)
         } else {
             super.minusAssign(other)
         }
@@ -149,9 +145,7 @@ class F64LargeDenseArray(
 
     override fun timesAssign(other: F64Array) {
         if (other is F64DenseFlatArray) {
-            NativeSpeedups.unsafeTimes(data, offset,
-                other.data, other.offset,
-                data, offset, size)
+            NativeSpeedups.unsafeTimesAssign(data, offset, other.data, other.offset, size)
         } else {
             super.timesAssign(other)
         }
@@ -161,9 +155,7 @@ class F64LargeDenseArray(
 
     override fun divAssign(other: F64Array) {
         if (other is F64DenseFlatArray) {
-            NativeSpeedups.unsafeDiv(data, offset,
-                other.data, other.offset,
-                data, offset, size)
+            NativeSpeedups.unsafeDivAssign(data, offset, other.data, other.offset, size)
         } else {
             super.divAssign(other)
         }
