@@ -3,6 +3,8 @@ package org.jetbrains.bio.viktor
 import org.apache.commons.math3.util.FastMath
 import org.apache.commons.math3.util.Precision
 import java.text.DecimalFormat
+import kotlin.math.ln
+import kotlin.math.ln1p
 
 /**
  * An 1-dimensional specialization of [F64Array].
@@ -25,7 +27,7 @@ open class F64FlatArray protected constructor(data: DoubleArray, offset: Int,
     override fun transpose() = reshape(size, 1)
 
     override fun contains(other: Double): Boolean {
-        for (pos in 0..size - 1) {
+        for (pos in 0 until size) {
             if (unsafeGet(pos) == other) {
                 return true
             }
@@ -38,13 +40,13 @@ open class F64FlatArray protected constructor(data: DoubleArray, offset: Int,
 
     override fun copyTo(other: F64Array) {
         checkShape(other)
-        for (pos in 0..size - 1) {
+        for (pos in 0 until size) {
             other.unsafeSet(pos, unsafeGet(pos))
         }
     }
 
     override fun fill(init: Double) {
-        for (pos in 0..size - 1) {
+        for (pos in 0 until size) {
             unsafeSet(pos, init)
         }
     }
@@ -152,7 +154,7 @@ open class F64FlatArray protected constructor(data: DoubleArray, offset: Int,
         require(size > 0) { "no data" }
         var minPos = 0
         var minValue = Double.POSITIVE_INFINITY
-        for (pos in 0..size - 1) {
+        for (pos in 0 until size) {
             val value = unsafeGet(pos)
             if (value < minValue) {
                 minPos = pos
@@ -169,7 +171,7 @@ open class F64FlatArray protected constructor(data: DoubleArray, offset: Int,
         require(size > 0) { "no data" }
         var maxPos = 0
         var maxValue = Double.NEGATIVE_INFINITY
-        for (pos in 0..size - 1) {
+        for (pos in 0 until size) {
             val value = unsafeGet(pos)
             if (value > maxValue) {
                 maxPos = pos
@@ -181,43 +183,43 @@ open class F64FlatArray protected constructor(data: DoubleArray, offset: Int,
     }
 
     override fun expInPlace() {
-        for (pos in 0..size - 1) {
+        for (pos in 0 until size) {
             unsafeSet(pos, FastMath.exp(unsafeGet(pos)))
         }
     }
 
     override fun expm1InPlace() {
-        for (pos in 0..size - 1) {
+        for (pos in 0 until size) {
             unsafeSet(pos, FastMath.expm1(unsafeGet(pos)))
         }
     }
 
     override fun logInPlace() {
-        for (pos in 0..size - 1) {
-            unsafeSet(pos, Math.log(unsafeGet(pos)))
+        for (pos in 0 until size) {
+            unsafeSet(pos, ln(unsafeGet(pos)))
         }
     }
 
     override fun log1pInPlace() {
-        for (pos in 0..size - 1) {
-            unsafeSet(pos, Math.log1p(unsafeGet(pos)))
+        for (pos in 0 until size) {
+            unsafeSet(pos, ln1p(unsafeGet(pos)))
         }
     }
 
     override fun logSumExp(): Double {
         val offset = max()
         val acc = KahanSum()
-        for (pos in 0..size - 1) {
+        for (pos in 0 until size) {
             acc += FastMath.exp(unsafeGet(pos) - offset)
         }
 
-        return Math.log(acc.result()) + offset
+        return ln(acc.result()) + offset
     }
 
     override fun logAddExp(other: F64Array, dst: F64Array) {
         checkShape(other)
         checkShape(dst)
-        for (pos in 0..size - 1) {
+        for (pos in 0 until size) {
             dst.unsafeSet(pos, unsafeGet(pos) logAddExp other.unsafeGet(pos))
         }
     }
@@ -226,7 +228,7 @@ open class F64FlatArray protected constructor(data: DoubleArray, offset: Int,
         // XXX 'v' is always dense but it might be too small to benefit
         //     from SIMD.
         val v = copy()
-        for (pos in 0..size - 1) {
+        for (pos in 0 until size) {
             v.unsafeSet(pos, -unsafeGet(pos))
         }
 
@@ -235,52 +237,52 @@ open class F64FlatArray protected constructor(data: DoubleArray, offset: Int,
 
     override fun plusAssign(other: F64Array) {
         checkShape(other)
-        for (pos in 0..size - 1) {
+        for (pos in 0 until size) {
             unsafeSet(pos, unsafeGet(pos) + other.unsafeGet(pos))
         }
     }
 
     override fun plusAssign(update: Double) {
-        for (pos in 0..size - 1) {
+        for (pos in 0 until size) {
             unsafeSet(pos, unsafeGet(pos) + update)
         }
     }
 
     override fun minusAssign(other: F64Array) {
         checkShape(other)
-        for (pos in 0..size - 1) {
+        for (pos in 0 until size) {
             unsafeSet(pos, unsafeGet(pos) - other.unsafeGet(pos))
         }
     }
 
     override fun minusAssign(update: Double) {
-        for (pos in 0..size - 1) {
+        for (pos in 0 until size) {
             unsafeSet(pos, unsafeGet(pos) - update)
         }
     }
 
     override fun timesAssign(other: F64Array) {
         checkShape(other)
-        for (pos in 0..size - 1) {
+        for (pos in 0 until size) {
             unsafeSet(pos, unsafeGet(pos) * other.unsafeGet(pos))
         }
     }
 
     override fun timesAssign(update: Double) {
-        for (pos in 0..size - 1) {
+        for (pos in 0 until size) {
             unsafeSet(pos, unsafeGet(pos) * update)
         }
     }
 
     override fun divAssign(other: F64Array) {
         checkShape(other)
-        for (pos in 0..size - 1) {
+        for (pos in 0 until size) {
             unsafeSet(pos, unsafeGet(pos) / other.unsafeGet(pos))
         }
     }
 
     override fun divAssign(update: Double) {
-        for (pos in 0..size - 1) {
+        for (pos in 0 until size) {
             unsafeSet(pos, unsafeGet(pos) / update)
         }
     }
@@ -307,21 +309,21 @@ open class F64FlatArray protected constructor(data: DoubleArray, offset: Int,
         sb.append('[')
 
         if (maxDisplay < size) {
-            for (pos in 0..maxDisplay / 2 - 1) {
+            for (pos in 0 until maxDisplay / 2) {
                 sb.append(format.safeFormat(this[pos])).append(", ")
             }
 
             sb.append("..., ")
 
             val leftover = maxDisplay - maxDisplay / 2
-            for (pos in size - leftover..size - 1) {
+            for (pos in size - leftover until size) {
                 sb.append(format.safeFormat(this[pos]))
                 if (pos < size - 1) {
                     sb.append(", ")
                 }
             }
         } else {
-            for (pos in 0..size - 1) {
+            for (pos in 0 until size) {
                 sb.append(format.safeFormat(this[pos]))
                 if (pos < size - 1) {
                     sb.append(", ")
@@ -337,12 +339,12 @@ open class F64FlatArray protected constructor(data: DoubleArray, offset: Int,
         this === other -> true
         other !is F64Array -> false
         size != other.size -> false
-        else -> (0..size - 1).all {
+        else -> (0 until size).all {
             Precision.equals(unsafeGet(it), other.unsafeGet(it))
         }
     }
 
-    override fun hashCode() = (0..size - 1).fold(1) { acc, pos ->
+    override fun hashCode() = (0 until size).fold(1) { acc, pos ->
         // XXX calling #hashCode results in boxing, see KT-7571.
         31 * acc + java.lang.Double.hashCode(unsafeGet(pos))
     }
