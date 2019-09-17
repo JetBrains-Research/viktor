@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        kotlin_version = '1.3.11'
+        kotlin_version = '1.3.41'
     }
 
     repositories {
@@ -15,7 +15,7 @@ buildscript {
 
 plugins {
     id 'com.jfrog.bintray' version '1.8.4'
-    id 'me.champeau.gradle.jmh' version '0.3.1'
+    id 'me.champeau.gradle.jmh' version '0.4.8'
 
     // Plugin which shows tasks dependencies, useful for debug:
     // id "com.dorongold.task-tree" version "1.3"
@@ -206,6 +206,17 @@ test {
     systemProperty 'java.library.path', "$buildDir/libs"
 }
 
+task benchmarkJar(type: Jar, dependsOn: jmhJar) {
+    manifest {
+        attributes 'Main-Class': 'org.openjdk.jmh.Main'
+    }
+    archiveName 'viktor-benchmark.jar'
+    from {
+        (jmhJar.outputs.files + configurations.jmh + configurations.jmhRuntime)
+                .collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
 jmh {
     includeTests = false
 }
@@ -269,5 +280,5 @@ bintrayUpload.doFirst {
 }
 
 wrapper {
-    gradleVersion = '4.10'
+    gradleVersion = '5.5'
 }
