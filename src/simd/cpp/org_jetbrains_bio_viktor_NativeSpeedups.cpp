@@ -294,66 +294,47 @@ JNI_METHOD(jdouble, unsafeMax)(JNIEnv *env, jobject,
     return min;
 }
 
-JNI_METHOD(void, unsafeExp)(JNIEnv *env, jobject,
-                            jdoubleArray jsrc, jint src_offset,
-                            jdoubleArray jdst, jint dst_offset,
-                            jint length)
+template<typename UnOp>
+void transformInPlace(JNIEnv *env,
+                      jdoubleArray jdst, jint dst_offset,
+                      jint length, UnOp const& f)
 {
-    jdouble *src = reinterpret_cast<jdouble *>(
-        env->GetPrimitiveArrayCritical(jsrc, NULL));
+    jboolean isCopy = false;
     jdouble *dst = reinterpret_cast<jdouble *>(
-        env->GetPrimitiveArrayCritical(jdst, NULL));
-    boost::simd::transform(src + src_offset, src + src_offset + length,
-                           dst + dst_offset, boost::simd::exp);
-    env->ReleasePrimitiveArrayCritical(jsrc, src, JNI_ABORT);
-    env->ReleasePrimitiveArrayCritical(jdst, dst, JNI_ABORT);
+        env->GetPrimitiveArrayCritical(jdst, &isCopy));
+    boost::simd::transform(dst + dst_offset, dst + dst_offset + length,
+                           dst + dst_offset, f);
+    env->ReleasePrimitiveArrayCritical(jdst, dst, isCopy == JNI_TRUE ? 0 : JNI_ABORT);
+}
+
+JNI_METHOD(void, unsafeExpInPlace)(JNIEnv *env, jobject,
+                                   jdoubleArray jdst, jint dst_offset,
+                                   jint length)
+{
+    transformInPlace(env, jdst, dst_offset, length, boost::simd::exp);
 }
 
 
-JNI_METHOD(void, unsafeExpm1)(JNIEnv *env, jobject,
-                              jdoubleArray jsrc, jint src_offset,
-                              jdoubleArray jdst, jint dst_offset,
-                              jint length)
+JNI_METHOD(void, unsafeExpm1InPlace)(JNIEnv *env, jobject,
+                                     jdoubleArray jdst, jint dst_offset,
+                                     jint length)
 {
-    jdouble *src = reinterpret_cast<jdouble *>(
-        env->GetPrimitiveArrayCritical(jsrc, NULL));
-    jdouble *dst = reinterpret_cast<jdouble *>(
-        env->GetPrimitiveArrayCritical(jdst, NULL));
-    boost::simd::transform(src + src_offset, src + src_offset + length,
-                           dst + dst_offset, boost::simd::expm1);
-    env->ReleasePrimitiveArrayCritical(jsrc, src, JNI_ABORT);
-    env->ReleasePrimitiveArrayCritical(jdst, dst, JNI_ABORT);
+    transformInPlace(env, jdst, dst_offset, length, boost::simd::expm1);
 }
 
 
-JNI_METHOD(void, unsafeLog)(JNIEnv *env, jobject,
-                            jdoubleArray jsrc, jint src_offset,
-                            jdoubleArray jdst, jint dst_offset,
-                            jint length)
+JNI_METHOD(void, unsafeLogInPlace)(JNIEnv *env, jobject,
+                                   jdoubleArray jdst, jint dst_offset,
+                                   jint length)
 {
-    jdouble *src = reinterpret_cast<jdouble *>(
-        env->GetPrimitiveArrayCritical(jsrc, NULL));
-    jdouble *dst = reinterpret_cast<jdouble *>(
-        env->GetPrimitiveArrayCritical(jdst, NULL));
-    boost::simd::transform(src + src_offset, src + src_offset + length,
-                           dst + dst_offset, boost::simd::log);
-    env->ReleasePrimitiveArrayCritical(jsrc, src, JNI_ABORT);
-    env->ReleasePrimitiveArrayCritical(jdst, dst, JNI_ABORT);
+    transformInPlace(env, jdst, dst_offset, length, boost::simd::log);
 }
 
-JNI_METHOD(void, unsafeLog1p)(JNIEnv *env, jobject,
-                              jdoubleArray jsrc, jint src_offset,
-                              jdoubleArray jdst, jint dst_offset,
-                              jint length)
+JNI_METHOD(void, unsafeLog1pInPlace)(JNIEnv *env, jobject,
+                                     jdoubleArray jdst, jint dst_offset,
+                                     jint length)
 {
-    jdouble *src = reinterpret_cast<jdouble *>(
-        env->GetPrimitiveArrayCritical(jsrc, NULL));
-    jdouble *dst = reinterpret_cast<jdouble *>(
-        env->GetPrimitiveArrayCritical(jdst, NULL));
-    boost::simd::transform(src + src_offset, src + src_offset + length,
-                           dst + dst_offset, boost::simd::log1p);
-    env->ReleasePrimitiveArrayCritical(jsrc, src, JNI_ABORT);
-    env->ReleasePrimitiveArrayCritical(jdst, dst, JNI_ABORT);
+    transformInPlace(env, jdst, dst_offset, length, boost::simd::log1p);
 }
 
 

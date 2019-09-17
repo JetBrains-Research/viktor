@@ -53,7 +53,8 @@ public class Log1pBenchmark {
 
     @Benchmark
     public void vector(final Blackhole bh) {
-        NativeSpeedups.INSTANCE.unsafeLog1p(src, 0, dst, 0, arraySize);
+        System.arraycopy(src, 0, dst, 0, arraySize);
+        NativeSpeedups.INSTANCE.unsafeLog1pInPlace(dst, 0, arraySize);
         bh.consume(dst);
     }
 

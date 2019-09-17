@@ -47,7 +47,8 @@ public class ExpBenchmark {
 
     @Benchmark
     public void vectorExp(final Blackhole bh) {
-        NativeSpeedups.INSTANCE.unsafeExp(src, 0, dst, 0, arraySize);
+        System.arraycopy(src, 0, dst, 0, arraySize);
+        NativeSpeedups.INSTANCE.unsafeExpInPlace(src, 0, arraySize);
         bh.consume(dst);
     }
 

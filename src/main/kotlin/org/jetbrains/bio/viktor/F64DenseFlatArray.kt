@@ -84,13 +84,13 @@ class F64LargeDenseArray(
         }
     }
 
-    override fun expInPlace() = NativeSpeedups.unsafeExp(data, offset, data, offset, size)
+    override fun expInPlace() = NativeSpeedups.unsafeExpInPlace(data, offset, size)
 
-    override fun expm1InPlace() = NativeSpeedups.unsafeExpm1(data, offset, data, offset, size)
+    override fun expm1InPlace() = NativeSpeedups.unsafeExpm1InPlace(data, offset, size)
 
-    override fun logInPlace() = NativeSpeedups.unsafeLog(data, offset, data, offset, size)
+    override fun logInPlace() = NativeSpeedups.unsafeLogInPlace(data, offset, size)
 
-    override fun log1pInPlace() = NativeSpeedups.unsafeLog1p(data, offset, data, offset, size)
+    override fun log1pInPlace() = NativeSpeedups.unsafeLog1pInPlace(data, offset, size)
 
     override fun logRescale() = NativeSpeedups.unsafeLogRescale(data, offset, data, offset, size)
 
