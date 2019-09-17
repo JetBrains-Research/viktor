@@ -3,6 +3,7 @@ package org.jetbrains.bio.viktor
 import org.apache.commons.math3.util.Precision
 import java.text.DecimalFormat
 import java.util.*
+import kotlin.math.sqrt
 
 /**
  * A strided n-dimensional array stored in a [DoubleArray].
@@ -39,7 +40,8 @@ open class F64Array protected constructor(
         /** Indexing steps along each axis. */
         val strides: IntArray,
         /** Number of elements along each axis. */
-        val shape: IntArray) {
+        val shape: IntArray
+) {
 
     /** Number of axes in this array. */
     val nDim: Int get() = shape.size
@@ -166,17 +168,16 @@ open class F64Array protected constructor(
      * For example, for a 2-D array `axis = 0` means "for each row",
      * and `axis = 1` "for each column".
      */
-    open fun along(axis: Int): Sequence<F64Array> {
-        return (0..shape[axis] - 1).asSequence()
-                .map { view(it, axis) }
-    }
+    open fun along(axis: Int): Sequence<F64Array> = (0 until shape[axis]).asSequence().map { view(it, axis) }
 
     /** Returns a view of this array along the specified [axis]. */
     fun view(index: Int, axis: Int = 0): F64Array {
         checkIndex("axis", axis, nDim)
         checkIndex("index", index, shape[axis])
-        return invoke(data, offset + strides[axis] * index,
-                      strides.remove(axis), shape.remove(axis))
+        return invoke(
+            data, offset + strides[axis] * index,
+            strides.remove(axis), shape.remove(axis)
+        )
     }
 
     /**
@@ -254,11 +255,11 @@ open class F64Array protected constructor(
     /** Copies elements in this array to [other] array. */
     open fun copyTo(other: F64Array) {
         checkShape(other)
-        if (Arrays.equals(strides, other.strides)) {
+        if (strides.contentEquals(other.strides)) {
             System.arraycopy(data, offset, other.data, other.offset,
-                             shape.product())
+                shape.product())
         } else {
-            for (r in 0..size - 1) {
+            for (r in 0 until size) {
                 V[r].copyTo(other.V[r])
             }
         }
@@ -279,7 +280,7 @@ open class F64Array protected constructor(
 
         return when {
             nDim > 1 -> TODO()
-            Arrays.equals(this.shape, shape) -> this
+            this.shape.contentEquals(shape) -> this
             else -> {
                 val reshaped = shape.clone()
                 reshaped[reshaped.lastIndex] = strides.single()
@@ -346,17 +347,18 @@ open class F64Array protected constructor(
     /** Fills this array with a given [init] value. */
     open fun fill(init: Double): Unit = flatten().fill(init)
 
-    fun reversed(axis: Int = 0): F64Array {
-        return invoke(data, offset + strides[axis] * (shape[axis] - 1),
-                      strides.clone().apply { this[axis] *= -1 },
-                      shape)
-    }
+    fun reversed(axis: Int = 0): F64Array = invoke(
+        data, offset + strides[axis] * (shape[axis] - 1),
+        strides.clone().apply { this[axis] *= -1 }, shape
+    )
 
     /** Applies a given permutation of indices to the elements in the array. */
     open fun reorder(indices: IntArray, axis: Int = 0) {
-        reorderInternal(this, indices, axis,
-                        get = { pos -> view(pos, axis).copy() },
-                        set = { pos, value -> value.copyTo(view(pos, axis)) })
+        reorderInternal(
+            this, indices, axis,
+            get = { pos -> view(pos, axis).copy() },
+            set = { pos, value -> value.copyTo(view(pos, axis)) }
+        )
     }
 
     /** A less verbose alternative to [fill]. */
@@ -399,7 +401,7 @@ open class F64Array protected constructor(
     open fun sd(): Double {
         val s = sum()
         val s2 = dot(this)
-        return Math.sqrt((s2 - s * s / size) / (size - 1))
+        return sqrt((s2 - s * s / size) / (size - 1))
     }
 
     /**
@@ -426,7 +428,7 @@ open class F64Array protected constructor(
     open fun cumSum() {
         check(nDim == 1)
         val acc = KahanSum()
-        for (pos in 0..size - 1) {
+        for (pos in 0 until size) {
             acc += unsafeGet(pos)
             unsafeSet(pos, acc.result())
         }
@@ -539,7 +541,7 @@ open class F64Array protected constructor(
     /**
      * Computes elementwise
      *
-     *   log(exp(this[i]) + exp(other[i]))
+     *     log(exp(this[i]) + exp(other[i]))
      *
      * in a numerically stable way.
      */
@@ -602,43 +604,44 @@ open class F64Array protected constructor(
     /** Ensures a given array has the same dimensions as this array. */
     fun checkShape(other: F64Array): F64Array {
         // Could relax this to "broadcastable".
-        require(this === other || Arrays.equals(shape, other.shape)) {
-            "operands shapes do not match " +
-            "${Arrays.toString(shape)} ${Arrays.toString(other.shape)}"
+        require(this === other || shape.contentEquals(other.shape)) {
+            "operands shapes do not match ${shape.contentToString()} ${other.shape.contentToString()}"
         }
         return other
     }
 
-    // XXX must be overriden in flat array.
+    // XXX must be overridden in flat array.
     open fun toArray(): Any = toGenericArray()
 
-    // XXX must be overriden in flat array.
+    // XXX must be overridden in flat array.
     open fun toGenericArray(): Array<*> = Array(size) { view(it).toArray() }
 
-    // XXX must be overriden in flat array.
+    // XXX must be overridden in flat array.
     open fun toDoubleArray(): DoubleArray = throw UnsupportedOperationException()
 
-    // XXX must be overriden in flat array.
-    open fun toString(maxDisplay: Int,
-                 format: DecimalFormat = DecimalFormat("#.####")): String {
+    // XXX must be overridden in flat array.
+    open fun toString(
+            maxDisplay: Int,
+            format: DecimalFormat = DecimalFormat("#.####")
+    ): String {
         val sb = StringBuilder()
         sb.append('[')
         if (maxDisplay < size) {
-            for (r in 0..maxDisplay / 2 - 1) {
+            for (r in 0 until maxDisplay / 2) {
                 sb.append(V[r].toString(maxDisplay, format)).append(", ")
             }
 
             sb.append("..., ")
 
             val leftover = maxDisplay - maxDisplay / 2
-            for (r in size - leftover..size - 1) {
+            for (r in size - leftover until size) {
                 sb.append(V[r].toString(maxDisplay, format))
                 if (r < size - 1) {
                     sb.append(", ")
                 }
             }
         } else {
-            for (r in 0..size - 1) {
+            for (r in 0 until size) {
                 sb.append(V[r].toString(maxDisplay, format))
                 if (r < size - 1) {
                     sb.append(", ")
@@ -652,16 +655,16 @@ open class F64Array protected constructor(
 
     override fun toString() = toString(8)
 
-    // XXX must be overriden in flat array.
+    // XXX must be overridden in flat array.
     override fun equals(other: Any?): Boolean = when {
         this === other -> true
         other !is F64Array -> false
-        !Arrays.equals(shape, other.shape) -> false
-        else -> (0..size - 1).all { view(it) == other.view(it) }
+        !shape.contentEquals(other.shape) -> false
+        else -> (0 until size).all { view(it) == other.view(it) }
     }
 
-    // XXX must be overriden in flat array.
-    override fun hashCode(): Int = (0..size - 1).fold(1) { acc, r ->
+    // XXX must be overridden in flat array.
+    override fun hashCode(): Int = (0 until size).fold(1) { acc, r ->
         31 * acc + view(r).hashCode()
     }
 
@@ -672,31 +675,38 @@ open class F64Array protected constructor(
                     .reshape(*shape)
         }
 
-        operator inline fun invoke(size: Int, block: (Int) -> Double): F64Array {
+        inline operator fun invoke(size: Int, block: (Int) -> Double): F64Array {
             return invoke(size).apply {
-                for (i in 0..size - 1) {
+                for (i in 0 until size) {
                     this[i] = block(i)
                 }
             }
         }
 
-        operator inline fun invoke(numRows: Int, numColumns: Int,
-                                   block: (Int, Int) -> Double): F64Array {
+        inline operator fun invoke(
+                numRows: Int,
+                numColumns: Int,
+                block: (Int, Int) -> Double
+        ): F64Array {
             return invoke(numRows, numColumns).apply {
-                for (r in 0..numRows - 1) {
-                    for (c in 0..numColumns - 1) {
+                for (r in 0 until numRows) {
+                    for (c in 0 until numColumns) {
                         this[r, c] = block(r, c)
                     }
                 }
             }
         }
 
-        operator inline fun invoke(depth: Int, numRows: Int, numColumns: Int,
-                                   block: (Int, Int, Int) -> Double): F64Array {
+        inline operator fun invoke(
+                depth: Int,
+                numRows: Int,
+                numColumns: Int,
+                block: (Int, Int, Int) -> Double
+        ): F64Array {
             return invoke(depth, numRows, numColumns).apply {
-                for (d in 0..depth - 1) {
-                    for (r in 0..numRows - 1) {
-                        for (c in 0..numColumns - 1) {
+                for (d in 0 until depth) {
+                    for (r in 0 until numRows) {
+                        for (c in 0 until numColumns) {
                             this[d, r, c] = block(d, r, c)
                         }
                     }
@@ -727,11 +737,8 @@ open class F64Array protected constructor(
          */
         fun concatenate(first: F64Array, vararg rest: F64Array, axis: Int = 0): F64Array {
             for (other in rest) {
-                if (!Arrays.equals(other.shape.remove(axis),
-                                   first.shape.remove(axis))) {
-                    throw IllegalArgumentException(
-                            "input array shapes must be exactly equal " +
-                            "for all dimensions except $axis")
+                require(other.shape.remove(axis).contentEquals(first.shape.remove(axis))) {
+                    "input array shapes must be exactly equal for all dimensions except $axis"
                 }
             }
 
@@ -753,7 +760,7 @@ open class F64Array protected constructor(
 
         /** "Smart" constructor. */
         internal operator fun invoke(data: DoubleArray, offset: Int,
-                                     strides: IntArray, shape: IntArray): F64Array {
+                strides: IntArray, shape: IntArray): F64Array {
             return if (shape.size == 1) {
                 F64FlatArray(data, offset, strides.single(), shape.single())
             } else {
@@ -788,8 +795,7 @@ private fun flatten(a: Array<*>): DoubleArray {
 /** No validation, therefore "check". */
 private fun Array<*>.guessShape(): IntArray {
     check(isNotEmpty())
-    val tip = first()
-    return when (tip) {
+    return when (val tip = first()) {
         is DoubleArray -> intArrayOf(size, tip.size)
         is Array<*> -> intArrayOf(size) + tip.guessShape()
         else -> unsupported()
