@@ -458,30 +458,14 @@ open class F64Array protected constructor(
      *
      * Optimized for dense arrays.
      */
-    open fun max(): Double = flatten().max()
-
-    /**
-     * Returns the unravelled index of the maximum element in the
-     * flattened array.
-     *
-     * See [ravelMultiIndex] and [unravelIndex] for details.
-     */
-    open fun argMax(): Int = flatten().argMax()
+    open fun max(): Double = unrollToFlat().map { it.max() }.max() ?: Double.NEGATIVE_INFINITY
 
     /**
      * Returns the minimum element.
      *
      * Optimized for dense arrays.
      */
-    open fun min(): Double = flatten().min()
-
-    /**
-     * Returns the unravelled index of the minimum element in the
-     * flattened array.
-     *
-     * See [ravelMultiIndex] and [unravelIndex] for details.
-     */
-    open fun argMin(): Int = flatten().argMin()
+    open fun min(): Double = unrollToFlat().map { it.min() }.min() ?: Double.POSITIVE_INFINITY
 
     /**
      * Replaces each element of this array with its exponent.
@@ -838,3 +822,11 @@ private fun Array<*>.guessShape(): IntArray {
         else -> unsupported()
     }
 }
+
+/**
+ * A special object used to denote all indices.
+ *
+ * @since 0.1.1 Renamed to `_I` because all-underscore names are reserved
+ *              for internal use in Kotlin.
+ */
+object _I {}

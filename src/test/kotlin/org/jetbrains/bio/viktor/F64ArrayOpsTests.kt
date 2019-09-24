@@ -131,17 +131,6 @@ class F64FlatArrayOpsTest(private val v: F64Array) {
         }
     }
 
-    @Test fun argMinMax() {
-        val values = v.toDoubleArray()
-        val min = values.min()!!
-        assertEquals(min, v.min(), Precision.EPSILON)
-        assertEquals(values.indexOf(min), v.argMin())
-
-        val max = values.max()!!
-        assertEquals(v.max(), max, Precision.EPSILON)
-        assertEquals(values.indexOf(max), v.argMax())
-    }
-
     companion object {
         @Parameters(name = "{0}")
         @JvmStatic fun `data`() = CASES

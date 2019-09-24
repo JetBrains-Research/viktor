@@ -64,7 +64,7 @@ open class F64FlatArray protected constructor(
     override fun dot(other: F64Array) = balancedDot { other[it] }
 
     /** See [balancedSum]. */
-    private inline fun F64FlatArray.balancedDot(getter: (Int) -> Double): Double {
+    private inline fun balancedDot(getter: (Int) -> Double): Double {
         var accUnaligned = 0.0
         var remaining = size
         while (remaining % 4 != 0) {
@@ -144,38 +144,39 @@ open class F64FlatArray protected constructor(
 
     override fun sum() = balancedSum()
 
-    override fun min() = unsafeGet(argMin())
 
-    override fun argMin(): Int {
-        require(size > 0) { "no data" }
-        var minPos = 0
-        var minValue = Double.POSITIVE_INFINITY
+    @Suppress("SimplifyNegatedBinaryExpression")
+    override fun min(): Double {
+        var res = Double.POSITIVE_INFINITY
         for (pos in 0 until size) {
             val value = unsafeGet(pos)
-            if (value < minValue) {
-                minPos = pos
-                minValue = value
+            /*
+                The reason for the inverted comparison is NaNs.
+                While we wait for https://youtrack.jetbrains.com/issue/KT-31280 ,
+                the warning will be suppressed manually.
+            */
+            if (!(value >= res)) {
+                res = value
             }
         }
-
-        return minPos
+        return res
     }
 
-    override fun max() = unsafeGet(argMax())
-
-    override fun argMax(): Int {
-        require(size > 0) { "no data" }
-        var maxPos = 0
-        var maxValue = Double.NEGATIVE_INFINITY
+    @Suppress("SimplifyNegatedBinaryExpression")
+    override fun max(): Double {
+        var res = Double.NEGATIVE_INFINITY
         for (pos in 0 until size) {
             val value = unsafeGet(pos)
-            if (value > maxValue) {
-                maxPos = pos
-                maxValue = value
+            /*
+                The reason for the inverted comparison is NaNs.
+                While we wait for https://youtrack.jetbrains.com/issue/KT-31280 ,
+                the warning will be suppressed manually.
+            */
+            if (!(value <= res)) {
+                res = value
             }
         }
-
-        return maxPos
+        return res
     }
 
     override fun expInPlace() {
