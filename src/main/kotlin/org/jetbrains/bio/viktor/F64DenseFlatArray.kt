@@ -67,7 +67,7 @@ class F64LargeDenseArray(
 
     override fun sd() = NativeSpeedups.sd(data, offset, size)
 
-    override fun balancedSum() = NativeSpeedups.sum(data, offset, size)
+    override fun sum() = NativeSpeedups.sum(data, offset, size)
 
     override fun cumSum() = NativeSpeedups.cumSum(data, offset, size)
 

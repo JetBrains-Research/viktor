@@ -408,7 +408,7 @@ open class F64Array protected constructor(
         return invoke(data, offset + from * strides[axis], sliceStrides, sliceShape)
     }
 
-    open operator fun contains(other: Double): Boolean = flatten().contains(other)
+    open operator fun contains(other: Double): Boolean = unrollToFlat().any { it.contains(other) }
 
     /**
      * Fills this array with a given [init] value.
@@ -472,14 +472,11 @@ open class F64Array protected constructor(
      *
      * Optimized for dense arrays.
      */
-    open fun sum(): Double = flatten().sum()
-
-    /**
-     * Returns the sum of the elements using balanced summation.
-     *
-     * Optimized for dense arrays.
-     */
-    open fun balancedSum(): Double = flatten().balancedSum()
+    open fun sum(): Double {
+        val acc = KahanSum()
+        unrollToFlat().forEach { acc += it.sum() }
+        return acc.result()
+    }
 
     /**
      * Computes cumulative sum of the elements.
@@ -640,10 +637,12 @@ open class F64Array protected constructor(
     fun checkShape(other: F64Array): F64Array {
         // Could relax this to "broadcastable".
         require(this === other || shape.contentEquals(other.shape)) {
-            "operands shapes do not match ${shape.contentToString()} ${other.shape.contentToString()}"
+            "operands shapes do not match: ${shape.contentToString()} vs ${other.shape.contentToString()}"
         }
         return other
     }
+
+    internal open fun asSequence(): Sequence<Double> = unrollToFlat().flatMap { it.asSequence() }
 
     // XXX must be overridden in flat array.
     open fun toArray(): Any = toGenericArray()

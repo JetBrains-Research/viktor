@@ -63,7 +63,7 @@ open class F64FlatArray protected constructor(
 
     override fun dot(other: F64Array) = balancedDot { other[it] }
 
-    /** See [balancedSum]. */
+    /** See [sum]. */
     private inline fun balancedDot(getter: (Int) -> Double): Double {
         var accUnaligned = 0.0
         var remaining = size
@@ -77,10 +77,8 @@ open class F64FlatArray protected constructor(
         var i = 0
         while (i < remaining) {
             // Shift.
-            var v = (unsafeGet(i) * getter(i) +
-                    unsafeGet(i + 1) * getter(i + 1))
-            val w = (unsafeGet(i + 2) * getter(i + 2) +
-                    unsafeGet(i + 3) * getter(i + 3))
+            var v = unsafeGet(i) * getter(i) + unsafeGet(i + 1) * getter(i + 1)
+            val w = unsafeGet(i + 2) * getter(i + 2) + unsafeGet(i + 3) * getter(i + 3)
             v += w
 
             // Reduce.
@@ -108,41 +106,36 @@ open class F64FlatArray protected constructor(
      *
      * Dalton et al. "SIMDizing pairwise sums", 2014.
      */
-    override fun balancedSum(): Double {
+    override fun sum(): Double {
         var accUnaligned = 0.0
         var remaining = size
         while (remaining % 4 > 0) {
-            accUnaligned += unsafeGet(--remaining)
-        }
-
+                accUnaligned += unsafeGet(--remaining)
+            }
         val stack = DoubleArray(31 - 2)
         var p = 0
         var i = 0
         while (i < remaining) {
-            // Shift.
-            var v = unsafeGet(i) + unsafeGet(i + 1)
-            val w = unsafeGet(i + 2) + unsafeGet(i + 3)
-            v += w
+                // Shift.
+                var v = unsafeGet(i) + unsafeGet(i + 1)
+                val w = unsafeGet(i + 2) + unsafeGet(i + 3)
+                v += w
 
-            // Reduce.
-            var bitmask = 4
-            while (i and bitmask != 0) {
-                v += stack[--p]
-                bitmask = bitmask shl 1
+                // Reduce.
+                var bitmask = 4
+                while (i and bitmask != 0) {
+                    v += stack[--p]
+                    bitmask = bitmask shl 1
+                }
+                stack[p++] = v
+                i += 4
             }
-            stack[p++] = v
-            i += 4
-        }
-
         var acc = 0.0
         while (p > 0) {
-            acc += stack[--p]
-        }
-
+                acc += stack[--p]
+            }
         return acc + accUnaligned
     }
-
-    override fun sum() = balancedSum()
 
 
     @Suppress("SimplifyNegatedBinaryExpression")
@@ -279,6 +272,8 @@ open class F64FlatArray protected constructor(
             unsafeSet(pos, unsafeGet(pos) / update)
         }
     }
+
+    override fun asSequence(): Sequence<Double> = (0 until size).asSequence().map(this::unsafeGet)
 
     override fun toArray() = toDoubleArray()
 
