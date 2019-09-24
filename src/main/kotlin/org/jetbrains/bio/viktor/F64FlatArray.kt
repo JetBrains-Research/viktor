@@ -11,20 +11,14 @@ import kotlin.math.ln1p
  *
  * @since 0.4.0
  */
-open class F64FlatArray protected constructor(data: DoubleArray, offset: Int,
-                                              stride: Int, size: Int)
-:
-        F64Array(data, offset, intArrayOf(stride), intArrayOf(size)) {
+open class F64FlatArray protected constructor(
+        data: DoubleArray,
+        offset: Int,
+        stride: Int,
+        size: Int
+) : F64Array(data, offset, intArrayOf(stride), intArrayOf(size)) {
 
     override fun flatten() = this
-
-    /**
-     * Constructs a column-vector view of this vector in O(1) time.
-     *
-     * A column vector is a matrix with [size] rows and a single column,
-     * e.g. `[1, 2, 3]^T` is `[[1], [2], [3]]`.
-     */
-    override fun transpose() = reshape(size, 1)
 
     override fun contains(other: Double): Boolean {
         for (pos in 0 until size) {
@@ -54,8 +48,8 @@ open class F64FlatArray protected constructor(data: DoubleArray, offset: Int,
     override fun reorder(indices: IntArray, axis: Int) {
         if (axis == 0) {
             reorderInternal(this, indices, axis,
-                            get = { pos -> unsafeGet(pos) },
-                            set = { pos, value -> unsafeSet(pos, value) })
+                get = { pos -> unsafeGet(pos) },
+                set = { pos, value -> unsafeSet(pos, value) })
         } else {
             unsupported()
         }
@@ -82,9 +76,9 @@ open class F64FlatArray protected constructor(data: DoubleArray, offset: Int,
         while (i < remaining) {
             // Shift.
             var v = (unsafeGet(i) * getter(i) +
-                     unsafeGet(i + 1) * getter(i + 1))
+                    unsafeGet(i + 1) * getter(i + 1))
             val w = (unsafeGet(i + 2) * getter(i + 2) +
-                     unsafeGet(i + 3) * getter(i + 3))
+                    unsafeGet(i + 3) * getter(i + 3))
             v += w
 
             // Reduce.
@@ -351,8 +345,8 @@ open class F64FlatArray protected constructor(data: DoubleArray, offset: Int,
 
     companion object {
         internal operator fun invoke(data: DoubleArray, offset: Int = 0,
-                                     stride: Int = 1,
-                                     size: Int = data.size): F64FlatArray {
+                stride: Int = 1,
+                size: Int = data.size): F64FlatArray {
             require(offset + (size - 1) * stride <= data.size) { "not enough data" }
             return if (stride == 1) {
                 F64DenseFlatArray.create(data, offset, size)
