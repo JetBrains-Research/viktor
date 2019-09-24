@@ -519,11 +519,9 @@ open class F64Array protected constructor(
     /**
      * Rescales the element so that the exponent of the sum is 1.0.
      *
-     * Optimized for dense arrays.
-     *
      * The operation is done **in place**.
      */
-    open fun logRescale() {
+    fun logRescale() {
         this -= logSumExp()
     }
 

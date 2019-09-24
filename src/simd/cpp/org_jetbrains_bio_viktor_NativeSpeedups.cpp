@@ -272,22 +272,6 @@ JNI_METHOD(void, unsafeLogAddExp)(JNIEnv *env, jobject,
     transformAssign(env, jdst, dst_offset, jsrc, src_offset, length, logaddexp());
 }
 
-
-JNI_METHOD(void, unsafeLogRescale)(JNIEnv *env, jobject,
-                                   jdoubleArray jdst, jint dst_offset,
-                                   jint length)
-{
-    jboolean is_copy = JNI_FALSE;
-    jdouble *dst = reinterpret_cast<jdouble *>(
-        env->GetPrimitiveArrayCritical(jdst, &is_copy));
-    double total = simdmath::logsumexp(dst + dst_offset, length);
-    boost::simd::transform(dst + dst_offset,
-                           dst + dst_offset + length,
-                           dst + dst_offset,
-                           minus_scalar(total));
-    env->ReleasePrimitiveArrayCritical(jdst, dst, is_copy == JNI_TRUE ? 0 : JNI_ABORT);
-}
-
 JNI_METHOD(jdouble, unsafeDot)(JNIEnv *env, jobject,
                                jdoubleArray jsrc1, jint src_offset1,
                                jdoubleArray jsrc2, jint src_offset2,
