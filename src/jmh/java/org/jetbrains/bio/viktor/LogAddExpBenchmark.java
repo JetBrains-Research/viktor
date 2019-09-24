@@ -53,7 +53,8 @@ public class LogAddExpBenchmark {
 
     @Benchmark
     public void vector(final Blackhole bh) {
-        NativeSpeedups.INSTANCE.unsafeLogAddExp(src1, 0, src2, 0, dst, 0, arraySize);
+        System.arraycopy(src1, 0, dst, 0, arraySize);
+        NativeSpeedups.INSTANCE.unsafeLogAddExp(dst, 0, src2, 0, arraySize);
         bh.consume(dst);
     }
 

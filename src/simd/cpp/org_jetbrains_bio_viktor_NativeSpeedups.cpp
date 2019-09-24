@@ -265,25 +265,11 @@ struct logaddexp {
 }
 
 JNI_METHOD(void, unsafeLogAddExp)(JNIEnv *env, jobject,
-                                  jdoubleArray jsrc1, jint src_offset1,
-                                  jdoubleArray jsrc2, jint src_offset2,
                                   jdoubleArray jdst, jint dst_offset,
+                                  jdoubleArray jsrc, jint src_offset,
                                   jint length)
 {
-    jdouble *src1 = reinterpret_cast<jdouble *>(
-        env->GetPrimitiveArrayCritical(jsrc1, NULL));
-    jdouble *src2 = reinterpret_cast<jdouble *>(
-        env->GetPrimitiveArrayCritical(jsrc2, NULL));
-    jdouble *dst = reinterpret_cast<jdouble *>(
-        env->GetPrimitiveArrayCritical(jdst, NULL));
-    boost::simd::transform(src1 + src_offset1,
-                           src1 + src_offset1 + length,
-                           src2 + src_offset2,
-                           dst + dst_offset,
-                           logaddexp());
-    env->ReleasePrimitiveArrayCritical(jsrc1, src1, JNI_ABORT);
-    env->ReleasePrimitiveArrayCritical(jsrc2, src2, JNI_ABORT);
-    env->ReleasePrimitiveArrayCritical(jdst, dst, JNI_ABORT);
+    transformAssign(env, jdst, dst_offset, jsrc, src_offset, length, logaddexp());
 }
 
 
