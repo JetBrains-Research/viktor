@@ -539,9 +539,7 @@ open class F64Array protected constructor(
     open fun logAddExpAssign(other: F64Array): Unit =
             commonUnrollToFlat(other).forEach { (a, b) -> a.logAddExpAssign(b) }
 
-    infix fun logAddExp(other: F64Array): F64Array {
-        return copy().apply { logAddExp(other, this) }
-    }
+    infix fun logAddExp(other: F64Array): F64Array = copy().apply { logAddExpAssign(other) }
 
     /**
      * Computes elementwise
@@ -552,8 +550,12 @@ open class F64Array protected constructor(
      */
     @Deprecated("Three-argument syntax is deprecated", ReplaceWith("logAddExpAssign(other)"))
     open fun logAddExp(other: F64Array, dst: F64Array) {
-        require(dst === this) { "this-other-dst syntax is no longer supported for logAddExp, use logAddExpAssign" }
-        logAddExpAssign(other)
+        if (dst === this) {
+            logAddExpAssign(other)
+        } else {
+            (this logAddExp other).copyTo(dst)
+        }
+
     }
 
     operator fun unaryPlus() = this
