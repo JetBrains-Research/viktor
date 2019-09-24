@@ -50,8 +50,19 @@ open class F64Array protected constructor(
     /** Number of elements along the first axis. */
     val size: Int get() = shape.first()
 
+    /**
+     * The maximum number of dimensions suitable for unrolling, see [unrollOnce].
+     */
     private val unrollDim: Int
+
+    /**
+     * The size of the maximum unrolled subarray sequence, see [unrollOnce].
+     */
     private val unrollSize: Int
+
+    /**
+     * The stride of the maximum unrolled subarray sequence, see [unrollOnce].
+     */
     private val unrollStride: Int
 
     /**
@@ -200,23 +211,55 @@ open class F64Array protected constructor(
         return indices.fold(this) { m, pos -> m.view(pos) }
     }
 
+    /**
+     * Unrolls the array down to flattenable subarrays and flattens them.
+     *
+     * See [unrollOnce] for description of unrolling. This method performs recursive unrolling until it arrives
+     * at flattenable subarrays, at which point it flattens them and returns the resulting sequence.
+     * In particular, if the original array [isFlattenable], it's flattened and returned as a singleton sequence.
+     */
     private fun unrollToFlat(): Sequence<F64FlatArray> {
         if (isFlattenable) return sequenceOf(flatten())
         return unrollOnce().flatMap { it.unrollToFlat() }
     }
 
-    private fun commonUnrollToFlat(other: F64Array): Sequence<Pair<F64FlatArray, F64FlatArray>> {
+    /**
+     * Unrolls two arrays down to flattenable subarrays in a compatible way.
+     *
+     * Since two arrays with the same [shape] can have different internal organization (i.e. [strides]),
+     * it's important to unroll them in a consistent way. This method provides the necessary functionality.
+     *
+     * @param action Since this method is always used in a for-each context, we include the corresponding lambda
+     * in the signature.
+     */
+    private fun commonUnrollToFlat(
+            other: F64Array,
+            action: (F64FlatArray, F64FlatArray) -> Unit
+    ) {
         checkShape(other)
         val commonUnrollDim = min(unrollDim, other.unrollDim)
-        return if (commonUnrollDim == nDim) {
-            sequenceOf(flatten() to other.flatten())
+        if (commonUnrollDim == nDim) {
+            action(flatten(), other.flatten())
         } else {
-            unrollOnce(commonUnrollDim).zip(other.unrollOnce(commonUnrollDim)).flatMap { (a, b) ->
-                a.commonUnrollToFlat(b)
+            unrollOnce(commonUnrollDim).zip(other.unrollOnce(commonUnrollDim)).forEach { (a, b) ->
+                a.commonUnrollToFlat(b, action)
             }
         }
     }
 
+    /**
+     * Unroll the array into a sequence of smaller subarrays in a reasonably efficient way.
+     *
+     * We can always iterate any array by performing nested loops over all its axes. However, in the vast majority
+     * of cases this is unnecessarily complicated and at least some of the nested loops can be replaced with
+     * a single loop. This is called "unrolling".
+     *
+     * [unrollDim] describes the maximum number of dimensions suitable for unrolling. When it's equal to [nDim],
+     * the array [isFlattenable], meaning that all its elements are equidistant and can be visited in a single loop.
+     *
+     * This method assumes that the caller knows what they do and unrolls over specified dimensions without
+     * checking whether the array [isFlattenable] and thus doesn't need any unrolling.
+     */
     private fun unrollOnce(n: Int = unrollDim): Sequence<F64Array> {
         require(n <= unrollDim) { "can't unroll $n dimensions, only $unrollDim are unrollable" }
         val newStrides = strides.slice(n until nDim).toIntArray()
@@ -226,7 +269,8 @@ open class F64Array protected constructor(
             while (nonTrivialN >= 0 && shape[nonTrivialN] <= 1) nonTrivialN--
             if (nonTrivialN >= 0) strides[nonTrivialN] else 0
         }
-        return (0 until unrollSize).asSequence().map { i ->
+        val currentUnrollSize = if (n == unrollDim) unrollSize else shape.slice(0 until n).toIntArray().product()
+        return (0 until currentUnrollSize).asSequence().map { i ->
             invoke(data, offset + currentUnrollStride * i, newStrides, newShape)
         }
     }
@@ -293,7 +337,7 @@ open class F64Array protected constructor(
     }
 
     /** Copies elements in this array to [other] array. */
-    open fun copyTo(other: F64Array): Unit = commonUnrollToFlat(other).forEach { (a, b) -> a.copyTo(b) }
+    open fun copyTo(other: F64Array): Unit = commonUnrollToFlat(other) { a, b -> a.copyTo(b) }
 
     /** A less verbose alternative to [copyTo]. */
     operator fun set(vararg any: _I, other: F64Array) = when {
@@ -535,7 +579,7 @@ open class F64Array protected constructor(
     open fun logSumExp(): Double = unrollToFlat().map { it.logSumExp() }.logSumExp()
 
     open fun logAddExpAssign(other: F64Array): Unit =
-            commonUnrollToFlat(other).forEach { (a, b) -> a.logAddExpAssign(b) }
+            commonUnrollToFlat(other) { a, b -> a.logAddExpAssign(b) }
 
     infix fun logAddExp(other: F64Array): F64Array = copy().apply { logAddExpAssign(other) }
 
@@ -562,7 +606,7 @@ open class F64Array protected constructor(
 
     operator fun plus(other: F64Array) = copy().apply { this += other }
 
-    open operator fun plusAssign(other: F64Array): Unit = commonUnrollToFlat(other).forEach { (a, b) -> a += b }
+    open operator fun plusAssign(other: F64Array): Unit = commonUnrollToFlat(other) { a, b -> a += b }
 
     operator fun plus(update: Double) = copy().apply { this += update }
 
@@ -570,7 +614,7 @@ open class F64Array protected constructor(
 
     operator fun minus(other: F64Array) = copy().apply { this -= other }
 
-    open operator fun minusAssign(other: F64Array): Unit = commonUnrollToFlat(other).forEach { (a, b) -> a -= b }
+    open operator fun minusAssign(other: F64Array): Unit = commonUnrollToFlat(other) { a, b -> a -= b }
 
     operator fun minus(update: Double) = copy().apply { this -= update }
 
@@ -578,7 +622,7 @@ open class F64Array protected constructor(
 
     operator fun times(other: F64Array) = copy().apply { this *= other }
 
-    open operator fun timesAssign(other: F64Array): Unit = commonUnrollToFlat(other).forEach { (a, b) -> a *= b }
+    open operator fun timesAssign(other: F64Array): Unit = commonUnrollToFlat(other) { a, b -> a *= b }
 
     operator fun times(update: Double) = copy().apply { this *= update }
 
@@ -586,7 +630,7 @@ open class F64Array protected constructor(
 
     operator fun div(other: F64Array) = copy().apply { this /= other }
 
-    open operator fun divAssign(other: F64Array): Unit = commonUnrollToFlat(other).forEach { (a, b) -> a /= b }
+    open operator fun divAssign(other: F64Array): Unit = commonUnrollToFlat(other) { a, b -> a /= b }
 
     operator fun div(update: Double) = copy().apply { this /= update }
 
