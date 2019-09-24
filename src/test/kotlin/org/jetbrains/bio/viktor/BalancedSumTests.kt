@@ -13,11 +13,11 @@ class BalancedSumTest(private val size: Int) {
         val v = Random().doubles(size.toLong()).toArray().asF64Array()
 
         val expected = KahanSum()
-        for (i in 0..v.size - 1) {
+        for (i in 0 until v.size) {
             expected.feed(v[i])
         }
 
-        assertEquals(expected.result(), v.balancedSum(), 1e-8)
+        assertEquals(expected.result(), v.sum(), 1e-8)
     }
 
     companion object {

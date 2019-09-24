@@ -20,7 +20,6 @@ class F64FlatArrayAgainstRTest {
         val v = VALUES.asF64Array()
         assertEquals(18.37403, v.sum(), 1E-5)
         assertEquals(1.837403, v.mean(), 1E-6)
-        assertEquals(18.37403, v.balancedSum(), 1E-5)
         assertEquals(0.8286257, v.sd(), 1E-7)
     }
 
@@ -28,7 +27,6 @@ class F64FlatArrayAgainstRTest {
         val v = VALUES.asF64Array(offset = 3, size = 4)
         assertEquals(8.292786, v.sum(), 1E-6)
         assertEquals(2.073197, v.mean(), 1E-6)
-        assertEquals(8.292786, v.balancedSum(), 1E-6)
         assertEquals(1.016512, v.sd(), 1E-6)
     }
 
@@ -64,14 +62,22 @@ class F64FlatArrayAgainstRTest {
 @RunWith(Parameterized::class)
 class F64FlatArrayOpsTest(private val v: F64Array) {
     @Test fun contains() {
-        for (i in 0 until v.size) {
-            assertTrue(v[i] in v)
+        v.asSequence().forEach {
+            assertTrue(it in v)
         }
     }
 
     @Test fun equals() {
         assertEquals(v, v)
-        assertEquals(v, v.toDoubleArray().asF64Array())
+        assertEquals(v, v.copy())
+        assertEquals(v.copy(), v)
+
+        if (v.nDim == 1) {
+            assertEquals(v, v.toDoubleArray().asF64Array())
+        } else {
+            assertEquals(v, v.toGenericArray().toF64Array())
+        }
+
         assertNotEquals(v, gappedArray(2..4))
         assertNotEquals(v, gappedArray(1..30))
     }
@@ -103,24 +109,25 @@ class F64FlatArrayOpsTest(private val v: F64Array) {
     }
 
     @Test fun dot() {
+        if (v.nDim != 1) return // only applicable to flat arrays
         assertEquals((0 until v.size).sumByDouble { v[it] * v[it] }, v.dot(v), 1E-10)
     }
 
     @Test fun mean() {
-        assertEquals(
-            (0 until v.size).sumByDouble { v[it] } / v.size, v.mean(), Precision.EPSILON
-        )
+        assertEquals(v.asSequence().sumByDouble { it } / v.shape.product(), v.mean(), 1E-10)
     }
 
     @Test fun sd() {
+        if (v.nDim != 1) return // only applicable to flat arrays
         assertEquals(sqrt(StatUtils.variance(v.toDoubleArray())), v.sd(), 1E-10)
     }
 
     @Test fun sum() {
-        assertEquals((0 until v.size).sumByDouble { v[it] }, v.sum(), 1E-10)
+        assertEquals(v.asSequence().sumByDouble { it }, v.sum(), 1E-10)
     }
 
     @Test fun cumSum() {
+        if (v.nDim != 1) return // only applicable to flat arrays
         val copy = v.copy()
         copy.cumSum()
 
@@ -192,30 +199,32 @@ class F64ArrayOpsTest {
 @RunWith(Parameterized::class)
 class F64VectorMathTest(private val v: F64Array) {
     @Test fun exp() {
-        val expV = (v / v.max()).exp()
-        for (i in 0 until v.size) {
-            assertEquals(FastMath.exp(v[i] / v.max()), expV[i], 1E-8)
+        val vMax = v.max()
+        val expV = (v / vMax).exp()
+        v.asSequence().zip(expV.asSequence()).forEach { (vx, expVx) ->
+            assertEquals(FastMath.exp(vx / vMax), expVx, 1E-8)
         }
     }
 
     @Test fun expm1() {
-        val expm1V = (v / v.max()).expm1()
-        for (i in 0 until v.size) {
-            assertEquals(FastMath.expm1(v[i] / v.max()), expm1V[i], 1E-8)
+        val vMax = v.max()
+        val expm1V = (v / vMax).expm1()
+        v.asSequence().zip(expm1V.asSequence()).forEach { (vx, expm1Vx) ->
+            assertEquals(FastMath.expm1(vx / vMax), expm1Vx, 1E-8)
         }
     }
 
     @Test fun log() {
         val logV = v.log()
-        for (i in 0 until v.size) {
-            assertEquals(FastMath.log(v[i]), logV[i], 1E-8)
+        v.asSequence().zip(logV.asSequence()).forEach { (vx, logVx) ->
+            assertEquals(FastMath.log(vx), logVx, 1E-8)
         }
     }
 
     @Test fun log1p() {
         val log1pV = v.log1p()
-        for (i in 0 until v.size) {
-            assertEquals(FastMath.log1p(v[i]), log1pV[i], 1E-8)
+        v.asSequence().zip(log1pV.asSequence()).forEach { (vx, log1pVx) ->
+            assertEquals(FastMath.log1p(vx), log1pVx, 1E-8)
         }
     }
 
@@ -233,14 +242,14 @@ class F64VectorMathTest(private val v: F64Array) {
 
     @Test fun logAddExp() {
         val vLaeV = v logAddExp v
-        for (i in 0 until v.size) {
-            assertEquals(v[i] logAddExp v[i], vLaeV[i], 1e-8)
+        v.asSequence().zip(vLaeV.asSequence()).forEach { (vx, vLaeVx) ->
+            assertEquals(vx logAddExp vx, vLaeVx, 1e-8)
         }
     }
 
     @Test fun logSumExp() {
         assertEquals(
-            (0 until v.size).sumByDouble { FastMath.exp(v[it]) }, FastMath.exp(v.logSumExp()), 1e-6
+            v.asSequence().sumByDouble { FastMath.exp(it) }, FastMath.exp(v.logSumExp()), 1e-6
         )
     }
 
@@ -248,8 +257,8 @@ class F64VectorMathTest(private val v: F64Array) {
         val copy = v.copy()
         v.expInPlace()
         v.logInPlace()
-        (0 until v.size).forEach { i ->
-            assertEquals(copy[i], v[i], 1e-6)
+        v.asSequence().zip(copy.asSequence()).forEach { (vx, copyx) ->
+            assertEquals(copyx, vx, 1e-6)
         }
     }
 
@@ -266,58 +275,60 @@ class F64FlatVectorArithTest(private val v: F64Array) {
     @Test fun unaryMinus() = assertEquals(v, -(-v))
 
     @Test fun plus() {
-        val u = v + v
-        for (pos in 0 until v.size) {
-            assertEquals(v[pos] + v[pos], u[pos], Precision.EPSILON)
+        val u = v.copy().apply { fill(42.0) } + v
+        v.asSequence().zip(u.asSequence()).forEach { (vx, ux) ->
+            assertEquals(vx + 42.0, ux, Precision.EPSILON)
         }
     }
 
     @Test fun plusScalar() {
         val u = v + 42.0
-        for (pos in 0 until v.size) {
-            assertEquals(v[pos] + 42, u[pos], Precision.EPSILON)
+        v.asSequence().zip(u.asSequence()).forEach { (vx, ux) ->
+            assertEquals(vx + 42, ux, Precision.EPSILON)
         }
     }
 
     @Test fun minus() {
-        val u = v - F64Array.full(v.size, 42.0)
-        for (pos in 0 until v.size) {
-            assertEquals(v[pos] - 42.0, u[pos], Precision.EPSILON)
+        val u = v.copy().apply { fill(42.0) } - v
+        v.asSequence().zip(u.asSequence()).forEach { (vx, ux) ->
+            assertEquals(42.0 - vx, ux, Precision.EPSILON)
         }
     }
 
     @Test fun minusScalar() {
         val u = v - 42.0
-        for (pos in 0 until v.size) {
-            assertEquals(v[pos] - 42.0, u[pos], Precision.EPSILON)
+        v.asSequence().zip(u.asSequence()).forEach { (vx, ux) ->
+            assertEquals(vx - 42.0, ux, Precision.EPSILON)
         }
     }
 
     @Test fun times() {
-        val u = v * v
-        for (pos in 0 until v.size) {
-            assertEquals(v[pos] * v[pos], u[pos], Precision.EPSILON)
+        val u = v.copy().apply { fill(42.0) } * v
+        v.asSequence().zip(u.asSequence()).forEach { (vx, ux) ->
+            assertEquals(vx * 42.0, ux, Precision.EPSILON)
         }
     }
 
     @Test fun timesScalar() {
         val u = v * 42.0
-        for (pos in 0 until v.size) {
-            assertEquals(v[pos] * 42, u[pos], Precision.EPSILON)
+        v.asSequence().zip(u.asSequence()).forEach { (vx, ux) ->
+            assertEquals(vx * 42, ux, Precision.EPSILON)
         }
     }
 
     @Test fun div() {
-        val u = v / F64Array.full(v.size, 42.0)
-        for (pos in 0 until v.size) {
-            assertEquals(v[pos] / 42.0, u[pos], Precision.EPSILON)
+        // since the left argument is replaced by a copy, and we want to test
+        // non-standard arrays, `v` goes to the right side of div.
+        val u = v.copy().apply { fill(42.0) } / v
+        v.asSequence().zip(u.asSequence()).forEach { (vx, ux) ->
+            assertEquals(42.0 / vx, ux, Precision.EPSILON)
         }
     }
 
     @Test fun divScalar() {
         val u = v / 42.0
-        for (pos in 0 until v.size) {
-            assertEquals(v[pos] / 42.0, u[pos], Precision.EPSILON)
+        v.asSequence().zip(u.asSequence()).forEach { (vx, ux) ->
+            assertEquals(vx / 42.0, ux, Precision.EPSILON)
         }
     }
 
@@ -336,7 +347,9 @@ private val CASES = listOf(
     Random().doubles(F64DenseFlatArray.DENSE_SPLIT_SIZE + 1L).toArray().asF64Array(),
     // Dense large subarray.
     Random().doubles(3 * (F64DenseFlatArray.DENSE_SPLIT_SIZE + 1L)).toArray()
-            .asF64Array(F64DenseFlatArray.DENSE_SPLIT_SIZE + 1, F64DenseFlatArray.DENSE_SPLIT_SIZE + 1)
+            .asF64Array(F64DenseFlatArray.DENSE_SPLIT_SIZE + 1, F64DenseFlatArray.DENSE_SPLIT_SIZE + 1),
+    // Non-flattenable array
+    Random().doubles(4 * 3 * 2).toArray().asF64Array().reshape(4, 3, 2).view(1, 1)
 )
 
 private fun gappedArray(r: IntRange): F64Array {
