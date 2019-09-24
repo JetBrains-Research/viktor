@@ -37,10 +37,12 @@ internal object Loader {
     private val LOG = Logger.getLogger(Loader::class.java)
 
     /** If `true` vector operations will be SIMD-optimized. */
-    internal var nativeLibraryLoaded = false
+    internal var nativeLibraryLoaded: Boolean = false
+        private set
 
-    internal var optimizationSupported = false
-    internal var architectureSupported = false
+    private var optimizationSupported = false
+    private var architectureSupported = false
+
 
     fun ensureLoaded() {}
 
