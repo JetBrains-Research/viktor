@@ -136,6 +136,19 @@ void transformInPlace(JNIEnv *env,
     env->ReleasePrimitiveArrayCritical(jdst, dst, is_copy == JNI_TRUE ? 0 : JNI_ABORT);
 }
 
+template<typename Fold, typename Empty>
+jdouble reduce(JNIEnv *env,
+               jdoubleArray jsrc, jint src_offset,
+               jint length, Fold const& f, Empty const& e)
+{
+    jdouble *src = reinterpret_cast<jdouble *>(
+        env->GetPrimitiveArrayCritical(jsrc, NULL));
+    jdouble res = boost::simd::reduce(
+        src + src_offset, src + src_offset + length, e, f, e);
+    env->ReleasePrimitiveArrayCritical(jsrc, src, JNI_ABORT);
+    return res;
+}
+
 JNI_METHOD(void, unsafePlusScalarAssign)(JNIEnv *env, jobject,
                                          jdoubleArray jdst, jint dst_offset,
                                          jint length, jdouble update)
@@ -182,28 +195,14 @@ JNI_METHOD(jdouble, unsafeMin)(JNIEnv *env, jobject,
                                jdoubleArray jsrc, jint src_offset,
                                jint length)
 {
-    jdouble *src = reinterpret_cast<jdouble *>(
-        env->GetPrimitiveArrayCritical(jsrc, NULL));
-    jdouble min = boost::simd::reduce(
-        src + src_offset, src + src_offset + length,
-        boost::simd::Inf<jdouble>(), boost::simd::min,
-        boost::simd::Inf<jdouble>());
-    env->ReleasePrimitiveArrayCritical(jsrc, src, JNI_ABORT);
-    return min;
+    return reduce(env, jsrc, src_offset, length, boost::simd::min, boost::simd::Inf<jdouble>());
 }
 
 JNI_METHOD(jdouble, unsafeMax)(JNIEnv *env, jobject,
                                jdoubleArray jsrc, jint src_offset,
                                jint length)
 {
-    jdouble *src = reinterpret_cast<jdouble *>(
-        env->GetPrimitiveArrayCritical(jsrc, NULL));
-    jdouble min = boost::simd::reduce(
-        src + src_offset, src + src_offset + length,
-        boost::simd::Minf<jdouble>(), boost::simd::max,
-        boost::simd::Minf<jdouble>());
-    env->ReleasePrimitiveArrayCritical(jsrc, src, JNI_ABORT);
-    return min;
+    return reduce(env, jsrc, src_offset, length, boost::simd::max, boost::simd::Minf<jdouble>());
 }
 
 JNI_METHOD(void, unsafeExpInPlace)(JNIEnv *env, jobject,
@@ -290,7 +289,8 @@ JNI_METHOD(jdouble, unsafeDot)(JNIEnv *env, jobject,
 JNI_METHOD(jdouble, sum)(JNIEnv *env, jobject,
                          jdoubleArray jvalues, jint offset, jint length)
 {
-    jdouble *values = (jdouble *) env->GetPrimitiveArrayCritical(jvalues, NULL);
+    jdouble *values = reinterpret_cast<jdouble *>(
+        env->GetPrimitiveArrayCritical(jvalues, NULL));
     source_1d<sum_tag> f(values + offset, length);
     double res = balanced_sum(f);
     env->ReleasePrimitiveArrayCritical(jvalues, values, JNI_ABORT);
@@ -302,8 +302,10 @@ JNI_METHOD(jdouble, weightedSum)(JNIEnv *env, jobject,
                                  jdoubleArray jweights, jint weights_offset,
                                  jint length)
 {
-    jdouble *values = (jdouble *) env->GetPrimitiveArrayCritical(jvalues, NULL);
-    jdouble *weights = (jdouble *) env->GetPrimitiveArrayCritical(jweights, NULL);
+    jdouble *values = reinterpret_cast<jdouble *>(
+        env->GetPrimitiveArrayCritical(jvalues, NULL));
+    jdouble *weights = reinterpret_cast<jdouble *>(
+        env->GetPrimitiveArrayCritical(jweights, NULL));
     source_1d<weighted_sum_tag> f(values + values_offset,
                                   weights + weights_offset,
                                   length);
@@ -318,8 +320,10 @@ JNI_METHOD(jdouble, weightedMean)(JNIEnv *env, jobject,
                                   jdoubleArray jweights, jint weights_offset,
                                   jint length)
 {
-    jdouble *values = (jdouble *) env->GetPrimitiveArrayCritical(jvalues, NULL);
-    jdouble *weights = (jdouble *) env->GetPrimitiveArrayCritical(jweights, NULL);
+    jdouble *values = reinterpret_cast<jdouble *>(
+        env->GetPrimitiveArrayCritical(jvalues, NULL));
+    jdouble *weights = reinterpret_cast<jdouble *>(
+        env->GetPrimitiveArrayCritical(jweights, NULL));
     source_2d<weighted_mean_tag> f(values + values_offset,
                                    weights + weights_offset,
                                    length);
@@ -333,7 +337,8 @@ JNI_METHOD(jdouble, sd)(JNIEnv *env, jobject,
                         jdoubleArray jvalues, jint offset,
                         jint length)
 {
-    jdouble *values = (jdouble *) env->GetPrimitiveArrayCritical(jvalues, NULL);
+    jdouble *values = reinterpret_cast<jdouble *>(
+        env->GetPrimitiveArrayCritical(jvalues, NULL));
     source_2d<sd_tag> f(values + offset, length);
     double res = twin_balanced_sum(f);
     env->ReleasePrimitiveArrayCritical(jvalues, values, JNI_ABORT);
@@ -341,14 +346,13 @@ JNI_METHOD(jdouble, sd)(JNIEnv *env, jobject,
 }
 
 JNI_METHOD(void, cumSum)(JNIEnv *env, jobject,
-                         jdoubleArray jsrc, jint src_offset,
                          jdoubleArray jdst, jint dst_offset,
                          jint length)
 {
-    jdouble *src = (jdouble *) env->GetPrimitiveArrayCritical(jsrc, NULL);
-    jdouble *dst = (jdouble *) env->GetPrimitiveArrayCritical(jdst, NULL);
-    source_1d<cum_sum_tag> f(src + src_offset, dst + dst_offset, length);
+    jboolean is_copy = JNI_FALSE;
+    jdouble *dst = reinterpret_cast<jdouble *>(
+        env->GetPrimitiveArrayCritical(jdst, &is_copy));
+    source_1d<cum_sum_tag> f(dst + dst_offset, dst + dst_offset, length);
     cum_sum(f);
-    env->ReleasePrimitiveArrayCritical(jsrc, src, JNI_ABORT);
-    env->ReleasePrimitiveArrayCritical(jdst, dst, JNI_ABORT);
+    env->ReleasePrimitiveArrayCritical(jdst, dst, is_copy == JNI_TRUE ? 0 : JNI_ABORT);
 }

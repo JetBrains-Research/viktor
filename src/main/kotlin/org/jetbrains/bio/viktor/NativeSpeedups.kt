@@ -42,19 +42,33 @@ internal object NativeSpeedups {
 
     external fun unsafeLogAddExp(dst: DoubleArray, dstOffset: Int, src: DoubleArray, srcOffset: Int, length: Int)
 
-    external fun unsafeDot(src1: DoubleArray, srcOffset1: Int,
-            src2: DoubleArray, srcOffset2: Int, length: Int): Double
+    external fun unsafeDot(
+            src1: DoubleArray,
+            srcOffset1: Int,
+            src2: DoubleArray,
+            srcOffset2: Int,
+            length: Int
+    ): Double
 
     external fun sum(values: DoubleArray, offset: Int, length: Int): Double
 
-    external fun weightedSum(values: DoubleArray, valuesOffset: Int,
-            weights: DoubleArray, weightsOffset: Int, length: Int): Double
+    external fun weightedSum(
+            values: DoubleArray,
+            valuesOffset: Int,
+            weights: DoubleArray,
+            weightsOffset: Int,
+            length: Int
+    ): Double
 
-    external fun weightedMean(values: DoubleArray, valuesOffset: Int,
-            weights: DoubleArray, weightsOffset: Int, length: Int): Double
+    external fun weightedMean(
+            values: DoubleArray,
+            valuesOffset: Int,
+            weights: DoubleArray,
+            weightsOffset: Int,
+            length: Int
+    ): Double
 
     external fun sd(values: DoubleArray, offset: Int, length: Int): Double
 
-    external fun cumSum(source: DoubleArray, sourceOffset: Int,
-            dest: DoubleArray, destOffset: Int, length: Int)
+    external fun cumSum(dest: DoubleArray, destOffset: Int, length: Int)
 }
