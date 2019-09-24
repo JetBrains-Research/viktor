@@ -3,6 +3,7 @@ package org.jetbrains.bio.viktor
 import org.apache.commons.math3.util.Precision
 import java.text.DecimalFormat
 import java.util.*
+import kotlin.math.min
 import kotlin.math.sqrt
 
 /**
@@ -49,6 +50,9 @@ open class F64Array protected constructor(
     /** Number of elements along the first axis. */
     val size: Int get() = shape.first()
 
+    private val unrollDim: Int
+    private val unrollSize: Int
+
     /**
      * Returns `true` if this array is dense and `false` otherwise.
      *
@@ -58,9 +62,14 @@ open class F64Array protected constructor(
      * This allows to use SIMD operations, e.g. when computing the
      * sum of elements.
      */
-    // This is inaccurate, but maybe sufficient for our use-case?
-    // Check with http://docs.scipy.org/doc/numpy/reference/arrays.ndarray.html
-    val isDense: Boolean get() = strides.last() == 1
+    val isDense: Boolean
+
+    init {
+        val (d, s) = calculateUnrollDimAndStride(strides, shape)
+        unrollDim = d
+        unrollSize = shape.slice(0 until unrollDim).toIntArray().product()
+        isDense = unrollDim == nDim && s == 1 && Loader.nativeLibraryLoaded
+    }
 
     /**
      * Generic getter.
@@ -191,6 +200,35 @@ open class F64Array protected constructor(
         return indices.fold(this) { m, pos -> m.view(pos) }
     }
 
+    private fun unrollToFlat(): Sequence<F64FlatArray> {
+        if (unrollDim == nDim) return sequenceOf(flatten())
+        return unrollOnce().flatMap { it.unrollToFlat() }
+    }
+
+    private fun commonUnrollToFlat(other: F64Array): Sequence<Pair<F64FlatArray, F64FlatArray>> {
+        checkShape(other)
+        val commonUnrollDim = min(unrollDim, other.unrollDim)
+        return if (commonUnrollDim == nDim) {
+            sequenceOf(flatten() to other.flatten())
+        } else {
+            unrollOnce(commonUnrollDim).zip(other.unrollOnce(commonUnrollDim)).flatMap { (a, b) ->
+                a.commonUnrollToFlat(b)
+            }
+        }
+    }
+
+    private fun unrollOnce(n: Int = unrollDim): Sequence<F64Array> {
+        require(n <= unrollDim) { "can't unroll $n dimensions, only $unrollDim are unrollable" }
+        val newStrides = strides.slice(n until nDim).toIntArray()
+        val newShape = shape.slice(n until nDim).toIntArray()
+        var nonTrivialN = n - 1
+        while (nonTrivialN >= 0 && shape[nonTrivialN] <= 1) nonTrivialN--
+        val unrollStride = if (nonTrivialN >= 0) strides[nonTrivialN] else 0
+        return (0 until unrollSize).asSequence().map { i ->
+            invoke(data, offset + unrollStride * i, newStrides, newShape)
+        }
+    }
+
     /** A broadcasted viewer for this array. */
     @delegate:Transient
     val V: Viewer by lazy(LazyThreadSafetyMode.NONE) { Viewer(this) }
@@ -299,7 +337,7 @@ open class F64Array protected constructor(
      * @since 0.2.3
      */
     fun append(other: F64Array, axis: Int = 0): F64Array {
-        return F64Array.concatenate(this, other, axis = axis)
+        return concatenate(this, other, axis = axis)
     }
 
     /**
@@ -308,17 +346,9 @@ open class F64Array protected constructor(
      * No data copying is performed, thus the operation is only applicable
      * to dense arrays.
      */
-    open fun flatten(): F64Array {
-        check(isDense) { "matrix is not dense" }
-        return data.asF64Array(offset, shape.product())
-    }
-
-    /** An alias for [transpose]. */
-    val T: F64Array get() = transpose()
-
-    /** Constructs matrix transpose in O(1) time. */
-    open fun transpose(): F64Array {
-        return invoke(data, offset, strides.reversedArray(), shape.reversedArray())
+    open fun flatten(): F64FlatArray {
+        check(unrollDim == nDim) { "array can't be flattened" }
+        return F64FlatArray.invoke(data, offset, strides.last(), unrollSize)
     }
 
     /**
@@ -344,13 +374,10 @@ open class F64Array protected constructor(
 
     open operator fun contains(other: Double): Boolean = flatten().contains(other)
 
-    /** Fills this array with a given [init] value. */
+    /**
+     * Fills this array with a given [init] value.
+     */
     open fun fill(init: Double): Unit = flatten().fill(init)
-
-    fun reversed(axis: Int = 0): F64Array = invoke(
-        data, offset + strides[axis] * (shape[axis] - 1),
-        strides.clone().apply { this[axis] *= -1 }, shape
-    )
 
     /** Applies a given permutation of indices to the elements in the array. */
     open fun reorder(indices: IntArray, axis: Int = 0) {
@@ -465,11 +492,11 @@ open class F64Array protected constructor(
     open fun argMin(): Int = flatten().argMin()
 
     /**
-     * Computes the exponent of each element of this array.
+     * Replaces each element of this array with its exponent.
      *
      * Optimized for dense arrays.
      */
-    open fun expInPlace(): Unit = flatten().expInPlace()
+    open fun expInPlace(): Unit = unrollToFlat().forEach { it.expInPlace() }
 
     fun exp() = copy().apply { expInPlace() }
 
@@ -480,7 +507,7 @@ open class F64Array protected constructor(
      *
      * @since 0.3.0
      */
-    open fun expm1InPlace(): Unit = flatten().expm1InPlace()
+    open fun expm1InPlace(): Unit = unrollToFlat().forEach { it.expm1InPlace() }
 
     fun expm1() = copy().apply { expm1InPlace() }
 
@@ -489,7 +516,7 @@ open class F64Array protected constructor(
      *
      * Optimized for dense arrays.
      */
-    open fun logInPlace(): Unit = flatten().logInPlace()
+    open fun logInPlace(): Unit = unrollToFlat().forEach { it.logInPlace() }
 
     fun log() = copy().apply { logInPlace() }
 
@@ -500,7 +527,7 @@ open class F64Array protected constructor(
      *
      * @since 0.3.0
      */
-    open fun log1pInPlace(): Unit = flatten().log1pInPlace()
+    open fun log1pInPlace(): Unit = unrollToFlat().forEach { it.log1pInPlace() }
 
     fun log1p() = copy().apply { log1pInPlace() }
 
@@ -555,51 +582,35 @@ open class F64Array protected constructor(
 
     operator fun plus(other: F64Array) = copy().apply { this += other }
 
-    open operator fun plusAssign(other: F64Array) {
-        flatten() += checkShape(other).flatten()
-    }
+    open operator fun plusAssign(other: F64Array): Unit = commonUnrollToFlat(other).forEach { (a, b) -> a += b }
 
     operator fun plus(update: Double) = copy().apply { this += update }
 
-    open operator fun plusAssign(update: Double) {
-        flatten() += update
-    }
+    open operator fun plusAssign(update: Double): Unit = unrollToFlat().forEach { it += update }
 
     operator fun minus(other: F64Array) = copy().apply { this -= other }
 
-    open operator fun minusAssign(other: F64Array) {
-        flatten() -= checkShape(other).flatten()
-    }
+    open operator fun minusAssign(other: F64Array): Unit = commonUnrollToFlat(other).forEach { (a, b) -> a -= b }
 
     operator fun minus(update: Double) = copy().apply { this -= update }
 
-    open operator fun minusAssign(update: Double) {
-        flatten() -= update
-    }
+    open operator fun minusAssign(update: Double): Unit = unrollToFlat().forEach { it -= update }
 
     operator fun times(other: F64Array) = copy().apply { this *= other }
 
-    open operator fun timesAssign(other: F64Array) {
-        flatten() *= checkShape(other).flatten()
-    }
+    open operator fun timesAssign(other: F64Array): Unit = commonUnrollToFlat(other).forEach { (a, b) -> a *= b }
 
     operator fun times(update: Double) = copy().apply { this *= update }
 
-    open operator fun timesAssign(update: Double) {
-        flatten() *= update
-    }
+    open operator fun timesAssign(update: Double): Unit = unrollToFlat().forEach { it *= update }
 
     operator fun div(other: F64Array) = copy().apply { this /= other }
 
-    open operator fun divAssign(other: F64Array) {
-        flatten() /= checkShape(other).flatten()
-    }
+    open operator fun divAssign(other: F64Array): Unit = commonUnrollToFlat(other).forEach { (a, b) -> a /= b }
 
     operator fun div(update: Double) = copy().apply { this /= update }
 
-    open operator fun divAssign(update: Double) {
-        flatten() /= update
-    }
+    open operator fun divAssign(update: Double): Unit = unrollToFlat().forEach { it /= update }
 
     /** Ensures a given array has the same dimensions as this array. */
     fun checkShape(other: F64Array): F64Array {
@@ -758,9 +769,43 @@ open class F64Array protected constructor(
             return result
         }
 
+        private fun calculateUnrollDimAndStride(strides: IntArray, shape: IntArray): Pair<Int, Int> {
+            require(strides.size == shape.size) {
+                "Strides and shape have different sizes (${strides.size} and ${shape.size})"
+            }
+            var prevStride = 0
+            var unrollable = true
+            var unrollDim = 0
+            var unrollStride = 0
+            for (i in strides.indices) {
+                require(shape[i] >= 0) { "Shape values must be non-negative, but got ${shape[i]}" }
+                if (shape[i] <= 1) {
+                    if (unrollable) unrollDim = i + 1
+                    continue
+                }
+                require(strides[i] > 0) { "Strides must be strictly positive, but got ${strides[i]}" }
+                require(prevStride == 0 || prevStride >= strides[i] * shape[i]) {
+                    "Strides-shape condition is violated for dimension $i: $prevStride is less than " +
+                            "${strides[i]} * ${shape[i]}"
+                }
+                if (unrollable && (prevStride == 0 || prevStride == strides[i] * shape[i])) {
+                    unrollDim = i + 1
+                    unrollStride = strides[i]
+                } else {
+                    unrollable = false
+                }
+                prevStride = strides[i]
+            }
+            return unrollDim to unrollStride
+        }
+
         /** "Smart" constructor. */
-        internal operator fun invoke(data: DoubleArray, offset: Int,
-                strides: IntArray, shape: IntArray): F64Array {
+        internal operator fun invoke(
+                data: DoubleArray,
+                offset: Int,
+                strides: IntArray,
+                shape: IntArray
+        ): F64Array {
             return if (shape.size == 1) {
                 F64FlatArray(data, offset, strides.single(), shape.single())
             } else {
