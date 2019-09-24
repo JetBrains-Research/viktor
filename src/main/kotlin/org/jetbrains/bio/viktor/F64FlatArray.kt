@@ -18,6 +18,8 @@ open class F64FlatArray protected constructor(
         size: Int
 ) : F64Array(data, offset, intArrayOf(stride), intArrayOf(size)) {
 
+    override val isFlattenable get() = true
+
     override fun flatten() = this
 
     override fun contains(other: Double): Boolean {
