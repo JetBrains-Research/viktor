@@ -102,26 +102,6 @@ class F64FlatArrayOpsTest(private val v: F64Array) {
         assertEquals(F64Array.full(copy.size, 42.0), copy)
     }
 
-    @Test fun reversed() {
-        assertEquals(
-            F64Array.of(3.0, 2.0, 1.0),
-            F64Array.of(1.0, 2.0, 3.0).reversed()
-        )
-        assertEquals(
-            F64Array.of(4.0, 5.0, 6.0, 1.0, 2.0, 3.0).reshape(2, 3),
-            F64Array.of(1.0, 2.0, 3.0, 4.0, 5.0, 6.0).reshape(2, 3).reversed()
-        )
-        assertEquals(
-            F64Array.of(3.0, 2.0, 1.0, 6.0, 5.0, 4.0).reshape(2, 3),
-            F64Array.of(1.0, 2.0, 3.0, 4.0, 5.0, 6.0).reshape(2, 3).reversed(axis = 1)
-        )
-    }
-
-    @Test fun reversedReversed() {
-        val v = F64Array.of(3.0, 2.0, 1.0)
-        assertEquals(v, v.reversed().reversed())
-    }
-
     @Test fun dot() {
         assertEquals((0 until v.size).sumByDouble { v[it] * v[it] }, v.dot(v), 1E-10)
     }
