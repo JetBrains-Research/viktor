@@ -1,12 +1,12 @@
 package org.jetbrains.bio.viktor
 
 /**
- * A contiguous strided vector.
+ * A contiguous vector.
  *
  * @author Sergei Lebedev
  * @since 0.1.0
  */
-open class F64DenseFlatArray protected constructor(
+sealed class F64DenseFlatArray(
         data: DoubleArray,
         offset: Int,
         size: Int
@@ -31,8 +31,8 @@ open class F64DenseFlatArray protected constructor(
          */
         const val DENSE_SPLIT_SIZE = 16
 
-        internal fun create(data: DoubleArray, offset: Int, size: Int): F64DenseFlatArray {
-            return if (size <= DENSE_SPLIT_SIZE || !Loader.optimizationSupported) {
+        internal fun create(data: DoubleArray, offset: Int = 0, size: Int = data.size): F64DenseFlatArray {
+            return if (size <= DENSE_SPLIT_SIZE || !Loader.nativeLibraryLoaded) {
                 F64SmallDenseArray(data, offset, size)
             } else {
                 F64LargeDenseArray(data, offset, size)
@@ -42,7 +42,7 @@ open class F64DenseFlatArray protected constructor(
 }
 
 /**
- * A contiguous strided vector of size at most [F64DenseFlatArray.DENSE_SPLIT_SIZE].
+ * A contiguous vector of size at most [F64DenseFlatArray.DENSE_SPLIT_SIZE].
  *
  * @author Sergei Lebedev
  * @since 0.1.0
