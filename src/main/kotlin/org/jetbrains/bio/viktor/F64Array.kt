@@ -52,23 +52,23 @@ open class F64Array protected constructor(
 
     private val unrollDim: Int
     private val unrollSize: Int
+    private val unrollStride: Int
 
     /**
-     * Returns `true` if this array is dense and `false` otherwise.
+     * Returns `true` if this array can be flattened using [flatten].
      *
-     * Dense arrays are laid out in a single contiguous block
-     * of memory.
+     * Flattenable array's elements are laid out with a constant stride. This allows to use simple loops when iterating.
      *
-     * This allows to use SIMD operations, e.g. when computing the
-     * sum of elements.
+     * A particular case of a flattenable array is a dense array whose elements occupy a contiguous block of memory.
+     * Large dense arrays employ SIMD optimizations, see [F64LargeDenseArray].
      */
-    val isDense: Boolean
+    open val isFlattenable get() = (unrollDim == nDim)
 
     init {
         val (d, s) = calculateUnrollDimAndStride(strides, shape)
         unrollDim = d
+        unrollStride = s
         unrollSize = shape.slice(0 until unrollDim).toIntArray().product()
-        isDense = unrollDim == nDim && s == 1 && Loader.nativeLibraryLoaded
     }
 
     /**
@@ -201,7 +201,7 @@ open class F64Array protected constructor(
     }
 
     private fun unrollToFlat(): Sequence<F64FlatArray> {
-        if (unrollDim == nDim) return sequenceOf(flatten())
+        if (isFlattenable) return sequenceOf(flatten())
         return unrollOnce().flatMap { it.unrollToFlat() }
     }
 
@@ -221,11 +221,13 @@ open class F64Array protected constructor(
         require(n <= unrollDim) { "can't unroll $n dimensions, only $unrollDim are unrollable" }
         val newStrides = strides.slice(n until nDim).toIntArray()
         val newShape = shape.slice(n until nDim).toIntArray()
-        var nonTrivialN = n - 1
-        while (nonTrivialN >= 0 && shape[nonTrivialN] <= 1) nonTrivialN--
-        val unrollStride = if (nonTrivialN >= 0) strides[nonTrivialN] else 0
+        val currentUnrollStride = if (n == unrollDim) unrollStride else run {
+            var nonTrivialN = n - 1
+            while (nonTrivialN >= 0 && shape[nonTrivialN] <= 1) nonTrivialN--
+            if (nonTrivialN >= 0) strides[nonTrivialN] else 0
+        }
         return (0 until unrollSize).asSequence().map { i ->
-            invoke(data, offset + unrollStride * i, newStrides, newShape)
+            invoke(data, offset + currentUnrollStride * i, newStrides, newShape)
         }
     }
 
@@ -291,17 +293,7 @@ open class F64Array protected constructor(
     }
 
     /** Copies elements in this array to [other] array. */
-    open fun copyTo(other: F64Array) {
-        checkShape(other)
-        if (strides.contentEquals(other.strides)) {
-            System.arraycopy(data, offset, other.data, other.offset,
-                shape.product())
-        } else {
-            for (r in 0 until size) {
-                V[r].copyTo(other.V[r])
-            }
-        }
-    }
+    open fun copyTo(other: F64Array): Unit = commonUnrollToFlat(other).forEach { (a, b) -> a.copyTo(b) }
 
     /** A less verbose alternative to [copyTo]. */
     operator fun set(vararg any: _I, other: F64Array) = when {
@@ -344,11 +336,11 @@ open class F64Array protected constructor(
      * Flattens the array into a 1-D view in O(1) time.
      *
      * No data copying is performed, thus the operation is only applicable
-     * to dense arrays.
+     * to flattenable arrays.
      */
     open fun flatten(): F64FlatArray {
-        check(unrollDim == nDim) { "array can't be flattened" }
-        return F64FlatArray.invoke(data, offset, strides.last(), unrollSize)
+        check(isFlattenable) { "array can't be flattened" }
+        return F64FlatArray.invoke(data, offset, unrollStride, unrollSize)
     }
 
     /**
