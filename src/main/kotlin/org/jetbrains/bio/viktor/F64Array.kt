@@ -534,8 +534,10 @@ open class F64Array protected constructor(
      *
      * in a numerically stable way.
      */
-    // TODO: add axis.
-    open fun logSumExp(): Double = flatten().logSumExp()
+    open fun logSumExp(): Double = unrollToFlat().map { it.logSumExp() }.logSumExp()
+
+    open fun logAddExpAssign(other: F64Array): Unit =
+            commonUnrollToFlat(other).forEach { (a, b) -> a.logAddExpAssign(b) }
 
     infix fun logAddExp(other: F64Array): F64Array {
         return copy().apply { logAddExp(other, this) }
@@ -548,8 +550,10 @@ open class F64Array protected constructor(
      *
      * in a numerically stable way.
      */
+    @Deprecated("Three-argument syntax is deprecated", ReplaceWith("logAddExpAssign(other)"))
     open fun logAddExp(other: F64Array, dst: F64Array) {
-        flatten().logAddExp(checkShape(other).flatten(), checkShape(dst).flatten())
+        require(dst === this) { "this-other-dst syntax is no longer supported for logAddExp, use logAddExpAssign" }
+        logAddExpAssign(other)
     }
 
     operator fun unaryPlus() = this

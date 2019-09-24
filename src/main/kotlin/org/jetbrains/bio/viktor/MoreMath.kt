@@ -18,6 +18,8 @@ infix fun Double.logAddExp(b: Double): Double {
     }
 }
 
+fun Sequence<Double>.logSumExp(): Double = toList().toDoubleArray().asF64Array().logSumExp()
+
 /**
  * Kahan-Babuska summation.
  *

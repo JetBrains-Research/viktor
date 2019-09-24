@@ -96,6 +96,12 @@ class F64LargeDenseArray(
 
     override fun logSumExp() = NativeSpeedups.unsafeLogSumExp(data, offset, size)
 
+    override fun logAddExpAssign(other: F64Array) = NativeSpeedups.unsafeLogAddExp(
+        data, offset,
+        other.data, other.offset,
+        data, offset, size
+    )
+
     override fun logAddExp(other: F64Array, dst: F64Array) {
         if (other is F64DenseFlatArray && dst is F64DenseFlatArray) {
             checkShape(other)
@@ -110,11 +116,9 @@ class F64LargeDenseArray(
         }
     }
 
-    override fun unaryMinus() =
-            copy().apply { NativeSpeedups.unsafeNegateInPlace(data, offset, size) }
+    override fun unaryMinus() = copy().apply { NativeSpeedups.unsafeNegateInPlace(data, offset, size) }
 
-    override fun plusAssign(update: Double) =
-            NativeSpeedups.unsafePlusScalarAssign(data, offset, size, update)
+    override fun plusAssign(update: Double) = NativeSpeedups.unsafePlusScalarAssign(data, offset, size, update)
 
     override fun plusAssign(other: F64Array) {
         if (other is F64DenseFlatArray) {
@@ -125,8 +129,7 @@ class F64LargeDenseArray(
         }
     }
 
-    override fun minusAssign(update: Double) =
-            NativeSpeedups.unsafeMinusScalarAssign(data, offset, size, update)
+    override fun minusAssign(update: Double) = NativeSpeedups.unsafeMinusScalarAssign(data, offset, size, update)
 
     override fun minusAssign(other: F64Array) {
         if (other is F64DenseFlatArray) {

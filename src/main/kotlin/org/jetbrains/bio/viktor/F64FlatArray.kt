@@ -213,17 +213,13 @@ open class F64FlatArray protected constructor(
         return ln(acc.result()) + offset
     }
 
-    override fun logAddExp(other: F64Array, dst: F64Array) {
-        checkShape(other)
-        checkShape(dst)
+    override fun logAddExpAssign(other: F64Array) {
         for (pos in 0 until size) {
-            dst.unsafeSet(pos, unsafeGet(pos) logAddExp other.unsafeGet(pos))
+            unsafeSet(pos, unsafeGet(pos) logAddExp other.unsafeGet(pos))
         }
     }
 
     override fun unaryMinus(): F64Array {
-        // XXX 'v' is always dense but it might be too small to benefit
-        //     from SIMD.
         val v = copy()
         for (pos in 0 until size) {
             v.unsafeSet(pos, -unsafeGet(pos))
