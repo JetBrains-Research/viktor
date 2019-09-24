@@ -14,18 +14,22 @@ class F64ArrayCreationTest {
     }
 
     @Test fun of() {
-        assertArrayEquals(doubleArrayOf(1.0),
-                          F64Array.of(1.0).toDoubleArray(), Precision.EPSILON)
-        assertArrayEquals(doubleArrayOf(1.0, 2.0),
-                          F64Array.of(1.0, 2.0).toDoubleArray(), Precision.EPSILON)
-        assertArrayEquals(doubleArrayOf(1.0, 2.0, 3.0),
-                          F64Array.of(1.0, 2.0, 3.0).toDoubleArray(), Precision.EPSILON)
+        assertArrayEquals(
+            doubleArrayOf(1.0), F64Array.of(1.0).toDoubleArray(), Precision.EPSILON
+        )
+        assertArrayEquals(
+            doubleArrayOf(1.0, 2.0), F64Array.of(1.0, 2.0).toDoubleArray(), Precision.EPSILON
+        )
+        assertArrayEquals(
+            doubleArrayOf(1.0, 2.0, 3.0), F64Array.of(1.0, 2.0, 3.0).toDoubleArray(), Precision.EPSILON
+        )
     }
 
     @Test fun asF64Array() {
         assertEquals(F64Array.of(1.0), doubleArrayOf(1.0).asF64Array())
-        assertEquals(F64Array.of(3.0),
-                     doubleArrayOf(1.0, 2.0, 3.0).asF64Array(offset = 2, size = 1))
+        assertEquals(
+            F64Array.of(3.0), doubleArrayOf(1.0, 2.0, 3.0).asF64Array(offset = 2, size = 1)
+        )
     }
 
     @Test fun asF64ArrayView() {
@@ -36,33 +40,59 @@ class F64ArrayCreationTest {
     }
 
     @Test fun toF64Array() {
-        assertEquals(F64Array.of(1.0, 2.0).reshape(1, 2),
-                     arrayOf(doubleArrayOf(1.0, 2.0)).toF64Array())
-        assertEquals(F64Array.of(1.0, 2.0).reshape(2, 1),
-                     arrayOf(doubleArrayOf(1.0),
-                             doubleArrayOf(2.0)).toF64Array())
+        assertEquals(
+            F64Array.of(1.0, 2.0).reshape(1, 2),
+            arrayOf(doubleArrayOf(1.0, 2.0)).toF64Array()
+        )
+        assertEquals(
+            F64Array.of(1.0, 2.0).reshape(2, 1),
+            arrayOf(doubleArrayOf(1.0), doubleArrayOf(2.0)).toF64Array()
+        )
 
-        assertEquals(F64Array.of(1.0, 2.0, 3.0,
-                                 4.0, 5.0, 6.0).reshape(2, 3),
-                     arrayOf(doubleArrayOf(1.0, 2.0, 3.0),
-                             doubleArrayOf(4.0, 5.0, 6.0)).toF64Array())
-        assertEquals(F64Array.of(1.0, 2.0, 3.0,
-                                 4.0, 5.0, 6.0).reshape(3, 2),
-                     arrayOf(doubleArrayOf(1.0, 2.0),
-                             doubleArrayOf(3.0, 4.0),
-                             doubleArrayOf(5.0, 6.0)).toF64Array())
+        assertEquals(
+            F64Array.of(
+                1.0, 2.0, 3.0,
+                4.0, 5.0, 6.0
+            ).reshape(2, 3),
+            arrayOf(
+                doubleArrayOf(1.0, 2.0, 3.0),
+                doubleArrayOf(4.0, 5.0, 6.0)
+            ).toF64Array()
+        )
+        assertEquals(
+            F64Array.of(
+                1.0, 2.0, 3.0,
+                4.0, 5.0, 6.0
+            ).reshape(3, 2),
+            arrayOf(
+                doubleArrayOf(1.0, 2.0),
+                doubleArrayOf(3.0, 4.0),
+                doubleArrayOf(5.0, 6.0)
+            ).toF64Array()
+        )
 
-        assertEquals(F64Array.of(1.0, 2.0, 3.0, 4.0,
-                                 5.0, 6.0, 7.0, 8.0).reshape(2, 2, 2),
-                     arrayOf(arrayOf(doubleArrayOf(1.0, 2.0),
-                                     doubleArrayOf(3.0, 4.0)),
-                             arrayOf(doubleArrayOf(5.0, 6.0),
-                                     doubleArrayOf(7.0, 8.0))).toF64Array())
+        assertEquals(
+            F64Array.of(
+                1.0, 2.0, 3.0, 4.0,
+                5.0, 6.0, 7.0, 8.0
+            ).reshape(2, 2, 2),
+            arrayOf(
+                arrayOf(
+                    doubleArrayOf(1.0, 2.0),
+                    doubleArrayOf(3.0, 4.0)
+                ),
+                arrayOf(
+                    doubleArrayOf(5.0, 6.0),
+                    doubleArrayOf(7.0, 8.0)
+                )
+            ).toF64Array())
     }
 
     @Test fun invoke() {
-        assertEquals(F64Array.of(1.0, 2.0, 3.0),
-                     F64Array(3) { it + 1.0 })
+        assertEquals(
+            F64Array.of(1.0, 2.0, 3.0),
+            F64Array(3) { it + 1.0 }
+        )
     }
 
     @Test fun full() {
@@ -72,43 +102,62 @@ class F64ArrayCreationTest {
     }
 
     @Test fun concatenateFlat() {
-        assertEquals(F64Array.of(1.0, 2.0, 3.0, 4.0, 5.0),
-                     F64Array.concatenate(F64Array.of(1.0, 2.0),
-                                          F64Array.of(3.0),
-                                          F64Array.of(4.0, 5.0)))
+        assertEquals(
+            F64Array.of(1.0, 2.0, 3.0, 4.0, 5.0),
+            F64Array.concatenate(
+                F64Array.of(1.0, 2.0),
+                F64Array.of(3.0),
+                F64Array.of(4.0, 5.0)
+            )
+        )
     }
 
     @Test fun appendFlat() {
-        assertEquals(F64Array.of(1.0, 2.0),
-                     F64Array.of(1.0, 2.0).append(F64Array(0)))
-        assertEquals(F64Array.of(1.0, 2.0),
-                     F64Array(0).append(F64Array.of(1.0, 2.0)))
-        assertEquals(F64Array.of(1.0, 2.0, 3.0, 4.0, 5.0),
-                     F64Array.of(1.0, 2.0).append(F64Array.of(3.0, 4.0, 5.0)))
+        assertEquals(
+            F64Array.of(1.0, 2.0),
+            F64Array.of(1.0, 2.0).append(F64Array(0))
+        )
+        assertEquals(
+            F64Array.of(1.0, 2.0),
+            F64Array(0).append(F64Array.of(1.0, 2.0))
+        )
+        assertEquals(
+            F64Array.of(1.0, 2.0, 3.0, 4.0, 5.0),
+            F64Array.of(1.0, 2.0).append(F64Array.of(3.0, 4.0, 5.0))
+        )
     }
 
     @Test fun appendMatrix0() {
-        assertEquals(F64Array.of(1.0, 2.0,
-                                 3.0, 4.0,
-                                 42.0, 42.0).reshape(3, 2),
-                     F64Array.of(1.0, 2.0,
-                                 3.0, 4.0).reshape(2, 2)
-                             .append(F64Array.of(42.0, 42.0).reshape(1, 2)))
+        assertEquals(
+            F64Array.of(
+                1.0, 2.0,
+                3.0, 4.0,
+                42.0, 42.0
+            ).reshape(3, 2),
+            F64Array.of(
+                1.0, 2.0,
+                3.0, 4.0
+            ).reshape(2, 2).append(F64Array.of(42.0, 42.0).reshape(1, 2)))
     }
 
     @Test fun appendMatrix1() {
-        assertEquals(F64Array.of(1.0, 2.0, 42.0,
-                                 3.0, 4.0, 42.0).reshape(2, 3),
-                     F64Array.of(1.0, 2.0,
-                                 3.0, 4.0).reshape(2, 2)
-                             .append(F64Array.of(42.0, 42.0).reshape(2, 1),
-                                     axis = 1))
+        assertEquals(
+            F64Array.of(
+                1.0, 2.0, 42.0,
+                3.0, 4.0, 42.0
+            ).reshape(2, 3),
+            F64Array.of(
+                1.0, 2.0,
+                3.0, 4.0
+            ).reshape(2, 2).append(F64Array.of(42.0, 42.0).reshape(2, 1), axis = 1)
+        )
     }
 
     @Test(expected = IllegalArgumentException::class) fun appendMismatch() {
-        F64Array.of(1.0, 2.0,
-                    3.0, 4.0).reshape(2, 2)
-                .append(F64Array.of(42.0, 42.0).reshape(2, 1), axis = 0)
+        F64Array.of(
+            1.0, 2.0,
+            3.0, 4.0
+        ).reshape(2, 2).append(F64Array.of(42.0, 42.0).reshape(2, 1), axis = 0)
     }
 
     @Test fun copy() {
