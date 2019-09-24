@@ -21,7 +21,7 @@ infix fun Double.logAddExp(b: Double): Double {
 /**
  * Kahan-Babuska summation.
  *
- * See http://cage.ugent.be/~klein/papers/floating-point.pdf for details.
+ * See https://en.wikipedia.org/wiki/Kahan_summation_algorithm for details.
  *
  * @author Alexey Dievsky
  * @since 0.1.0
