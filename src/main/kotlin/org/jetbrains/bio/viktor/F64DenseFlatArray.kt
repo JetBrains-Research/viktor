@@ -92,7 +92,7 @@ class F64LargeDenseArray(
 
     override fun log1pInPlace() = NativeSpeedups.unsafeLog1pInPlace(data, offset, size)
 
-    override fun logRescale() = NativeSpeedups.unsafeLogRescale(data, offset, data, offset, size)
+    override fun logRescale() = NativeSpeedups.unsafeLogRescale(data, offset, size)
 
     override fun logSumExp() = NativeSpeedups.unsafeLogSumExp(data, offset, size)
 

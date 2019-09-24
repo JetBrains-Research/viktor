@@ -42,8 +42,7 @@ internal object NativeSpeedups {
 
     external fun unsafeLogAddExp(dst: DoubleArray, dstOffset: Int, src: DoubleArray, srcOffset: Int, length: Int)
 
-    external fun unsafeLogRescale(src: DoubleArray, srcOffset: Int,
-            dst: DoubleArray, dstOffset: Int, length: Int)
+    external fun unsafeLogRescale(dst: DoubleArray, dstOffset: Int, length: Int)
 
     external fun unsafeDot(src1: DoubleArray, srcOffset1: Int,
             src2: DoubleArray, srcOffset2: Int, length: Int): Double

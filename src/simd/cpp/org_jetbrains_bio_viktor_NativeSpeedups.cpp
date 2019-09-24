@@ -128,12 +128,12 @@ void transformInPlace(JNIEnv *env,
                       jdoubleArray jdst, jint dst_offset,
                       jint length, UnOp const& f)
 {
-    jboolean isCopy = JNI_FALSE;
+    jboolean is_copy = JNI_FALSE;
     jdouble *dst = reinterpret_cast<jdouble *>(
-        env->GetPrimitiveArrayCritical(jdst, &isCopy));
+        env->GetPrimitiveArrayCritical(jdst, &is_copy));
     boost::simd::transform(dst + dst_offset, dst + dst_offset + length,
                            dst + dst_offset, f);
-    env->ReleasePrimitiveArrayCritical(jdst, dst, isCopy == JNI_TRUE ? 0 : JNI_ABORT);
+    env->ReleasePrimitiveArrayCritical(jdst, dst, is_copy == JNI_TRUE ? 0 : JNI_ABORT);
 }
 
 JNI_METHOD(void, unsafePlusScalarAssign)(JNIEnv *env, jobject,
@@ -274,21 +274,18 @@ JNI_METHOD(void, unsafeLogAddExp)(JNIEnv *env, jobject,
 
 
 JNI_METHOD(void, unsafeLogRescale)(JNIEnv *env, jobject,
-                                   jdoubleArray jsrc, jint src_offset,
                                    jdoubleArray jdst, jint dst_offset,
                                    jint length)
 {
-    jdouble *src = reinterpret_cast<jdouble *>(
-        env->GetPrimitiveArrayCritical(jsrc, NULL));
+    jboolean is_copy = JNI_FALSE;
     jdouble *dst = reinterpret_cast<jdouble *>(
-        env->GetPrimitiveArrayCritical(jdst, NULL));
-    double total = simdmath::logsumexp(src + src_offset, length);
-    boost::simd::transform(src + src_offset,
-                           src + src_offset + length,
+        env->GetPrimitiveArrayCritical(jdst, &is_copy));
+    double total = simdmath::logsumexp(dst + dst_offset, length);
+    boost::simd::transform(dst + dst_offset,
+                           dst + dst_offset + length,
                            dst + dst_offset,
                            minus_scalar(total));
-    env->ReleasePrimitiveArrayCritical(jsrc, src, JNI_ABORT);
-    env->ReleasePrimitiveArrayCritical(jdst, dst, JNI_ABORT);
+    env->ReleasePrimitiveArrayCritical(jdst, dst, is_copy == JNI_TRUE ? 0 : JNI_ABORT);
 }
 
 JNI_METHOD(jdouble, unsafeDot)(JNIEnv *env, jobject,
