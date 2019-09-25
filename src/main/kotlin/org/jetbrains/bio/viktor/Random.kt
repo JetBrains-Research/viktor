@@ -2,6 +2,7 @@ package org.jetbrains.bio.viktor
 
 import org.apache.commons.math3.random.MersenneTwister
 import org.apache.commons.math3.random.RandomGenerator
+import kotlin.math.floor
 
 private val DEFAULT_RANDOM = MersenneTwister()
 
@@ -18,10 +19,14 @@ internal object QuickSelect {
      *
      * Invariant:  left <= n <= right
      */
-    tailrec fun select(values: F64Array,
-                       left: Int, right: Int, n: Int,
-                       randomGenerator: RandomGenerator): Double {
-        assert(left <= n && n <= right)
+    tailrec fun select(
+            values: F64Array,
+            left: Int,
+            right: Int,
+            n: Int,
+            randomGenerator: RandomGenerator
+    ): Double {
+        // assert(n in left..right) unnecessary since we control all invocations
 
         if (left == right) {
             return values[left]
@@ -48,21 +53,25 @@ internal object QuickSelect {
  *
  * @since 0.2.0
  */
-fun F64Array.quantile(q: Double = 0.5,
-                      randomGenerator: RandomGenerator = DEFAULT_RANDOM): Double {
+fun F64Array.quantile(
+        q: Double = 0.5,
+        randomGenerator: RandomGenerator = DEFAULT_RANDOM
+): Double {
     require(size > 0) { "no data" }
     check1D(this)
 
     val pos = (size + 1) * q
-    val d = pos - Math.floor(pos)
+    val d = pos - floor(pos)
     return when {
-        pos < 1     -> min()
+        pos < 1 -> min()
         pos >= size -> max()
         else -> {
             val lo = QuickSelect.select(
-                    this, 0, size - 1, pos.toInt() - 1, randomGenerator)
+                this, 0, size - 1, pos.toInt() - 1, randomGenerator
+            )
             val hi = QuickSelect.select(
-                    this, 0, size - 1, pos.toInt(), randomGenerator)
+                this, 0, size - 1, pos.toInt(), randomGenerator
+            )
             return lo + d * (hi - lo)
         }
     }

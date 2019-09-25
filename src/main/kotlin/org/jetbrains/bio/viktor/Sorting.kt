@@ -29,22 +29,26 @@ fun F64Array.argSort(reverse: Boolean = false): IntArray {
 private data class IndexedDoubleValue(val index: Int, val value: Double) :
         Comparable<IndexedDoubleValue> {
     override fun compareTo(other: IndexedDoubleValue): Int {
-        val res = java.lang.Double.compare(value, other.value)
+        val res = value.compareTo(other.value)
         return if (res != 0) {
             res
         } else {
-            java.lang.Integer.compare(index, other.index)
+            index.compareTo(other.index)
         }
     }
 }
 
 internal inline fun <T> reorderInternal(
-        a: F64Array, indices: IntArray, axis: Int,
-        get: (Int) -> T, set: (Int, T) -> Unit) {
+        a: F64Array,
+        indices: IntArray,
+        axis: Int,
+        get: (Int) -> T,
+        set: (Int, T) -> Unit
+) {
     require(indices.size == a.shape[axis])
 
     val copy = indices.clone()
-    for (pos in 0..a.shape[axis] - 1) {
+    for (pos in 0 until a.shape[axis]) {
         val value = get(pos)
         var j = pos
         while (true) {
@@ -77,7 +81,7 @@ internal inline fun <T> reorderInternal(
  */
 fun F64Array.partition(p: Int) {
     check1D(this)
-    require(p >= 0 && p < size) { "p must be in [0, $size)" }
+    require(p in 0 until size) { "p must be in [0, $size)" }
     partition(p, 0, size - 1)
 }
 
