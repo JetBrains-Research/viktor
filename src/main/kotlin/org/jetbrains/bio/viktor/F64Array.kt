@@ -30,6 +30,10 @@ import kotlin.math.sqrt
  * The distinction is important because some of the operations
  * can be significantly optimized for dense arrays.
  *
+ * Due to instantiation contracts, the actual instance of this exact class will always be non-flat, i.e.
+ * have at least two dimensions. One-dimensional array will be [F64FlatArray] (or possibly a descendant of that),
+ * and zero-dimensional (singleton) arrays are not allowed.
+ *
  * @author Sergei Lebedev
  * @since 0.4.0
  */
@@ -224,7 +228,7 @@ open class F64Array protected constructor(
     }
 
     /**
-     * Unrolls two arrays down to flattenable subarrays in a compatible way.
+     * Unrolls two arrays down to flattenable subarrays in a compatible way and applies [action] to the flattened pairs.
      *
      * Since two arrays with the same [shape] can have different internal organization (i.e. [strides]),
      * it's important to unroll them in a consistent way. This method provides the necessary functionality.
@@ -298,9 +302,14 @@ open class F64Array protected constructor(
 
         /** A less-verbose alias to [copyTo]. */
         @Suppress("unused_parameter")
-        operator fun set(vararg any: _I, other: F64Array) {
-            require(any.size < a.nDim) { "too many axes" }
+        operator fun set(any: _I, other: F64Array) {
             other.copyTo(a)
+        }
+
+        /** A less-verbose alias to [fill]. */
+        @Suppress("unused_parameter")
+        operator fun set(any: _I, other: Double) {
+            a.fill(other)
         }
 
         /**
@@ -829,6 +838,9 @@ open class F64Array protected constructor(
                 strides: IntArray,
                 shape: IntArray
         ): F64Array {
+            require(strides.isNotEmpty()) { "singleton arrays are not supported" }
+            require(shape.isNotEmpty()) { "singleton arrays are not supported" }
+            require(strides.size == shape.size) { "strides and shape size don't match" }
             return if (shape.size == 1) {
                 F64FlatArray(data, offset, strides.single(), shape.single())
             } else {
@@ -855,7 +867,7 @@ private fun flatten(a: Array<*>): DoubleArray {
         when (it) {
             is DoubleArray -> Arrays.stream(it)
             is Array<*> -> Arrays.stream(flatten(it))
-            else -> unsupported()
+            else -> unsupported() // unreachable since [guessShape] will fail faster
         }
     }.toArray()
 }
