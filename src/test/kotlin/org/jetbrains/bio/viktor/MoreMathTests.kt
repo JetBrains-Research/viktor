@@ -9,13 +9,30 @@ import kotlin.test.assertTrue
 class MoreMathTest {
     @Test fun testLogAddExpEdgeCases() {
         val r = Random()
-        val logx = -Math.abs(r.nextDouble())
+        val logx = -abs(r.nextDouble())
+
         assertEquals(logx, Double.NEGATIVE_INFINITY logAddExp logx)
         assertEquals(logx, logx logAddExp Double.NEGATIVE_INFINITY)
-        assertEquals(
-            Double.NEGATIVE_INFINITY,
-            Double.NEGATIVE_INFINITY logAddExp Double.NEGATIVE_INFINITY
-        )
+        assertEquals(Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY logAddExp Double.NEGATIVE_INFINITY)
+
+        assertEquals(Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY logAddExp logx)
+        assertEquals(Double.POSITIVE_INFINITY, logx logAddExp Double.POSITIVE_INFINITY)
+        assertEquals(Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY logAddExp Double.POSITIVE_INFINITY)
+
+        assertEquals(Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY logAddExp Double.POSITIVE_INFINITY)
+        assertEquals(Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY logAddExp Double.NEGATIVE_INFINITY)
+
+        assertIsNan(Double.NaN logAddExp logx)
+        assertIsNan(Double.NaN logAddExp Double.NEGATIVE_INFINITY)
+        assertIsNan(Double.NaN logAddExp Double.POSITIVE_INFINITY)
+        assertIsNan(Double.NaN logAddExp Double.NaN)
+        assertIsNan(logx logAddExp Double.NaN)
+        assertIsNan(Double.NEGATIVE_INFINITY logAddExp Double.NaN)
+        assertIsNan(Double.POSITIVE_INFINITY logAddExp Double.NaN)
+    }
+
+    fun assertIsNan(x: Double) {
+        assertTrue(x.isNaN(), "Expected NaN but got $x")
     }
 }
 

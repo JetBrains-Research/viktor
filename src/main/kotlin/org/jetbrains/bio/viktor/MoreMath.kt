@@ -1,6 +1,8 @@
 package org.jetbrains.bio.viktor
 
 import org.apache.commons.math3.util.FastMath
+import kotlin.math.abs
+import kotlin.math.max
 
 /**
  * Evaluates log(exp(a) + exp(b)) using the following trick
@@ -12,9 +14,10 @@ import org.apache.commons.math3.util.FastMath
 infix fun Double.logAddExp(b: Double): Double {
     val a = this
     return when {
-        a.isInfinite() && a < 0 -> b
-        b.isInfinite() && b < 0 -> a
-        else -> Math.max(a, b) + StrictMath.log1p(FastMath.exp(-Math.abs(a - b)))
+        a.isNaN() || b.isNaN() -> Double.NaN
+        a.isInfinite() -> if (a < 0) b else a
+        b.isInfinite() -> if (b < 0) a else b
+        else -> max(a, b) + StrictMath.log1p(FastMath.exp(-abs(a - b)))
     }
 }
 
