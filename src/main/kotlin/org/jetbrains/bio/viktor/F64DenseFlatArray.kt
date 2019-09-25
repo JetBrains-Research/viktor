@@ -77,7 +77,7 @@ class F64LargeDenseArray(
 
     override fun dot(other: F64Array): Double {
         return if (other is F64LargeDenseArray) {
-            require(other.size == size) { "non-conformable arrays" }
+            checkShape(other)
             NativeSpeedups.unsafeDot(data, offset, other.data, other.offset, size)
         } else {
             super.dot(other)
