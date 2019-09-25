@@ -106,7 +106,7 @@ class F64FlatArrayOpsTest(private val v: F64Array) {
     @Test fun fill() {
         val copy = v.copy()
         copy.fill(42.0)
-        assertEquals(F64Array.full(copy.size, 42.0), copy)
+        assertEquals(F64Array.full(*v.shape, init = 42.0), copy)
     }
 
     @Test fun dot() {
@@ -173,6 +173,8 @@ class F64ArrayOpsTest {
         assertEquals(m, m)
         assertEquals(m, m.copy())
         assertNotEquals(m, m.exp())
+        assertNotEquals(m.toArray(), m)
+        assertNotEquals(m, m.flatten())
     }
 
     @Test fun _toString2() {
