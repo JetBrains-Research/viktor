@@ -273,6 +273,24 @@ open class F64FlatArray protected constructor(
         }
     }
 
+    override fun reshape(vararg shape: Int): F64Array {
+        require(shape.product() == size) {
+            "total size of the new matrix must be unchanged"
+        }
+        return when {
+            this.shape.contentEquals(shape) -> this
+            else -> {
+                val reshaped = shape.clone()
+                reshaped[reshaped.lastIndex] = strides.single()
+                for (i in reshaped.lastIndex - 1 downTo 0) {
+                    reshaped[i] = reshaped[i + 1] * shape[i + 1]
+                }
+
+                invoke(data, offset, reshaped, shape)
+            }
+        }
+    }
+
     override fun asSequence(): Sequence<Double> = (0 until size).asSequence().map(this::unsafeGet)
 
     override fun toArray() = toDoubleArray()
@@ -325,7 +343,7 @@ open class F64FlatArray protected constructor(
 
     override fun equals(other: Any?) = when {
         this === other -> true
-        other !is F64Array -> false
+        other !is F64FlatArray -> false // an instance of F64Array can't be flat
         size != other.size -> false
         else -> (0 until size).all {
             Precision.equals(unsafeGet(it), other.unsafeGet(it))

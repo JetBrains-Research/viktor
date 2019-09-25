@@ -31,7 +31,7 @@ sealed class F64DenseFlatArray(
          */
         const val DENSE_SPLIT_SIZE = 16
 
-        internal fun create(data: DoubleArray, offset: Int = 0, size: Int = data.size): F64DenseFlatArray {
+        internal fun create(data: DoubleArray, offset: Int, size: Int): F64DenseFlatArray {
             return if (size <= DENSE_SPLIT_SIZE || !Loader.nativeLibraryLoaded) {
                 F64SmallDenseArray(data, offset, size)
             } else {

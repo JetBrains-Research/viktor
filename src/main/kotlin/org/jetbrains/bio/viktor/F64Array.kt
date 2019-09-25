@@ -355,26 +355,12 @@ open class F64Array protected constructor(
         else -> other.copyTo(this)
     }
 
-    /** Reshapes this vector into a matrix in row-major order. */
-    fun reshape(vararg shape: Int): F64Array {
-        require(shape.product() == size) {
-            "total size of the new matrix must be unchanged"
-        }
-
-        return when {
-            nDim > 1 -> TODO()
-            this.shape.contentEquals(shape) -> this
-            else -> {
-                val reshaped = shape.clone()
-                reshaped[reshaped.lastIndex] = strides.single()
-                for (i in reshaped.lastIndex - 1 downTo 0) {
-                    reshaped[i] = reshaped[i + 1] * shape[i + 1]
-                }
-
-                invoke(data, offset, reshaped, shape)
-            }
-        }
-    }
+    /**
+     * Reshapes this array into a matrix in row-major order.
+     *
+     * Only supported for flattenable arrays.
+     */
+    open fun reshape(vararg shape: Int): F64Array = flatten().reshape(*shape)
 
     /**
      * Appends this array to another array.
@@ -714,8 +700,7 @@ open class F64Array protected constructor(
     companion object {
         /** Creates a zero-filled array of a given [shape]. */
         operator fun invoke(vararg shape: Int): F64Array {
-            return F64FlatArray(DoubleArray(shape.product()))
-                    .reshape(*shape)
+            return F64FlatArray(DoubleArray(shape.product())).reshape(*shape)
         }
 
         inline operator fun invoke(size: Int, block: (Int) -> Double): F64Array {
@@ -769,8 +754,8 @@ open class F64Array protected constructor(
         fun full(size: Int, init: Double) = invoke(size).apply { fill(init) }
 
         /** Creates a matrix filled with a given [init] element. */
-        fun full(vararg indices: Int, init: Double): F64Array {
-            return invoke(*indices).apply { fill(init) }
+        fun full(vararg shape: Int, init: Double): F64Array {
+            return invoke(*shape).apply { fill(init) }
         }
 
         /**
@@ -850,8 +835,13 @@ open class F64Array protected constructor(
     }
 }
 
-/** Wraps a given array of elements. The array will not be copied. */
-fun DoubleArray.asF64Array(offset: Int = 0, size: Int = this.size): F64Array {
+/** Wraps a given array. The array will not be copied. */
+fun DoubleArray.asF64Array(): F64Array {
+    return F64FlatArray(this, 0, 1, size)
+}
+
+/** Wraps a given region of the array. The array will not be copied. */
+fun DoubleArray.asF64Array(offset: Int, size: Int): F64Array {
     return F64FlatArray(this, offset, 1, size)
 }
 
@@ -876,8 +866,34 @@ private fun flatten(a: Array<*>): DoubleArray {
 private fun Array<*>.guessShape(): IntArray {
     check(isNotEmpty())
     return when (val tip = first()) {
-        is DoubleArray -> intArrayOf(size, tip.size)
-        is Array<*> -> intArrayOf(size) + tip.guessShape()
+        is DoubleArray -> {
+            (1 until size).forEach {
+                val el = get(it)
+                check(el is DoubleArray) {
+                    "array has elements of different types: element 0 is a double array, " +
+                            "but element $it is ${el?.let { it::class.java.name } ?: "null"}"
+                }
+                check(el.size == tip.size) {
+                    "array has elements of different sizes: element 0 is ${tip.size} long, " +
+                            "but element $it is ${el.size} long"
+                }
+            }
+            intArrayOf(size, tip.size)
+        }
+        is Array<*> -> {
+            (1 until size).forEach {
+                val el = get(it)
+                check(el is Array<*>) {
+                    "array has elements of different types: element 0 is a generic array, " +
+                            "but element $it is ${el?.let { it::class.java.name } ?: "null"}"
+                }
+                check(el.size == tip.size) {
+                    "array has elements of different sizes: element 0 is ${tip.size} long, " +
+                            "but element $it is ${el.size} long"
+                }
+            }
+            intArrayOf(size) + tip.guessShape()
+        }
         else -> unsupported()
     }
 }
