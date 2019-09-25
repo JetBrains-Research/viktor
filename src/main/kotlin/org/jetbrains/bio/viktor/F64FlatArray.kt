@@ -338,10 +338,14 @@ open class F64FlatArray protected constructor(
     }
 
     companion object {
-        internal operator fun invoke(data: DoubleArray, offset: Int = 0,
+        internal operator fun invoke(
+                data: DoubleArray,
+                offset: Int = 0,
                 stride: Int = 1,
-                size: Int = data.size): F64FlatArray {
-            require(offset + (size - 1) * stride <= data.size) { "not enough data" }
+                size: Int = data.size
+        ): F64FlatArray {
+            // require(offset + (size - 1) * stride < data.size) { "not enough data" }
+            // this check is not needed since we control all invocations of this internal method
             return if (stride == 1) {
                 F64DenseFlatArray.create(data, offset, size)
             } else {

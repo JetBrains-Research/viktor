@@ -34,7 +34,7 @@ class BalancedDotTest(private val size: Int) {
         val w = r.doubles(size.toLong()).toArray().asF64Array()
 
         val expected = KahanSum()
-        for (i in 0..v.size - 1) {
+        for (i in 0 until v.size) {
             expected.feed(v[i] * w[i])
         }
 
