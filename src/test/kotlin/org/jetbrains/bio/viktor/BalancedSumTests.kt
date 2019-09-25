@@ -41,6 +41,35 @@ class BalancedDotTest(private val size: Int) {
         assertEquals(expected.result(), v.dot(w), 1e-8)
     }
 
+    @Test fun intAccuracy() {
+        val r = Random()
+        val v = r.doubles(size.toLong()).toArray().asF64Array()
+        val w = r.ints(-1000, 1000).limit(size.toLong()).toArray()
+
+        val expected = KahanSum()
+        for (i in 0 until v.size) {
+            expected.feed(v[i] * w[i])
+        }
+
+        assertEquals(expected.result(), v.dot(w), 1e-8)
+    }
+
+    @Test fun shortAccuracy() {
+        val r = Random()
+        val v = r.doubles(size.toLong()).toArray().asF64Array()
+        // there are no short streams
+        val w = ShortArray(size)
+        for (i in 0 until size) {
+            w[i] = (r.nextInt(2000) - 1000).toShort()
+        }
+        val expected = KahanSum()
+        for (i in 0 until v.size) {
+            expected.feed(v[i] * w[i])
+        }
+
+        assertEquals(expected.result(), v.dot(w), 1e-8)
+    }
+
     companion object {
         @Parameters(name = "{0}")
         @JvmStatic fun `data`() = listOf(32, 64, 100, 500)
