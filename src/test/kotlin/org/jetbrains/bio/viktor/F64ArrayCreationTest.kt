@@ -4,6 +4,7 @@ import org.apache.commons.math3.util.Precision
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertArrayEquals
 import org.junit.Test
+import java.lang.IllegalStateException
 import kotlin.test.assertTrue
 
 class F64ArrayCreationTest {
@@ -166,5 +167,20 @@ class F64ArrayCreationTest {
         assertEquals(v, copy)
         v[0] = 42.0
         assertEquals(1.0, copy[0], Precision.EPSILON)
+    }
+
+    @Test fun reshapeNonFlat() {
+        val v = F64Array.of(
+            1.0, 2.0,
+            3.0, 4.0
+        )
+        assertEquals(v.reshape(4, 1), v.reshape(2, 2).reshape(4, 1))
+    }
+
+    @Test(expected = IllegalArgumentException::class) fun reshapeSizeMismatch() {
+        F64Array.of(
+            1.0, 2.0,
+            3.0, 4.0
+        ).reshape(3, 2)
     }
 }
