@@ -13,6 +13,7 @@ import java.util.stream.DoubleStream
 import java.util.stream.IntStream
 import kotlin.math.sqrt
 import kotlin.test.assertNotEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class F64FlatArrayAgainstRTest {
@@ -111,6 +112,12 @@ class F64FlatArrayOpsTest(private val v: F64Array) {
     @Test fun dot() {
         if (v.nDim != 1) return // only applicable to flat arrays
         assertEquals((0 until v.size).sumByDouble { v[it] * v[it] }, v.dot(v), 1E-10)
+    }
+
+    @Test fun dotWithNotDense() {
+        if (v.nDim != 1) return // only applicable to flat arrays
+        val other = F64Array(v.size, 2) { _, _ -> Random().nextDouble() }.V[_I, 0]
+        assertEquals((0 until v.size).sumByDouble { v[it] * other[it] }, v.dot(other), 1E-10)
     }
 
     @Test fun mean() {
@@ -247,6 +254,15 @@ class F64VectorMathTest(private val v: F64Array) {
         }
     }
 
+    @Test fun logAddExpWithNotDense() {
+        if (v.nDim != 1) return // only applicable to flat arrays
+        val other = F64Array(v.size, 2) { _, _ -> Random().nextDouble() }.V[_I, 0]
+        val vLaeO = v logAddExp other
+        (0 until v.size).forEach { pos ->
+            assertEquals(v[pos] logAddExp other[pos], vLaeO[pos], Precision.EPSILON)
+        }
+    }
+
     @Test fun logSumExp() {
         assertEquals(
             v.asSequence().sumByDouble { FastMath.exp(it) }, FastMath.exp(v.logSumExp()), 1e-6
@@ -260,6 +276,18 @@ class F64VectorMathTest(private val v: F64Array) {
         v.asSequence().zip(copy.asSequence()).forEach { (vx, copyx) ->
             assertEquals(copyx, vx, 1e-6)
         }
+    }
+
+    @Test fun min() {
+        val sequenceMin = v.asSequence().min()
+        assertNotNull(sequenceMin, "Sequential min of an array was null")
+        assertEquals(sequenceMin, v.min(), 0.0)
+    }
+
+    @Test fun max() {
+        val sequenceMax = v.asSequence().max()
+        assertNotNull(sequenceMax, "Sequential min of an array was null")
+        assertEquals(sequenceMax, v.max(), 0.0)
     }
 
     companion object {
@@ -288,6 +316,15 @@ class F64FlatVectorArithTest(private val v: F64Array) {
         }
     }
 
+    @Test fun plusWithNotDense() {
+        if (v.nDim != 1) return // this is a test for flat arrays
+        val other = F64Array(v.size, 2) { _, _ -> Random().nextDouble() }.V[_I, 0]
+        val u = v + other
+        (0 until v.size).forEach { pos ->
+            assertEquals(v[pos] + other[pos], u[pos], Precision.EPSILON)
+        }
+    }
+
     @Test fun minus() {
         val u = v.copy().apply { fill(42.0) } - v
         v.asSequence().zip(u.asSequence()).forEach { (vx, ux) ->
@@ -299,6 +336,15 @@ class F64FlatVectorArithTest(private val v: F64Array) {
         val u = v - 42.0
         v.asSequence().zip(u.asSequence()).forEach { (vx, ux) ->
             assertEquals(vx - 42.0, ux, Precision.EPSILON)
+        }
+    }
+
+    @Test fun minusWithNotDense() {
+        if (v.nDim != 1) return // this is a test for flat arrays
+        val other = F64Array(v.size, 2) { _, _ -> Random().nextDouble() }.V[_I, 0]
+        val u = v - other
+        (0 until v.size).forEach { pos ->
+            assertEquals(v[pos] - other[pos], u[pos], Precision.EPSILON)
         }
     }
 
@@ -316,6 +362,15 @@ class F64FlatVectorArithTest(private val v: F64Array) {
         }
     }
 
+    @Test fun timesWithNotDense() {
+        if (v.nDim != 1) return // this is a test for flat arrays
+        val other = F64Array(v.size, 2) { _, _ -> Random().nextDouble() }.V[_I, 0]
+        val u = v * other
+        (0 until v.size).forEach { pos ->
+            assertEquals(v[pos] * other[pos], u[pos], Precision.EPSILON)
+        }
+    }
+
     @Test fun div() {
         // since the left argument is replaced by a copy, and we want to test
         // non-standard arrays, `v` goes to the right side of div.
@@ -329,6 +384,15 @@ class F64FlatVectorArithTest(private val v: F64Array) {
         val u = v / 42.0
         v.asSequence().zip(u.asSequence()).forEach { (vx, ux) ->
             assertEquals(vx / 42.0, ux, Precision.EPSILON)
+        }
+    }
+
+    @Test fun divWithNotDense() {
+        if (v.nDim != 1) return // this is a test for flat arrays
+        val other = F64Array(v.size, 2) { _, _ -> Random().nextDouble() }.V[_I, 0]
+        val u = v / other
+        (0 until v.size).forEach { pos ->
+            assertEquals(v[pos] / other[pos], u[pos], Precision.EPSILON)
         }
     }
 
@@ -357,7 +421,7 @@ private fun gappedArray(r: IntRange): F64Array {
     //
     // 1. to ensure 'offset' and 'stride' are used correctly,
     // 2. to force the use of fallback implementation.
-    val values = IntStream.range(r.start, r.endInclusive + 1)
+    val values = IntStream.range(r.first, r.last + 1)
             .mapToDouble(Int::toDouble)
             .flatMap { DoubleStream.of(Double.NaN, it) }
             .toArray()
