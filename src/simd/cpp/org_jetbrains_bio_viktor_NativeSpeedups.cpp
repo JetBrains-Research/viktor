@@ -18,55 +18,57 @@
     JNIEXPORT rtype JNICALL Java_org_jetbrains_bio_viktor_NativeSpeedups_##name
 
 template<typename BinOp>
-void transformAssign(JNIEnv *env,
-                     jdoubleArray jdst, jint dst_offset,
-                     jdoubleArray jsrc, jint src_offset,
-                     jint length, BinOp const& op)
+jboolean transformAssign(JNIEnv *env,
+                         jdoubleArray jdst, jint dst_offset,
+                         jdoubleArray jsrc, jint src_offset,
+                         jint length, BinOp const& op)
 {
     jdouble *src = reinterpret_cast<jdouble *>(
             env->GetPrimitiveArrayCritical(jsrc, NULL));
     jboolean dst_is_copy = JNI_FALSE;
     jdouble *dst = reinterpret_cast<jdouble *>(
             env->GetPrimitiveArrayCritical(jdst, &dst_is_copy));
+    if (dst_is_copy == JNI_TRUE) return JNI_FALSE;
     boost::simd::transform(dst + dst_offset,
                            dst + dst_offset + length,
                            src + src_offset,
                            dst + dst_offset,
                            op);
-    env->ReleasePrimitiveArrayCritical(jdst, dst, dst_is_copy == JNI_TRUE ? 0 : JNI_ABORT);
+    env->ReleasePrimitiveArrayCritical(jdst, dst, JNI_ABORT);
     env->ReleasePrimitiveArrayCritical(jsrc, src, JNI_ABORT);
+    return JNI_TRUE;
 }
 
-JNI_METHOD(void, unsafePlusAssign)(JNIEnv *env, jobject,
-                                   jdoubleArray jdst, jint dst_offset,
-                                   jdoubleArray jsrc, jint src_offset,
-                                   jint length)
+JNI_METHOD(jboolean, unsafePlusAssign)(JNIEnv *env, jobject,
+                                       jdoubleArray jdst, jint dst_offset,
+                                       jdoubleArray jsrc, jint src_offset,
+                                       jint length)
 {
-    transformAssign(env, jdst, dst_offset, jsrc, src_offset, length, boost::simd::plus);
+    return transformAssign(env, jdst, dst_offset, jsrc, src_offset, length, boost::simd::plus);
 }
 
-JNI_METHOD(void, unsafeMinusAssign)(JNIEnv *env, jobject,
-                                    jdoubleArray jdst, jint dst_offset,
-                                    jdoubleArray jsrc, jint src_offset,
-                                    jint length)
+JNI_METHOD(jboolean, unsafeMinusAssign)(JNIEnv *env, jobject,
+                                        jdoubleArray jdst, jint dst_offset,
+                                        jdoubleArray jsrc, jint src_offset,
+                                        jint length)
 {
-    transformAssign(env, jdst, dst_offset, jsrc, src_offset, length, boost::simd::minus);
+    return transformAssign(env, jdst, dst_offset, jsrc, src_offset, length, boost::simd::minus);
 }
 
-JNI_METHOD(void, unsafeTimesAssign)(JNIEnv *env, jobject,
-                                    jdoubleArray jdst, jint dst_offset,
-                                    jdoubleArray jsrc, jint src_offset,
-                                    jint length)
+JNI_METHOD(jboolean, unsafeTimesAssign)(JNIEnv *env, jobject,
+                                        jdoubleArray jdst, jint dst_offset,
+                                        jdoubleArray jsrc, jint src_offset,
+                                        jint length)
 {
-    transformAssign(env, jdst, dst_offset, jsrc, src_offset, length, boost::simd::multiplies);
+    return transformAssign(env, jdst, dst_offset, jsrc, src_offset, length, boost::simd::multiplies);
 }
 
-JNI_METHOD(void, unsafeDivAssign)(JNIEnv *env, jobject,
-                                  jdoubleArray jdst, jint dst_offset,
-                                  jdoubleArray jsrc, jint src_offset,
-                                  jint length)
+JNI_METHOD(jboolean, unsafeDivAssign)(JNIEnv *env, jobject,
+                                      jdoubleArray jdst, jint dst_offset,
+                                      jdoubleArray jsrc, jint src_offset,
+                                      jint length)
 {
-    transformAssign(env, jdst, dst_offset, jsrc, src_offset, length, boost::simd::div);
+    return transformAssign(env, jdst, dst_offset, jsrc, src_offset, length, boost::simd::div);
 }
 
 namespace {
@@ -124,16 +126,18 @@ private:
 }
 
 template<typename UnOp>
-void transformInPlace(JNIEnv *env,
-                      jdoubleArray jdst, jint dst_offset,
-                      jint length, UnOp const& f)
+jboolean transformInPlace(JNIEnv *env,
+                          jdoubleArray jdst, jint dst_offset,
+                          jint length, UnOp const& f)
 {
     jboolean is_copy = JNI_FALSE;
     jdouble *dst = reinterpret_cast<jdouble *>(
         env->GetPrimitiveArrayCritical(jdst, &is_copy));
+    if (is_copy == JNI_TRUE) return JNI_FALSE;
     boost::simd::transform(dst + dst_offset, dst + dst_offset + length,
                            dst + dst_offset, f);
-    env->ReleasePrimitiveArrayCritical(jdst, dst, is_copy == JNI_TRUE ? 0 : JNI_ABORT);
+    env->ReleasePrimitiveArrayCritical(jdst, dst, is_copy == JNI_ABORT);
+    return JNI_TRUE;
 }
 
 template<typename Fold, typename Empty>
@@ -149,46 +153,46 @@ jdouble reduce(JNIEnv *env,
     return res;
 }
 
-JNI_METHOD(void, unsafePlusScalarAssign)(JNIEnv *env, jobject,
+JNI_METHOD(jboolean, unsafePlusScalarAssign)(JNIEnv *env, jobject,
                                          jdoubleArray jdst, jint dst_offset,
                                          jint length, jdouble update)
 {
-    transformInPlace(env, jdst, dst_offset, length, plus_scalar(update));
+    return transformInPlace(env, jdst, dst_offset, length, plus_scalar(update));
 }
 
-JNI_METHOD(void, unsafeMinusScalarAssign)(JNIEnv *env, jobject,
+JNI_METHOD(jboolean, unsafeMinusScalarAssign)(JNIEnv *env, jobject,
                                           jdoubleArray jdst, jint dst_offset,
                                           jint length, jdouble update)
 {
-    transformInPlace(env, jdst, dst_offset, length, minus_scalar(update));
+    return transformInPlace(env, jdst, dst_offset, length, minus_scalar(update));
 }
 
-JNI_METHOD(void, unsafeTimesScalarAssign)(JNIEnv *env, jobject,
+JNI_METHOD(jboolean, unsafeTimesScalarAssign)(JNIEnv *env, jobject,
                                           jdoubleArray jdst, jint dst_offset,
                                           jint length, jdouble update)
 {
-    transformInPlace(env, jdst, dst_offset, length, multiplies_scalar(update));
+    return transformInPlace(env, jdst, dst_offset, length, multiplies_scalar(update));
 }
 
-JNI_METHOD(void, unsafeDivScalarAssign)(JNIEnv *env, jobject,
+JNI_METHOD(jboolean, unsafeDivScalarAssign)(JNIEnv *env, jobject,
                                         jdoubleArray jdst, jint dst_offset,
                                         jint length, jdouble update)
 {
-    transformInPlace(env, jdst, dst_offset, length, div_scalar(update));
+    return transformInPlace(env, jdst, dst_offset, length, div_scalar(update));
 }
 
-JNI_METHOD(void, unsafeScalarDivAssign)(JNIEnv *env, jobject,
+JNI_METHOD(jboolean, unsafeScalarDivAssign)(JNIEnv *env, jobject,
                                         jdoubleArray jdst, jint dst_offset,
                                         jint length, jdouble update)
 {
-    transformInPlace(env, jdst, dst_offset, length, scalar_div(update));
+    return transformInPlace(env, jdst, dst_offset, length, scalar_div(update));
 }
 
-JNI_METHOD(void, unsafeNegateInPlace)(JNIEnv *env, jobject,
+JNI_METHOD(jboolean, unsafeNegateInPlace)(JNIEnv *env, jobject,
                                       jdoubleArray jdst, jint dst_offset,
                                       jint length)
 {
-    transformInPlace(env, jdst, dst_offset, length, boost::simd::unary_minus);
+    return transformInPlace(env, jdst, dst_offset, length, boost::simd::unary_minus);
 }
 
 JNI_METHOD(jdouble, unsafeMin)(JNIEnv *env, jobject,
@@ -205,34 +209,34 @@ JNI_METHOD(jdouble, unsafeMax)(JNIEnv *env, jobject,
     return reduce(env, jsrc, src_offset, length, boost::simd::max, boost::simd::Minf<jdouble>());
 }
 
-JNI_METHOD(void, unsafeExpInPlace)(JNIEnv *env, jobject,
+JNI_METHOD(jboolean, unsafeExpInPlace)(JNIEnv *env, jobject,
                                    jdoubleArray jdst, jint dst_offset,
                                    jint length)
 {
-    transformInPlace(env, jdst, dst_offset, length, boost::simd::exp);
+    return transformInPlace(env, jdst, dst_offset, length, boost::simd::exp);
 }
 
 
-JNI_METHOD(void, unsafeExpm1InPlace)(JNIEnv *env, jobject,
+JNI_METHOD(jboolean, unsafeExpm1InPlace)(JNIEnv *env, jobject,
                                      jdoubleArray jdst, jint dst_offset,
                                      jint length)
 {
-    transformInPlace(env, jdst, dst_offset, length, boost::simd::expm1);
+    return transformInPlace(env, jdst, dst_offset, length, boost::simd::expm1);
 }
 
 
-JNI_METHOD(void, unsafeLogInPlace)(JNIEnv *env, jobject,
+JNI_METHOD(jboolean, unsafeLogInPlace)(JNIEnv *env, jobject,
                                    jdoubleArray jdst, jint dst_offset,
                                    jint length)
 {
-    transformInPlace(env, jdst, dst_offset, length, boost::simd::log);
+    return transformInPlace(env, jdst, dst_offset, length, boost::simd::log);
 }
 
-JNI_METHOD(void, unsafeLog1pInPlace)(JNIEnv *env, jobject,
+JNI_METHOD(jboolean, unsafeLog1pInPlace)(JNIEnv *env, jobject,
                                      jdoubleArray jdst, jint dst_offset,
                                      jint length)
 {
-    transformInPlace(env, jdst, dst_offset, length, boost::simd::log1p);
+    return transformInPlace(env, jdst, dst_offset, length, boost::simd::log1p);
 }
 
 
@@ -263,12 +267,12 @@ struct logaddexp {
 
 }
 
-JNI_METHOD(void, unsafeLogAddExp)(JNIEnv *env, jobject,
-                                  jdoubleArray jdst, jint dst_offset,
-                                  jdoubleArray jsrc, jint src_offset,
-                                  jint length)
+JNI_METHOD(jboolean, unsafeLogAddExp)(JNIEnv *env, jobject,
+                                      jdoubleArray jdst, jint dst_offset,
+                                      jdoubleArray jsrc, jint src_offset,
+                                      jint length)
 {
-    transformAssign(env, jdst, dst_offset, jsrc, src_offset, length, logaddexp());
+    return transformAssign(env, jdst, dst_offset, jsrc, src_offset, length, logaddexp());
 }
 
 JNI_METHOD(jdouble, unsafeDot)(JNIEnv *env, jobject,
@@ -345,14 +349,16 @@ JNI_METHOD(jdouble, sd)(JNIEnv *env, jobject,
     return res;
 }
 
-JNI_METHOD(void, cumSum)(JNIEnv *env, jobject,
+JNI_METHOD(jboolean, cumSum)(JNIEnv *env, jobject,
                          jdoubleArray jdst, jint dst_offset,
                          jint length)
 {
     jboolean is_copy = JNI_FALSE;
     jdouble *dst = reinterpret_cast<jdouble *>(
         env->GetPrimitiveArrayCritical(jdst, &is_copy));
+    if (is_copy == JNI_TRUE) return JNI_FALSE;
     source_1d<cum_sum_tag> f(dst + dst_offset, dst + dst_offset, length);
     cum_sum(f);
     env->ReleasePrimitiveArrayCritical(jdst, dst, is_copy == JNI_TRUE ? 0 : JNI_ABORT);
+    return JNI_TRUE;
 }

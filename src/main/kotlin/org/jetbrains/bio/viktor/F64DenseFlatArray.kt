@@ -69,7 +69,9 @@ class F64LargeDenseArray(
 
     override fun sum() = NativeSpeedups.sum(data, offset, size)
 
-    override fun cumSum() = NativeSpeedups.cumSum(data, offset, size)
+    override fun cumSum() {
+        if (!NativeSpeedups.cumSum(data, offset, size)) super.cumSum()
+    }
 
     override fun min() = NativeSpeedups.unsafeMin(data, offset, size)
 
@@ -84,65 +86,78 @@ class F64LargeDenseArray(
         }
     }
 
-    override fun expInPlace() = NativeSpeedups.unsafeExpInPlace(data, offset, size)
+    override fun expInPlace() {
+        if (!NativeSpeedups.unsafeExpInPlace(data, offset, size)) super.expInPlace()
+    }
 
-    override fun expm1InPlace() = NativeSpeedups.unsafeExpm1InPlace(data, offset, size)
+    override fun expm1InPlace() {
+        if (!NativeSpeedups.unsafeExpm1InPlace(data, offset, size)) super.expm1InPlace()
+    }
 
-    override fun logInPlace() = NativeSpeedups.unsafeLogInPlace(data, offset, size)
+    override fun logInPlace() {
+        if (!NativeSpeedups.unsafeLogInPlace(data, offset, size)) super.logInPlace()
+    }
 
-    override fun log1pInPlace() = NativeSpeedups.unsafeLog1pInPlace(data, offset, size)
+    override fun log1pInPlace(){
+        if (!NativeSpeedups.unsafeLog1pInPlace(data, offset, size)) super.log1pInPlace()
+    }
 
     override fun logSumExp() = NativeSpeedups.unsafeLogSumExp(data, offset, size)
 
     override fun logAddExpAssign(other: F64Array) {
         if (other is F64LargeDenseArray) {
             checkShape(other)
-            NativeSpeedups.unsafeLogAddExp(data, offset, other.data, other.offset, size)
-        } else {
-            super.logAddExpAssign(other)
+            if (NativeSpeedups.unsafeLogAddExp(data, offset, other.data, other.offset, size)) return
         }
+        super.logAddExpAssign(other)
     }
 
     override fun unaryMinus() = copy().apply { NativeSpeedups.unsafeNegateInPlace(data, offset, size) }
 
-    override fun plusAssign(update: Double) = NativeSpeedups.unsafePlusScalarAssign(data, offset, size, update)
+    override fun plusAssign(update: Double) {
+        if (!NativeSpeedups.unsafePlusScalarAssign(data, offset, size, update)) super.plusAssign(update)
+    }
 
     override fun plusAssign(other: F64Array) {
         if (other is F64DenseFlatArray) {
             checkShape(other)
-            NativeSpeedups.unsafePlusAssign(data, offset, other.data, other.offset, size)
-        } else {
-            super.plusAssign(other)
+            if (NativeSpeedups.unsafePlusAssign(data, offset, other.data, other.offset, size)) return
         }
+        super.plusAssign(other)
     }
 
-    override fun minusAssign(update: Double) = NativeSpeedups.unsafeMinusScalarAssign(data, offset, size, update)
+    override fun minusAssign(update: Double) {
+        if (!NativeSpeedups.unsafeMinusScalarAssign(data, offset, size, update)) super.minusAssign(update)
+    }
 
     override fun minusAssign(other: F64Array) {
         if (other is F64DenseFlatArray) {
             checkShape(other)
-            NativeSpeedups.unsafeMinusAssign(data, offset, other.data, other.offset, size)
-        } else {
-            super.minusAssign(other)
+            if (NativeSpeedups.unsafeMinusAssign(data, offset, other.data, other.offset, size)) return
         }
+        super.minusAssign(other)
     }
 
-    override fun timesAssign(update: Double) =
-            NativeSpeedups.unsafeTimesScalarAssign(data, offset, size, update)
+    override fun timesAssign(update: Double) {
+        if (!NativeSpeedups.unsafeTimesScalarAssign(data, offset, size, update)) super.timesAssign(update)
+    }
 
     override fun timesAssign(other: F64Array) {
         if (other is F64DenseFlatArray) {
-            NativeSpeedups.unsafeTimesAssign(data, offset, other.data, other.offset, size)
-        } else {
-            super.timesAssign(other)
+            checkShape(other)
+            if (NativeSpeedups.unsafeTimesAssign(data, offset, other.data, other.offset, size)) return
         }
+        super.timesAssign(other)
     }
 
-    override fun divAssign(update: Double) = NativeSpeedups.unsafeDivScalarAssign(data, offset, size, update)
+    override fun divAssign(update: Double) {
+        if (!NativeSpeedups.unsafeDivScalarAssign(data, offset, size, update)) super.divAssign(update)
+    }
 
     override fun divAssign(other: F64Array) {
         if (other is F64DenseFlatArray) {
-            NativeSpeedups.unsafeDivAssign(data, offset, other.data, other.offset, size)
+            checkShape(other)
+            if (NativeSpeedups.unsafeDivAssign(data, offset, other.data, other.offset, size)) return
         } else {
             super.divAssign(other)
         }
