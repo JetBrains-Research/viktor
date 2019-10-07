@@ -284,12 +284,14 @@ class F64VectorMathTest(private val v: F64Array) {
         val sequenceMin = v.asSequence().min()
         assertNotNull(sequenceMin, "Sequential min of an array was null")
         assertEquals(sequenceMin, v.min(), 0.0)
+        assertEquals(v[v.argMin()], v.min(), 0.0)
     }
 
     @Test fun max() {
         val sequenceMax = v.asSequence().max()
-        assertNotNull(sequenceMax, "Sequential min of an array was null")
+        assertNotNull(sequenceMax, "Sequential max of an array was null")
         assertEquals(sequenceMax, v.max(), 0.0)
+        assertEquals(v[v.argMax()], v.max(), 0.0)
     }
 
     companion object {
