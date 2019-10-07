@@ -52,7 +52,7 @@ class F64FlatArrayGetSetTest(
 
     @Test fun setMagicScalar() {
         val copy = v.copy()
-        copy[_I] = 42.0
+        copy.V[_I] = 42.0
 
         assertEquals(F64Array.full(copy.size, 42.0), copy)
     }
@@ -60,7 +60,7 @@ class F64FlatArrayGetSetTest(
     @Test fun setMagicVector() {
         val other = F64Array.full(v.size, 42.0)
         val copy = v.copy()
-        copy[_I] = other
+        copy.V[_I] = other
 
         assertEquals(other, copy)
     }

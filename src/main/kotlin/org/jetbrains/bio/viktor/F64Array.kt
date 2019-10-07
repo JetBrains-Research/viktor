@@ -26,13 +26,15 @@ import kotlin.math.sqrt
  * [1, 4]
  * ```
  *
- * Arrays with last stride equal to 1 are called called *dense*.
- * The distinction is important because some of the operations
- * can be significantly optimized for dense arrays.
- *
  * Due to instantiation contracts, the actual instance of this exact class will always be non-flat, i.e.
  * have at least two dimensions. One-dimensional array will be [F64FlatArray] (or possibly a descendant of that),
  * and zero-dimensional (singleton) arrays are not allowed.
+ *
+ * Method tags:
+ * - "in-place": this operation will modify the array
+ * - "copying": this operation creates a copy fully independent from the original array
+ * - "viewer": this operation creates a new array which shares data with the original one;
+ * modifications to one will be seen through the other, and no copying is performed
  *
  * @author Sergei Lebedev
  * @since 0.4.0
@@ -73,70 +75,90 @@ open class F64Array protected constructor(
      * Returns `true` if this array can be flattened using [flatten].
      *
      * Flattenable array's elements are laid out with a constant stride. This allows to use simple loops when iterating.
+     * Calling [flatten] on a non-flattenable array will produce an [IllegalStateException].
      *
      * A particular case of a flattenable array is a dense array whose elements occupy a contiguous block of memory.
-     * Large dense arrays employ SIMD optimizations, see [F64LargeDenseArray].
+     * Large dense arrays employ native SIMD optimizations, see [F64LargeDenseArray].
      */
     open val isFlattenable get() = (unrollDim == nDim)
 
     init {
-        val (d, s) = calculateUnrollDimAndStride(strides, shape)
+        require(strides.size == shape.size) {
+            "Strides and shape have different sizes (${strides.size} and ${shape.size})"
+        }
+        // calculation of unrollDim, unrollStride and unrollSize
+        var prevStride = 0
+        var unrollable = true
+        var d = 0
+        var s = 0
+        for (i in strides.indices) {
+            if (shape[i] == 1) {
+                if (unrollable) d = i + 1
+                continue
+            }
+            if (unrollable && (prevStride == 0 || prevStride == strides[i] * shape[i])) {
+                d = i + 1
+                s = strides[i]
+            } else {
+                unrollable = false
+            }
+            prevStride = strides[i]
+        }
         unrollDim = d
         unrollStride = s
-        unrollSize = shape.slice(0 until unrollDim).toIntArray().product()
+        unrollSize = shape.slice(0 until d).toIntArray().product()
     }
 
     /**
      * Generic getter.
      *
-     * Note that it could be at least 1.5x slower than specialized versions.
+     * Note that it could be at least 1.5x slower than specialized versions for 1, 2 or 3 dimensions.
      */
     operator fun get(vararg indices: Int): Double {
-        require(indices.size == nDim) { "broadcasting get is not supported" }
+        check(indices.size == nDim) { "broadcasting get is not supported" }
         return safeIndex({ indices }) { data[unsafeIndex(indices)] }
     }
 
     operator fun get(pos: Int): Double {
-        require(nDim == 1) { "broadcasting get is not supported" }
+        check(nDim == 1) { "broadcasting get is not supported" }
         return safeIndex({ intArrayOf(pos) }) { data[unsafeIndex(pos)] }
     }
 
     operator fun get(r: Int, c: Int): Double {
-        require(nDim == 2) { "broadcasting get is not supported" }
+        check(nDim == 2) { "broadcasting get is not supported" }
         return safeIndex({ intArrayOf(r, c) }) { data[unsafeIndex(r, c)] }
     }
 
     operator fun get(d: Int, r: Int, c: Int): Double {
-        require(nDim == 3) { "broadcasting get is not supported" }
+        check(nDim == 3) { "broadcasting get is not supported" }
         return safeIndex({ intArrayOf(d, r, c) }) { data[unsafeIndex(d, r, c)] }
     }
 
     /**
      * Generic setter.
      *
-     * Note that it could be at least 1.5x slower than specialized versions.
+     * Note that it could be at least 1.5x slower than specialized versions for 1, 2 or 3 dimensions.
      */
     operator fun set(vararg indices: Int, value: Double) {
-        require(indices.size == nDim) { "broadcasting set is not supported" }
+        check(indices.size == nDim) { "broadcasting set is not supported" }
         safeIndex({ indices }) { data[unsafeIndex(indices)] = value }
     }
 
     operator fun set(pos: Int, value: Double) {
-        require(nDim == 1) { "broadcasting set is not supported" }
+        check(nDim == 1) { "broadcasting set is not supported" }
         safeIndex({ intArrayOf(pos) }) { data[unsafeIndex(pos)] = value }
     }
 
     operator fun set(r: Int, c: Int, value: Double) {
-        require(nDim == 2) { "broadcasting set is not supported" }
+        check(nDim == 2) { "broadcasting set is not supported" }
         safeIndex({ intArrayOf(r, c) }) { data[unsafeIndex(r, c)] = value }
     }
 
     operator fun set(d: Int, r: Int, c: Int, value: Double) {
-        require(nDim == 3) { "broadcasting set is not supported" }
+        check(nDim == 3) { "broadcasting set is not supported" }
         safeIndex({ intArrayOf(d, r, c) }) { data[unsafeIndex(d, r, c)] = value }
     }
 
-    // XXX required for fallback implementations in [F64FlatVector].
     @Suppress("nothing_to_inline")
     internal inline fun unsafeGet(pos: Int): Double = data[unsafeIndex(pos)]
 
@@ -189,12 +211,18 @@ open class F64Array protected constructor(
     /**
      * Returns a sequence of views along the specified [axis].
      *
-     * For example, for a 2-D array `axis = 0` means "for each row",
+     * For example, for a 2D array `axis = 0` means "for each row",
      * and `axis = 1` "for each column".
+     *
+     * Viewer method.
      */
     open fun along(axis: Int): Sequence<F64Array> = (0 until shape[axis]).asSequence().map { view(it, axis) }
 
-    /** Returns a view of this array along the specified [axis]. */
+    /**
+     * Returns a view of this array along the specified [axis].
+     *
+     * Viewer method.
+     */
     fun view(index: Int, axis: Int = 0): F64Array {
         checkIndex("axis", axis, nDim)
         checkIndex("index", index, shape[axis])
@@ -262,7 +290,7 @@ open class F64Array protected constructor(
      * the array [isFlattenable], meaning that all its elements are equidistant and can be visited in a single loop.
      *
      * This method assumes that the caller knows what they do and unrolls over specified dimensions without
-     * checking whether the array [isFlattenable] and thus doesn't need any unrolling.
+     * checking e.g. whether the array [isFlattenable] and thus doesn't need any unrolling.
      */
     private fun unrollOnce(n: Int = unrollDim): Sequence<F64Array> {
         require(n <= unrollDim) { "can't unroll $n dimensions, only $unrollDim are unrollable" }
@@ -279,46 +307,105 @@ open class F64Array protected constructor(
         }
     }
 
-    /** A broadcasted viewer for this array. */
+    /**
+     * A broadcasted viewer for this array.
+     *
+     * The main difference between
+     *     a[...]
+     * and
+     *     a.V[...]
+     * is that the array's getter/setter methods deal with scalar [Double] values, while the viewer's methods
+     * deal with [F64Array]s. Another difference is that the viewer's methods can skip dimensions by providing
+     * [_I] object instead of an index.
+     *
+     * Consider a matrix (2D array) `a`. Then the following invocations have the following effect:
+     *     a[4] // fails, since it doesn't reference a scalar
+     *     a[4, 2] // returns a Double
+     *     a.V[4] // returns 4th row
+     *     a.V[_I, 2] // returns 2nd column
+     *     a.V[4, 2] // fails, since it doesn't reference an array
+     */
     @delegate:Transient
     val V: Viewer by lazy(LazyThreadSafetyMode.NONE) { Viewer(this) }
 
     class Viewer(private val a: F64Array) {
         /**
-         * A less-verbose alias to [view].
+         * Returns a subarray with several first indices specified.
          *
-         * Please do NOT abuse this shortcut by double-indexing, i.e. don't
-         * do `m[i][j]`, write `m[i, j]` instead.
+         * A less-verbose alias to [view] and chained [view] calls:
+         *     a.V[i0, i1, i2] == a.view(i0).view(i1).view(i2)
+         *
+         * For an appropriately sized `moreIndices` [IntArray], the following invariant holds:
+         *     a[indices + moreIndices] == a.V[indices][moreIndices]
+         *
+         * It should be noted that the former invocation is generally much more efficient.
+         *
+         * Viewer method.
          */
         operator fun get(vararg indices: Int) = a.view0(indices)
 
+        /**
+         * Replaces a subarray with several first indices specified with the values from [other].
+         *
+         * After we call:
+         *     a.V[indices] = other
+         * the following holds for an appropriately sized `moreIndices` [IntArray]:
+         *     a[indices + moreIndices] == other[moreIndices]
+         *
+         * In-place method for this and copying method for [other].
+         */
         operator fun set(vararg indices: Int, other: F64Array) {
             other.copyTo(a.view0(indices))
         }
 
+        /**
+         * Fills a subarray with several first indices specified with [init] value.
+         *
+         * After we do:
+         *     a.V[indices] = init
+         * the following holds for any appropriately sized `moreIndices` [IntArray]:
+         *     a[indices + moreIndices] == init
+         *
+         * In-place method.
+         */
         operator fun set(vararg indices: Int, init: Double) {
             a.view0(indices).fill(init)
         }
 
-        /** A less-verbose alias to [copyTo]. */
+        /**
+         * Replaces the whole array with the values from [other].
+         *
+         * A less-verbose alias to [copyTo].
+         *
+         * In-place method for this and copying method for [other].
+         */
         @Suppress("unused_parameter")
         operator fun set(any: _I, other: F64Array) {
             other.copyTo(a)
         }
 
-        /** A less-verbose alias to [fill]. */
+        /**
+         * Replaces the whole array with [other] value.
+         *
+         * A less-verbose alias to [fill].
+         *
+         * In-place method.
+         */
         @Suppress("unused_parameter")
         operator fun set(any: _I, other: Double) {
             a.fill(other)
         }
 
         /**
-         * A less-verbose alias to [view].
+         * Returns a subarray with index 1 specified to [c].
          *
-         * Use in conjunction with [_I], e.g. `m[_I, i]`.
+         * A less-verbose alias to [view]:
+         *     a.V[_I, c] == a.view(c, 1)
+         *
+         * Viewer method.
          */
         // XXX we could generalize this in a way similar to the above method.
-        //     However, after the resulting methods could only be called via
+        //     However, in that case the resulting methods could only be called via
         //     method call syntax with explicit parameter names. E.g.
         //
         //         get(any: _I, vararg rest: _I, c: Int, other: F64Array)
@@ -327,44 +414,74 @@ open class F64Array protected constructor(
         @Suppress("unused_parameter")
         operator fun get(any: _I, c: Int) = a.view(c, axis = 1)
 
+        /**
+         * Replaces a subarray with index 1 specified to [c] with the values from [other].
+         *
+         * A less-verbose alias to [view]:
+         *     a.V[_I, c] == a.view(c, 1)
+         *
+         * In-place method for this and copying method for [other].
+         */
         @Suppress("unused_parameter")
         operator fun set(any: _I, c: Int, other: F64Array) {
             other.copyTo(a.view(c, axis = 1))
         }
 
+        /**
+         * Replaces a subarray with index 1 specified to [c] with the [init] value.
+         *
+         * In-place method.
+         */
         @Suppress("unused_parameter")
         operator fun set(any: _I, c: Int, init: Double) {
             a.view(c, axis = 1).fill(init)
         }
     }
 
-    /** Returns a copy of the elements in this array. */
+    /**
+     * Returns a copy of this array.
+     *
+     * The copy has the same [shape] as the original, but not necessary the same [strides], since
+     * the copy is always flattenable and dense, even if the original array is not.
+     *
+     * Copying method.
+     */
     fun copy(): F64Array {
         val copy = invoke(*shape)
         copyTo(copy)
         return copy
     }
 
-    /** Copies elements in this array to [other] array. */
+    /**
+     * Copies elements in this array to [other] array.
+     *
+     * In-place method for [other] and copying method for this.
+     */
     open fun copyTo(other: F64Array): Unit = commonUnrollToFlat(other) { a, b -> a.copyTo(b) }
 
-    /** A less verbose alternative to [copyTo]. */
-    operator fun set(vararg any: _I, other: F64Array) = when {
-        any.size > nDim -> throw IllegalArgumentException("too many axes")
-        any.size < nDim -> throw IllegalArgumentException("too few axes")
-        else -> other.copyTo(this)
-    }
-
     /**
-     * Reshapes this array into a matrix in row-major order.
+     * Reshapes this array.
+     *
+     * The original and the new array contain the same elements in the same orider, if both are enumerated row-major.
+     *
+     * For example,
+     *     F64Array.of(1.0, 2.0, 3.0, 4.0, 5.0, 6.0).reshape(2, 3)
+     * produces a 2x3 matrix:
+     *     [
+     *         [1.0, 2.0, 3.0],
+     *         [4.0, 5.0, 6.0]
+     *     ]
      *
      * Only supported for flattenable arrays.
+     *
+     * Viewer method.
      */
     open fun reshape(vararg shape: Int): F64Array = flatten().reshape(*shape)
 
     /**
      * Appends this array to another array.
      *
+     * @param axis the axis along which the arrays are appended.
      * @since 0.2.3
      */
     fun append(other: F64Array, axis: Int = 0): F64Array {
@@ -372,10 +489,11 @@ open class F64Array protected constructor(
     }
 
     /**
-     * Flattens the array into a 1-D view in O(1) time.
+     * Flattens the array into a 1D view in O(1) time.
      *
-     * No data copying is performed, thus the operation is only applicable
-     * to flattenable arrays.
+     * Only implemented for flattenable arrays.
+     *
+     * Viewer method.
      */
     open fun flatten(): F64FlatArray {
         check(isFlattenable) { "array can't be flattened" }
@@ -386,19 +504,27 @@ open class F64Array protected constructor(
      * Creates a sliced view of this array in O(1) time.
      *
      * @param from the first index of the slice (inclusive).
-     * @param to the last index of the slice (exclusive).
+     * @param to the last index of the slice (exclusive). `-1` is treated as "until the end", otherwise must be
+     * strictly greater than [from] (empty arrays are not allowed).
      * @param step indexing step.
      * @param axis to slice along.
      */
     fun slice(from: Int = 0, to: Int = -1, step: Int = 1, axis: Int = 0): F64Array {
-        val axisTo = if (to == -1) shape[axis] else to
-        if (from < 0 || axisTo < from || axisTo > shape[axis]) {
-            throw IndexOutOfBoundsException()
+        require(step > 0) { "slicing step must be positive, but was $step" }
+        require(axis in 0 until nDim) { "axis out of bounds: $axis" }
+        require(from >= 0) { "slicing start index must be positive, but was $from" }
+        val actualTo = if (to != -1) {
+            require(to > from) { "slicing end index $to must be greater than start index $from" }
+            require(to <= shape[axis]) { "slicing end index out of bounds: $to > ${shape[axis]}" }
+            to
+        } else {
+            require(shape[axis] > from) { "slicing start index out of bounds: $from >= ${shape[axis]}" }
+            shape[axis]
         }
 
         val sliceStrides = strides.clone().apply { this[axis] *= step }
         val sliceShape = shape.clone().apply {
-            this[axis] = (axisTo - from + step - 1) / step
+            this[axis] = (actualTo - from + step - 1) / step
         }
         return invoke(data, offset + from * strides[axis], sliceStrides, sliceShape)
     }
@@ -407,10 +533,16 @@ open class F64Array protected constructor(
 
     /**
      * Fills this array with a given [init] value.
+     *
+     * In-place method.
      */
     open fun fill(init: Double): Unit = flatten().fill(init)
 
-    /** Applies a given permutation of indices to the elements in the array. */
+    /**
+     * Applies a given permutation of indices to the elements in the array.
+     *
+     * In-place method.
+     */
     open fun reorder(indices: IntArray, axis: Int = 0) {
         reorderInternal(
             this, indices, axis,
@@ -419,26 +551,31 @@ open class F64Array protected constructor(
         )
     }
 
-    /** A less verbose alternative to [fill]. */
-    operator fun set(vararg any: _I, value: Double) = when {
-        any.size > nDim -> throw IllegalArgumentException("too many axes")
-        any.size < nDim -> throw IllegalArgumentException("too few axes")
-        else -> fill(value)
-    }
-
-    /** Computes a dot product between two 1-D arrays. */
+    /**
+     * Computes a dot product between two vectors.
+     *
+     * Only implemented for flat arrays.
+     */
     open infix fun dot(other: ShortArray): Double = unsupported()
 
-    /** Computes a dot product between two 1-D arrays. */
+    /**
+     * Computes a dot product between two vectors.
+     *
+     * Only implemented for flat arrays.
+     */
     open infix fun dot(other: IntArray): Double = unsupported()
 
-    /** Computes a dot product between two 1-D arrays. */
+    /**
+     * Computes a dot product between two vectors.
+     *
+     * Only implemented for flat arrays. Optimized for dense arrays.
+     */
     infix fun dot(other: DoubleArray): Double = dot(other.asF64Array())
 
     /**
-     * Computes a dot product between two 1-D arrays.
+     * Computes a dot product between two vectors.
      *
-     * Optimized for dense arrays.
+     * Only implemented for flat arrays. Optimized for dense arrays.
      */
     open infix fun dot(other: F64Array): Double = unsupported()
 
@@ -476,86 +613,119 @@ open class F64Array protected constructor(
     /**
      * Computes cumulative sum of the elements.
      *
-     * The operation is done **in place**.
-     *
-     * Available only for 1-D arrays.
+     * In-place method. Only implemented for flat arrays.
      */
-    open fun cumSum() {
-        check(nDim == 1)
-        val acc = KahanSum()
-        for (pos in 0 until size) {
-            acc += unsafeGet(pos)
-            unsafeSet(pos, acc.result())
-        }
-    }
+    open fun cumSum(): Unit = unsupported()
 
     /**
      * Returns the maximum element.
+     *
+     * If any of array elements is NaN, the result is undefined but will be one of the array elements.
      *
      * Optimized for dense arrays.
      */
     open fun max(): Double = unrollToFlat().map { it.max() }.max() ?: Double.NEGATIVE_INFINITY
 
     /**
+     * Returns the index of the maximum element.
+     *
+     * If any of array elements is NaN, the result is undefined but will be a valid index.
+     *
+     * Only implemented for flat arrays.
+     */
+    open fun argMax(): Int = unsupported()
+
+    /**
      * Returns the minimum element.
+     *
+     * If any of array elements is NaN, the result is undefined but will be one of the array elements.
      *
      * Optimized for dense arrays.
      */
     open fun min(): Double = unrollToFlat().map { it.min() }.min() ?: Double.POSITIVE_INFINITY
 
     /**
-     * Replaces each element of this array with its exponent.
+     * Returns the index of the minimum element.
      *
-     * Optimized for dense arrays.
+     * If any of array elements is NaN, the result is undefined but will be a valid index.
+     *
+     * Only implemented for flat arrays.
+     */
+    open fun argMin(): Int = unsupported()
+
+    /**
+     * Replaces each element x of this array with its exponent exp(x).
+     *
+     * In-place method. Optimized for dense arrays.
      */
     open fun expInPlace(): Unit = unrollToFlat().forEach { it.expInPlace() }
 
+    /**
+     * A copying version of [expInPlace].
+     *
+     * Copying method. Optimized for dense arrays.
+     */
     fun exp() = copy().apply { expInPlace() }
 
     /**
-     * Computes exp(x) - 1 for each element of this array.
+     * Replaces each element x of this array with exp(x) - 1.
      *
-     * Optimized for dense arrays.
+     * In-place method. Optimized for dense arrays.
      *
      * @since 0.3.0
      */
     open fun expm1InPlace(): Unit = unrollToFlat().forEach { it.expm1InPlace() }
 
+    /**
+     * A copying version of [expm1InPlace].
+     *
+     * Copying method. Optimized for dense arrays.
+     */
     fun expm1() = copy().apply { expm1InPlace() }
 
     /**
-     * Computes the natural log of each element of this array.
+     * Replaces each element x of this array with its natural logarithm log(x).
      *
-     * Optimized for dense arrays.
+     * In-place method. Optimized for dense arrays.
      */
     open fun logInPlace(): Unit = unrollToFlat().forEach { it.logInPlace() }
 
+    /**
+     * A copying version of [logInPlace].
+     *
+     * Copying method. Optimized for dense arrays.
+     */
     fun log() = copy().apply { logInPlace() }
 
     /**
-     * Computes log(1 + x) for each element of this array.
+     * Replaces each element x of this array with log(1 + x).
      *
-     * Optimized for dense arrays.
+     * In-place method. Optimized for dense arrays.
      *
      * @since 0.3.0
      */
     open fun log1pInPlace(): Unit = unrollToFlat().forEach { it.log1pInPlace() }
 
+    /**
+     * A copying version of [log1pInPlace].
+     *
+     * Copying method. Optimized for dense arrays.
+     */
     fun log1p() = copy().apply { log1pInPlace() }
 
     /**
      * Rescales the elements so that the sum is 1.0.
      *
-     * The operation is done **in place**.
+     * In-place method.
      */
     fun rescale() {
         this /= sum() + Precision.EPSILON * shape.product().toDouble()
     }
 
     /**
-     * Rescales the element so that the exponent of the sum is 1.0.
+     * Rescales the elements so that the sum of their exponents is 1.0.
      *
-     * The operation is done **in place**.
+     * In-place method.
      */
     fun logRescale() {
         this -= logSumExp()
@@ -564,33 +734,35 @@ open class F64Array protected constructor(
     /**
      * Computes
      *
-     *   log(exp(v[0]) + ... + exp(v[size - 1]))
+     *     log(Σ_x exp(x))
      *
      * in a numerically stable way.
      */
     open fun logSumExp(): Double = unrollToFlat().map { it.logSumExp() }.logSumExp()
 
-    open fun logAddExpAssign(other: F64Array): Unit =
-            commonUnrollToFlat(other) { a, b -> a.logAddExpAssign(b) }
-
-    infix fun logAddExp(other: F64Array): F64Array = copy().apply { logAddExpAssign(other) }
+    /**
+     * Plus-assign for values stored as logarithms.
+     *
+     * In other words, the same as invoking
+     *
+     *     this[*i] = log(exp(this[*i]) + exp(other[*i]))
+     *
+     * for every valid i.
+     *
+     * In-place method.
+     */
+    open fun logAddExpAssign(other: F64Array): Unit = commonUnrollToFlat(other) { a, b -> a.logAddExpAssign(b) }
 
     /**
      * Computes elementwise
      *
-     *     log(exp(this[i]) + exp(other[i]))
+     *     log(exp(this[*i]) + exp(other[*i]))
      *
      * in a numerically stable way.
+     *
+     * Copying method.
      */
-    @Deprecated("Three-argument syntax is deprecated", ReplaceWith("logAddExpAssign(other)"))
-    open fun logAddExp(other: F64Array, dst: F64Array) {
-        if (dst === this) {
-            logAddExpAssign(other)
-        } else {
-            (this logAddExp other).copyTo(dst)
-        }
-
-    }
+    infix fun logAddExp(other: F64Array): F64Array = copy().apply { logAddExpAssign(other) }
 
     operator fun unaryPlus() = this
 
@@ -629,26 +801,49 @@ open class F64Array protected constructor(
     open operator fun divAssign(update: Double): Unit = unrollToFlat().forEach { it /= update }
 
     /** Ensures a given array has the same dimensions as this array. */
-    fun checkShape(other: F64Array): F64Array {
+    protected fun checkShape(other: F64Array): F64Array {
         // Could relax this to "broadcastable".
-        require(this === other || shape.contentEquals(other.shape)) {
+        check(this === other || shape.contentEquals(other.shape)) {
             "operands shapes do not match: ${shape.contentToString()} vs ${other.shape.contentToString()}"
         }
         return other
     }
 
+    /**
+     * Returns a sequence of all array elements. Useful for testing.
+     */
     internal open fun asSequence(): Sequence<Double> = unrollToFlat().flatMap { it.asSequence() }
 
-    // XXX must be overridden in flat array.
+    /**
+     * Converts this array to a conventional Kotlin structure.
+     *
+     * For example, a vector will be converted to a [DoubleArray], a matrix will become `Array<DoubleArray>` etc.
+     *
+     * Copying method.
+     */
     open fun toArray(): Any = toGenericArray()
 
-    // XXX must be overridden in flat array.
+    /**
+     * Converts this array to an [Array].
+     *
+     * For example, a matrix will become `Array<DoubleArray>` etc.
+     *
+     * Copying method. Not implemented for flat arrays.
+     */
     open fun toGenericArray(): Array<*> = Array(size) { view(it).toArray() }
 
-    // XXX must be overridden in flat array.
+    /**
+     * Converts this vector to a [DoubleArray].
+     *
+     * Copying method. Only implemented for flat arrays.
+     */
     open fun toDoubleArray(): DoubleArray = throw UnsupportedOperationException()
 
-    // XXX must be overridden in flat array.
+    /**
+     * Creates a [String] representation of the given array.
+     *
+     * At most [maxDisplay] elements are printed for each dimension.
+     */
     open fun toString(
             maxDisplay: Int,
             format: DecimalFormat = DecimalFormat("#.####")
@@ -684,7 +879,6 @@ open class F64Array protected constructor(
 
     override fun toString() = toString(8)
 
-    // XXX must be overridden in flat array.
     override fun equals(other: Any?): Boolean = when {
         this === other -> true
         other !is F64Array -> false
@@ -692,17 +886,21 @@ open class F64Array protected constructor(
         else -> (0 until size).all { view(it) == other.view(it) }
     }
 
-    // XXX must be overridden in flat array.
     override fun hashCode(): Int = (0 until size).fold(1) { acc, r ->
         31 * acc + view(r).hashCode()
     }
 
     companion object {
-        /** Creates a zero-filled array of a given [shape]. */
+        /**
+         * Creates a zero-filled flat array of a given [shape].
+         */
         operator fun invoke(vararg shape: Int): F64Array {
             return F64FlatArray(DoubleArray(shape.product())).reshape(*shape)
         }
 
+        /**
+         * Creates a flat array of a given [size] and fills it using [block].
+         */
         inline operator fun invoke(size: Int, block: (Int) -> Double): F64Array {
             return invoke(size).apply {
                 for (i in 0 until size) {
@@ -711,6 +909,9 @@ open class F64Array protected constructor(
             }
         }
 
+        /**
+         * Creates a matrix with a given number of rows and columns and fills it using [block].
+         */
         inline operator fun invoke(
                 numRows: Int,
                 numColumns: Int,
@@ -725,6 +926,9 @@ open class F64Array protected constructor(
             }
         }
 
+        /**
+         * Creates a 3D array with given dimensions and fills it using [block].
+         */
         inline operator fun invoke(
                 depth: Int,
                 numRows: Int,
@@ -742,7 +946,9 @@ open class F64Array protected constructor(
             }
         }
 
-        /** Creates a vector with given elements. */
+        /**
+         * Creates a vector from given elements.
+         */
         fun of(first: Double, vararg rest: Double): F64Array {
             val data = DoubleArray(rest.size + 1)
             data[0] = first
@@ -750,10 +956,16 @@ open class F64Array protected constructor(
             return data.asF64Array()
         }
 
-        /** Creates a vector filled with a given [init] element. */
+        /**
+         * Creates a vector filled with a given [init] element.
+         */
         fun full(size: Int, init: Double) = invoke(size).apply { fill(init) }
 
-        /** Creates a matrix filled with a given [init] element. */
+        /**
+         * Creates an array filled with a given [init] element.
+         *
+         * Note that [init] must be a named argument.
+         */
         fun full(vararg shape: Int, init: Double): F64Array {
             return invoke(*shape).apply { fill(init) }
         }
@@ -786,36 +998,6 @@ open class F64Array protected constructor(
             return result
         }
 
-        private fun calculateUnrollDimAndStride(strides: IntArray, shape: IntArray): Pair<Int, Int> {
-            require(strides.size == shape.size) {
-                "Strides and shape have different sizes (${strides.size} and ${shape.size})"
-            }
-            var prevStride = 0
-            var unrollable = true
-            var unrollDim = 0
-            var unrollStride = 0
-            for (i in strides.indices) {
-                require(shape[i] >= 0) { "Shape values must be non-negative, but got ${shape[i]}" }
-                if (shape[i] <= 1) {
-                    if (unrollable) unrollDim = i + 1
-                    continue
-                }
-                require(strides[i] > 0) { "Strides must be strictly positive, but got ${strides[i]}" }
-                require(prevStride == 0 || prevStride >= strides[i] * shape[i]) {
-                    "Strides-shape condition is violated for dimension $i: $prevStride is less than " +
-                            "${strides[i]} * ${shape[i]}"
-                }
-                if (unrollable && (prevStride == 0 || prevStride == strides[i] * shape[i])) {
-                    unrollDim = i + 1
-                    unrollStride = strides[i]
-                } else {
-                    unrollable = false
-                }
-                prevStride = strides[i]
-            }
-            return unrollDim to unrollStride
-        }
-
         /** "Smart" constructor. */
         internal operator fun invoke(
                 data: DoubleArray,
@@ -835,17 +1017,29 @@ open class F64Array protected constructor(
     }
 }
 
-/** Wraps a given array. The array will not be copied. */
+/**
+ * Wraps a given array.
+ *
+ * Viewer method.
+ */
 fun DoubleArray.asF64Array(): F64Array {
     return F64FlatArray(this, 0, 1, size)
 }
 
-/** Wraps a given region of the array. The array will not be copied. */
+/**
+ * Wraps a given region of the array.
+ *
+ * Viewer method.
+ */
 fun DoubleArray.asF64Array(offset: Int, size: Int): F64Array {
     return F64FlatArray(this, offset, 1, size)
 }
 
-/** Copies the elements of this nested array into [F64Array] of the same shape. */
+/**
+ * Copies the elements of this nested array into [F64Array] of the same shape.
+ *
+ * Copying method.
+ */
 fun Array<*>.toF64Array(): F64Array {
     val shape = guessShape()
     return flatten(this).asF64Array().reshape(*shape)

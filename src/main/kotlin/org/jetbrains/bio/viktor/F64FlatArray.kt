@@ -137,36 +137,46 @@ open class F64FlatArray protected constructor(
         return acc + accUnaligned
     }
 
+    override fun cumSum() {
+        val acc = KahanSum()
+        for (pos in 0 until size) {
+            acc += unsafeGet(pos)
+            unsafeSet(pos, acc.result())
+        }
+    }
 
-    @Suppress("SimplifyNegatedBinaryExpression")
+
     override fun min(): Double {
-        var res = Double.POSITIVE_INFINITY
+        val pos = argMin()
+        return if (pos >= 0) unsafeGet(pos) else Double.POSITIVE_INFINITY
+    }
+
+    override fun argMin(): Int {
+        var minValue = Double.POSITIVE_INFINITY
+        var res = -1
         for (pos in 0 until size) {
             val value = unsafeGet(pos)
-            /*
-                The reason for the inverted comparison is NaNs.
-                While we wait for https://youtrack.jetbrains.com/issue/KT-31280 ,
-                the warning will be suppressed manually.
-            */
-            if (!(value >= res)) {
-                res = value
+            if (value <= minValue) {
+                minValue = value
+                res = pos
             }
         }
         return res
     }
 
-    @Suppress("SimplifyNegatedBinaryExpression")
     override fun max(): Double {
-        var res = Double.NEGATIVE_INFINITY
+        val pos = argMax()
+        return if (pos >= 0) unsafeGet(pos) else Double.NEGATIVE_INFINITY
+    }
+
+    override fun argMax(): Int {
+        var maxValue = Double.NEGATIVE_INFINITY
+        var res = -1
         for (pos in 0 until size) {
             val value = unsafeGet(pos)
-            /*
-                The reason for the inverted comparison is NaNs.
-                While we wait for https://youtrack.jetbrains.com/issue/KT-31280 ,
-                the warning will be suppressed manually.
-            */
-            if (!(value <= res)) {
-                res = value
+            if (value >= maxValue) {
+                maxValue = value
+                res = pos
             }
         }
         return res
@@ -274,8 +284,9 @@ open class F64FlatArray protected constructor(
     }
 
     override fun reshape(vararg shape: Int): F64Array {
-        require(shape.product() == size) {
-            "total size of the new matrix must be unchanged"
+        shape.forEach { require(it > 0) { "Shape must be positive but was $it" } }
+        check(shape.product() == size) {
+            "total size of the new array must be unchanged"
         }
         return when {
             this.shape.contentEquals(shape) -> this
