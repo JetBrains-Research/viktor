@@ -361,7 +361,7 @@ open class F64Array protected constructor(
         /**
          * Fills a subarray with several first indices specified with [init] value.
          *
-         * After we do:
+         * After we call:
          *     a.V[indices] = init
          * the following holds for any appropriately sized `moreIndices` [IntArray]:
          *     a[indices + moreIndices] == init
@@ -504,7 +504,7 @@ open class F64Array protected constructor(
      * Creates a sliced view of this array in O(1) time.
      *
      * @param from the first index of the slice (inclusive).
-     * @param to the last index of the slice (exclusive). `-1` is treated as "until the end", otherwise must be
+     * @param to the last index of the slice (exclusive). `-1` is treated as "until the end", otherwise [to] must be
      * strictly greater than [from] (empty arrays are not allowed).
      * @param step indexing step.
      * @param axis to slice along.
@@ -515,10 +515,10 @@ open class F64Array protected constructor(
         require(from >= 0) { "slicing start index must be positive, but was $from" }
         val actualTo = if (to != -1) {
             require(to > from) { "slicing end index $to must be greater than start index $from" }
-            require(to <= shape[axis]) { "slicing end index out of bounds: $to > ${shape[axis]}" }
+            check(to <= shape[axis]) { "slicing end index out of bounds: $to > ${shape[axis]}" }
             to
         } else {
-            require(shape[axis] > from) { "slicing start index out of bounds: $from >= ${shape[axis]}" }
+            check(shape[axis] > from) { "slicing start index out of bounds: $from >= ${shape[axis]}" }
             shape[axis]
         }
 
