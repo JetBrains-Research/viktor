@@ -3,6 +3,8 @@ package org.jetbrains.bio.viktor
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import java.lang.IllegalArgumentException
+import java.lang.IllegalStateException
 import kotlin.test.assertFailsWith
 
 class F64FlatArraySlicingTest {
@@ -70,8 +72,20 @@ class F64FlatArraySlicingTest {
         }
     }
 
-    @Test(expected = IndexOutOfBoundsException::class) fun sliceOutOfBounds() {
-        F64Array(0).slice(0, 42)
+    @Test(expected = IllegalStateException::class) fun sliceOutOfBounds() {
+        F64Array(7).slice(10, 42)
+    }
+
+    @Test(expected = IllegalArgumentException::class) fun sliceFromNegative() {
+        F64Array(7).slice(-1, 5)
+    }
+
+    @Test(expected = IllegalArgumentException::class) fun sliceToBeforeFrom() {
+        F64Array(7).slice(3, 1)
+    }
+
+    @Test(expected = IllegalArgumentException::class) fun sliceStepNegative() {
+        F64Array(7).slice(3, 5, -1)
     }
 }
 

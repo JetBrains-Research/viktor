@@ -115,14 +115,6 @@ class F64ArrayCreationTest {
 
     @Test fun appendFlat() {
         assertEquals(
-            F64Array.of(1.0, 2.0),
-            F64Array.of(1.0, 2.0).append(F64Array(0))
-        )
-        assertEquals(
-            F64Array.of(1.0, 2.0),
-            F64Array(0).append(F64Array.of(1.0, 2.0))
-        )
-        assertEquals(
             F64Array.of(1.0, 2.0, 3.0, 4.0, 5.0),
             F64Array.of(1.0, 2.0).append(F64Array.of(3.0, 4.0, 5.0))
         )
@@ -177,7 +169,7 @@ class F64ArrayCreationTest {
         assertEquals(v.reshape(4, 1), v.reshape(2, 2).reshape(4, 1))
     }
 
-    @Test(expected = IllegalArgumentException::class) fun reshapeSizeMismatch() {
+    @Test(expected = IllegalStateException::class) fun reshapeSizeMismatch() {
         F64Array.of(
             1.0, 2.0,
             3.0, 4.0

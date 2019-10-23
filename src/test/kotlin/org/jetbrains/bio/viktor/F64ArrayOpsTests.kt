@@ -84,7 +84,6 @@ class F64FlatArrayOpsTest(private val v: F64Array) {
     }
 
     @Test fun _toString() {
-        assertEquals("[]", F64Array(0).toString())
         assertEquals("[42]", F64Array.of(42.0).toString())
         assertEquals("[0, 1, 2, 3]", gappedArray(0..3).toString())
     }
@@ -178,9 +177,8 @@ class F64ArrayOpsTest {
     }
 
     @Test fun _toString2() {
-        assertEquals("[]", F64Array(0, 0).toString())
-        assertEquals("[[]]", F64Array(1, 0).toString())
         assertEquals("[[0], [0]]", F64Array(2, 1).toString())
+        assertEquals("[[0, 0]]", F64Array(1, 2).toString())
     }
 
     @Test fun toString2Large() {
@@ -196,7 +194,6 @@ class F64ArrayOpsTest {
     }
 
     @Test fun _toString3() {
-        assertEquals("[]", F64Array(0, 0, 0).toString())
         assertEquals("[[[0]]]", F64Array(1, 1, 1).toString())
         assertEquals(
             "[[[0], [0]], [[0], [0]], [[0], [0]]]",
@@ -284,14 +281,20 @@ class F64VectorMathTest(private val v: F64Array) {
         val sequenceMin = v.asSequence().min()
         assertNotNull(sequenceMin, "Sequential min of an array was null")
         assertEquals(sequenceMin, v.min(), 0.0)
-        assertEquals(v[v.argMin()], v.min(), 0.0)
+        if (v.nDim == 1) {
+            // argMin is only applicable to flat arrays
+            assertEquals(v[v.argMin()], v.min(), 0.0)
+        }
     }
 
     @Test fun max() {
         val sequenceMax = v.asSequence().max()
         assertNotNull(sequenceMax, "Sequential max of an array was null")
         assertEquals(sequenceMax, v.max(), 0.0)
-        assertEquals(v[v.argMax()], v.max(), 0.0)
+        if (v.nDim == 1) {
+            // argMax is only applicable to flat arrays
+            assertEquals(v[v.argMax()], v.max(), 0.0)
+        }
     }
 
     companion object {
