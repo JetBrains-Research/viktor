@@ -326,7 +326,7 @@ open class F64Array protected constructor(
      *     a.V[4, 2] // fails, since it doesn't reference an array
      */
     @delegate:Transient
-    val V: Viewer by lazy(LazyThreadSafetyMode.NONE) { Viewer(this) }
+    val V: Viewer by lazy(LazyThreadSafetyMode.PUBLICATION) { Viewer(this) }
 
     class Viewer(private val a: F64Array) {
         /**
