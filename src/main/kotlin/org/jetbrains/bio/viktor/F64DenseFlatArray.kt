@@ -65,12 +65,12 @@ class F64LargeDenseArray(
         size: Int
 ) : F64DenseFlatArray(data, offset, size) {
 
-    override fun sd() = NativeSpeedups.sd(data, offset, size)
+    override fun sd() = NativeSpeedups.unsafeSD(data, offset, size)
 
-    override fun sum() = NativeSpeedups.sum(data, offset, size)
+    override fun sum() = NativeSpeedups.unsafeSum(data, offset, size)
 
     override fun cumSum() {
-        if (!NativeSpeedups.cumSum(data, offset, size)) super.cumSum()
+        if (!NativeSpeedups.unsafeCumSum(data, offset, size)) super.cumSum()
     }
 
     override fun min() = NativeSpeedups.unsafeMin(data, offset, size)

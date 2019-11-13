@@ -1,11 +1,9 @@
 package org.jetbrains.bio.viktor;
 
 import org.apache.commons.math3.util.Precision;
-import org.jetbrains.annotations.Nullable;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 @BenchmarkMode(Mode.Throughput)
@@ -47,7 +45,7 @@ public class SumBenchmark {
 
 	@Benchmark
 	public void vector(final Blackhole bh) {
-		res = NativeSpeedups.INSTANCE.sum(src, 0, arraySize);
+		res = NativeSpeedups.INSTANCE.unsafeSum(src, 0, arraySize);
 		bh.consume(res);
 	}
 

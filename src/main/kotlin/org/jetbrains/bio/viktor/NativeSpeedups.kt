@@ -50,25 +50,9 @@ internal object NativeSpeedups {
             length: Int
     ): Double
 
-    external fun sum(values: DoubleArray, offset: Int, length: Int): Double
+    external fun unsafeSum(values: DoubleArray, offset: Int, length: Int): Double
 
-    external fun weightedSum(
-            values: DoubleArray,
-            valuesOffset: Int,
-            weights: DoubleArray,
-            weightsOffset: Int,
-            length: Int
-    ): Double
+    external fun unsafeSD(values: DoubleArray, offset: Int, length: Int): Double
 
-    external fun weightedMean(
-            values: DoubleArray,
-            valuesOffset: Int,
-            weights: DoubleArray,
-            weightsOffset: Int,
-            length: Int
-    ): Double
-
-    external fun sd(values: DoubleArray, offset: Int, length: Int): Double
-
-    external fun cumSum(dest: DoubleArray, destOffset: Int, length: Int): Boolean
+    external fun unsafeCumSum(dest: DoubleArray, destOffset: Int, length: Int): Boolean
 }
