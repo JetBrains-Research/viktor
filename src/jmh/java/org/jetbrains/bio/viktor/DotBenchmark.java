@@ -13,17 +13,20 @@ import java.util.concurrent.TimeUnit;
 @Warmup(iterations = 5)
 @Measurement(iterations = 10)
 @Fork(value = 2, jvmArgsPrepend = "-Djava.library.path=./build/libs")
-public class SDBenchmark {
+public class DotBenchmark {
 
 	@Param({"1_000", "100_000", "10_000_000"})
 	int arraySize;
-	private double[] src;
+	private double[] src1;
+	private double[] src2;
 	private double res;
 
 	@Setup
 	public void generateData() {
-		src = new double[arraySize];
-		Internal.sampleUniformGamma(src);
+		src1 = new double[arraySize];
+		Internal.sampleUniformGamma(src1);
+		src2 = new double[arraySize];
+		Internal.sampleUniformGamma(src2);
 	}
 
 	@TearDown
@@ -37,19 +40,16 @@ public class SDBenchmark {
 
 	@Benchmark
 	public void scalar(final Blackhole bh) {
-		double sum = 0., sumSquares = 0.;
-		for (double value : src) {
-			sum += value;
-			sumSquares += value * value;
+		res = 0.;
+		for (int i = 0; i < arraySize; i++) {
+			res += src1[i] * src2[i];
 		}
-		res = Math.sqrt((sumSquares - sum * sum / arraySize) / (arraySize - 1));
-		if (bh != null)	bh.consume(res);
+		if (bh != null) bh.consume(res);
 	}
 
 	@Benchmark
 	public void vector(final Blackhole bh) {
-		res = NativeSpeedups.INSTANCE.sd(src, 0, arraySize);
+		res = NativeSpeedups.INSTANCE.unsafeDot(src1, 0, src2, 0, arraySize);
 		bh.consume(res);
 	}
-
 }
