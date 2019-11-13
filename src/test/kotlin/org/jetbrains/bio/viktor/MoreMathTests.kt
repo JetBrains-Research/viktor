@@ -31,7 +31,7 @@ class MoreMathTest {
         assertIsNan(Double.POSITIVE_INFINITY logAddExp Double.NaN)
     }
 
-    fun assertIsNan(x: Double) {
+    private fun assertIsNan(x: Double) {
         assertTrue(x.isNaN(), "Expected NaN but got $x")
     }
 }

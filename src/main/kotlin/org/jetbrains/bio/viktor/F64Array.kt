@@ -325,6 +325,7 @@ open class F64Array protected constructor(
      *     a.V[_I, 2] // returns 2nd column
      *     a.V[4, 2] // fails, since it doesn't reference an array
      */
+    @Suppress("PropertyName")
     @delegate:Transient
     val V: Viewer by lazy(LazyThreadSafetyMode.PUBLICATION) { Viewer(this) }
 
@@ -1098,4 +1099,5 @@ private fun Array<*>.guessShape(): IntArray {
  * @since 0.1.1 Renamed to `_I` because all-underscore names are reserved
  *              for internal use in Kotlin.
  */
-object _I {}
+@Suppress("ClassName")
+object _I

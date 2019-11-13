@@ -47,8 +47,7 @@ internal object Loader {
     fun ensureLoaded() {}
 
     private val arch: String get() {
-        val arch = System.getProperty("os.arch").toLowerCase()
-        return when (arch) {
+        return when (val arch = System.getProperty("os.arch").toLowerCase()) {
             "amd64", "x86_64" -> "x86_64"
             else -> error("unsupported architecture: $arch")
         }
@@ -110,7 +109,3 @@ Build viktor for your system from source as described in https://github.com/JetB
 
 internal external fun isAvxSupported(): Boolean
 internal external fun isSse2Supported(): Boolean
-
-fun main(args: Array<String>) {
-    Loader.ensureLoaded()
-}

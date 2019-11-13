@@ -83,7 +83,7 @@ class F64FlatArrayOpsTest(private val v: F64Array) {
         assertNotEquals(v, gappedArray(1..30))
     }
 
-    @Test fun _toString() {
+    @Test fun toStringNormal() {
         assertEquals("[42]", F64Array.of(42.0).toString())
         assertEquals("[0, 1, 2, 3]", gappedArray(0..3).toString())
     }
@@ -176,7 +176,7 @@ class F64ArrayOpsTest {
         assertNotEquals(m, m.flatten())
     }
 
-    @Test fun _toString2() {
+    @Test fun toString2() {
         assertEquals("[[0], [0]]", F64Array(2, 1).toString())
         assertEquals("[[0, 0]]", F64Array(1, 2).toString())
     }
@@ -193,7 +193,7 @@ class F64ArrayOpsTest {
         )
     }
 
-    @Test fun _toString3() {
+    @Test fun toString3() {
         assertEquals("[[[0]]]", F64Array(1, 1, 1).toString())
         assertEquals(
             "[[[0], [0]], [[0], [0]], [[0], [0]]]",

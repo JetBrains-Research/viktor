@@ -6,13 +6,37 @@ internal object NativeSpeedups {
         Loader.ensureLoaded()
     }
 
-    external fun unsafePlusAssign(dst: DoubleArray, dstOffset: Int, src: DoubleArray, srcOffset: Int, length: Int): Boolean
+    external fun unsafePlusAssign(
+            dst: DoubleArray,
+            dstOffset: Int,
+            src: DoubleArray,
+            srcOffset: Int,
+            length: Int
+    ): Boolean
 
-    external fun unsafeMinusAssign(dst: DoubleArray, dstOffset: Int, src: DoubleArray, srcOffset: Int, length: Int): Boolean
+    external fun unsafeMinusAssign(
+            dst: DoubleArray,
+            dstOffset: Int,
+            src: DoubleArray,
+            srcOffset: Int,
+            length: Int
+    ): Boolean
 
-    external fun unsafeTimesAssign(dst: DoubleArray, dstOffset: Int, src: DoubleArray, srcOffset: Int, length: Int): Boolean
+    external fun unsafeTimesAssign(
+            dst: DoubleArray,
+            dstOffset: Int,
+            src: DoubleArray,
+            srcOffset: Int,
+            length: Int
+    ): Boolean
 
-    external fun unsafeDivAssign(dst: DoubleArray, dstOffset: Int, src: DoubleArray, srcOffset: Int, length: Int): Boolean
+    external fun unsafeDivAssign(
+            dst: DoubleArray,
+            dstOffset: Int,
+            src: DoubleArray,
+            srcOffset: Int,
+            length: Int
+    ): Boolean
 
     external fun unsafeNegateInPlace(dst: DoubleArray, dstOffset: Int, length: Int): Boolean
 
@@ -40,7 +64,13 @@ internal object NativeSpeedups {
 
     external fun unsafeLogSumExp(src: DoubleArray, srcOffset: Int, length: Int): Double
 
-    external fun unsafeLogAddExp(dst: DoubleArray, dstOffset: Int, src: DoubleArray, srcOffset: Int, length: Int): Boolean
+    external fun unsafeLogAddExp(
+            dst: DoubleArray,
+            dstOffset: Int,
+            src: DoubleArray,
+            srcOffset: Int,
+            length: Int
+    ): Boolean
 
     external fun unsafeDot(
             src1: DoubleArray,

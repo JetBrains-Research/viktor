@@ -89,8 +89,10 @@ fun F64Array.partition(p: Int) {
  * Helper [partition] extension.
  *
  * Invariants: p = partition(values, left, right, p)
- * for all i <  p: values[i] <  values[p]
- * for all i >= p: values[p] >= values[p]
+ * for all i < p:
+ *     values[i] < values[p]
+ * for all i >= p:
+ *     values[i] >= values[p]
  *
  * @param p the index of the element to partition by.
  * @param left start index (inclusive).
@@ -101,7 +103,7 @@ internal fun F64Array.partition(p: Int, left: Int, right: Int): Int {
     swap(p, right)  // move to end.
 
     var ptr = left
-    for (i in left..right - 1) {
+    for (i in left until right) {
         if (this[i] < pivot) {
             swap(i, ptr)
             ptr++

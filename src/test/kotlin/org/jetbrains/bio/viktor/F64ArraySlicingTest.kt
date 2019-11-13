@@ -3,8 +3,6 @@ package org.jetbrains.bio.viktor
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Test
-import java.lang.IllegalArgumentException
-import java.lang.IllegalStateException
 import kotlin.test.assertFailsWith
 
 class F64FlatArraySlicingTest {
@@ -90,11 +88,6 @@ class F64FlatArraySlicingTest {
 }
 
 class F64ArraySlicing {
-    private val m = F64Array.of(
-        0.0, 1.0,
-        2.0, 3.0,
-        4.0, 5.0
-    ).reshape(3, 2)
 
     @Test fun rowView() {
         val m = F64Array.of(

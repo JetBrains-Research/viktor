@@ -37,10 +37,10 @@ class KahanSum @JvmOverloads constructor(private var accumulator: Double = 0.0) 
     /** Supplies a number to be added to the accumulator. */
     fun feed(value: Double): KahanSum {
         val t = accumulator + value
-        if (Math.abs(accumulator) >= Math.abs(value)) {
-            compensator += (accumulator - t) + value
+        compensator += if (abs(accumulator) >= abs(value)) {
+            (accumulator - t) + value
         } else {
-            compensator += (value - t) + accumulator
+            (value - t) + accumulator
         }
 
         accumulator = t

@@ -4,8 +4,6 @@ import org.apache.commons.math3.util.Precision
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Test
-import java.lang.IllegalArgumentException
-import java.lang.UnsupportedOperationException
 import java.util.*
 import kotlin.test.assertTrue
 

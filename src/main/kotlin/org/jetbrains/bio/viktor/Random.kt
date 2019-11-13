@@ -46,9 +46,9 @@ internal object QuickSelect {
  * Computes the [q]-th order statistic over this 1-D array.
  *
  * The implementation follows that of Commons Math. See JavaDoc of
- * [Percentile] for computational details.
+ * [org.apache.commons.math3.stat.descriptive.rank.Percentile] for computational details.
  *
- * The array is modified in-place. Do a [copy] of the array
+ * The array is modified in-place. Do a [F64Array.copy] of the array
  * to avoid mutation if necessary.
  *
  * @since 0.2.0

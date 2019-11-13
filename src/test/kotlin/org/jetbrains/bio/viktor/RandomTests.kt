@@ -87,19 +87,19 @@ class ShuffleTest {
         val values = doubleArrayOf(0.0, 1.0, 2.0, 3.0).asF64Array()
         val counts = HashMap<F64Array, Int>()
 
-        val `n!` = CombinatoricsUtils.factorial(4).toInt()
-        for (i in 0..5000 * `n!`) {
+        val nFactorial = CombinatoricsUtils.factorial(4).toInt()
+        for (i in 0..5000 * nFactorial) {
             values.shuffle()
             val p = values.copy()
             counts[p] = (counts[p] ?: 0) + 1
         }
 
-        assertEquals(`n!`, counts.size)
+        assertEquals(nFactorial, counts.size)
 
         val total = counts.values.sum()
         for (count in counts.values) {
             val p = count.toDouble() / total
-            assertEquals(1.0 / `n!`, p, 1e-2)
+            assertEquals(1.0 / nFactorial, p, 1e-2)
         }
     }
 
