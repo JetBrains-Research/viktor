@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 @Fork(value = 2, jvmArgsPrepend = "-Djava.library.path=./build/libs")
 public class LogSumExpBenchmark {
 
-    @Param({"1_000", "100_000", "10_000_000"})
+    @Param({"1000", "100000", "1000000"})
     int arraySize;
     double[] src;
     double res;

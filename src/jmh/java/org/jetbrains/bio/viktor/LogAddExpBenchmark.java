@@ -16,7 +16,7 @@ import static org.jetbrains.bio.viktor.MoreMathKt.logAddExp;
 @Fork(value = 2, jvmArgsPrepend = "-Djava.library.path=./build/libs")
 public class LogAddExpBenchmark {
 
-    @Param({"1_000", "100_000", "10_000_000"})
+    @Param({"1000", "100000", "1000000"})
     int arraySize;
     double[] src1;
     double[] src2;
