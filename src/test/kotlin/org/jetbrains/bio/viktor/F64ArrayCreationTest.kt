@@ -1,10 +1,9 @@
 package org.jetbrains.bio.viktor
 
 import org.apache.commons.math3.util.Precision
-import org.junit.Assert.assertEquals
 import org.junit.Assert.assertArrayEquals
+import org.junit.Assert.assertEquals
 import org.junit.Test
-import java.lang.IllegalStateException
 import kotlin.test.assertTrue
 
 class F64ArrayCreationTest {
@@ -174,5 +173,12 @@ class F64ArrayCreationTest {
             1.0, 2.0,
             3.0, 4.0
         ).reshape(3, 2)
+    }
+
+    @Test(expected = IllegalArgumentException::class) fun reshapeNegativeShape() {
+        F64Array.of(
+            1.0, 2.0,
+            3.0, 4.0
+        ).reshape(-2, -2)
     }
 }

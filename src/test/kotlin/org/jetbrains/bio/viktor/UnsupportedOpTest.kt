@@ -1,8 +1,6 @@
 package org.jetbrains.bio.viktor
 
 import org.junit.Test
-import java.lang.IllegalStateException
-import java.lang.UnsupportedOperationException
 
 class UnsupportedOpTest {
 
@@ -29,6 +27,11 @@ class UnsupportedOpTest {
     @Test(expected = UnsupportedOperationException::class)
     fun flatArrayReorder() {
         F64Array.of(1.0, 2.0, 3.0).reorder(intArrayOf(2, 1, 0), 1)
+    }
+
+    @Test(expected = UnsupportedOperationException::class)
+    fun indicesSizeReorder() {
+        F64Array.of(1.0, 2.0, 3.0).reorder(intArrayOf(1, 0))
     }
 
     @Test(expected = IllegalStateException::class)
