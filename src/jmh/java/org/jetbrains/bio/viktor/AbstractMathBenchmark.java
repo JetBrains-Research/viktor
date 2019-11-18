@@ -1,7 +1,9 @@
 package org.jetbrains.bio.viktor;
 
 import org.apache.commons.math3.util.Precision;
-import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.Setup;
+import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.infra.Blackhole;
 
 import java.util.function.DoubleUnaryOperator;
@@ -40,7 +42,7 @@ public abstract class AbstractMathBenchmark {
             final double expected = regularOp.applyAsDouble(src[i]);
             if (!Precision.equals(expected, dst[i], 5)) {
                 throw new IllegalStateException(String.format(
-                        "exp(%s) = %s (instead of %s)",
+                        "f(%s) = %s (instead of %s)",
                         src[i], dst[i], expected));
             }
         }
