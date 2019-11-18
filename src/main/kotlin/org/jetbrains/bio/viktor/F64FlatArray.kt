@@ -146,14 +146,11 @@ open class F64FlatArray protected constructor(
     }
 
 
-    override fun min(): Double {
-        val pos = argMin()
-        return if (pos >= 0) unsafeGet(pos) else Double.POSITIVE_INFINITY
-    }
+    override fun min() = unsafeGet(argMin())
 
     override fun argMin(): Int {
         var minValue = Double.POSITIVE_INFINITY
-        var res = -1
+        var res = 0
         for (pos in 0 until size) {
             val value = unsafeGet(pos)
             if (value <= minValue) {
@@ -164,14 +161,11 @@ open class F64FlatArray protected constructor(
         return res
     }
 
-    override fun max(): Double {
-        val pos = argMax()
-        return if (pos >= 0) unsafeGet(pos) else Double.NEGATIVE_INFINITY
-    }
+    override fun max() = unsafeGet(argMax())
 
     override fun argMax(): Int {
         var maxValue = Double.NEGATIVE_INFINITY
-        var res = -1
+        var res = 0
         for (pos in 0 until size) {
             val value = unsafeGet(pos)
             if (value >= maxValue) {
