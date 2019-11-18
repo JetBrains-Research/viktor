@@ -4,7 +4,6 @@ import org.apache.commons.math3.util.Precision;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 @BenchmarkMode(Mode.Throughput)
@@ -33,7 +32,7 @@ public class DotBenchmark {
 	public void checkAnswer() {
 		final double stored = res;
 		scalar(null);
-		if (!Precision.equals(stored, res, 5)) {
+		if (!Precision.equals(stored, res, (stored + res) * 1E-12)) {
 			throw new IllegalStateException(String.format("expected %s, got %s", res, stored));
 		}
 	}

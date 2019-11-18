@@ -29,7 +29,7 @@ public class SDBenchmark {
 	public void checkAnswer() {
 		final double stored = res;
 		scalar(null);
-		if (!Precision.equals(stored, res, 5)) {
+		if (!Precision.equals(stored, res, (stored + res) * 1E-12)) {
 			throw new IllegalStateException(String.format("expected %s, got %s", res, stored));
 		}
 	}
