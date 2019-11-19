@@ -11,10 +11,12 @@
 * [Efficiency and SIMD](#efficiency-and-simd)
 * [Examples](#examples)
 
-See [README](README.md) for instructions on how to install `viktor`.
+See [README](../README.md) for instructions on how to install `viktor`.
 
 The section [Examples](#examples) contains instructive code examples with explanations
 and can be used as a tutorial.
+
+See [Benchmarks](./benchmark.md) for informational benchmarking data.
 
 ## General Concepts
 

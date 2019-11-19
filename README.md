@@ -89,5 +89,5 @@ to deploy a cross-platform version.
 Documentation
 ----
 
-Visit [viktor Documentation](docs.md) for an extensive feature overview
-and instructive code examples. 
+Visit [viktor Documentation](./docs/docs.md) for an extensive feature overview,
+instructive code examples and benchmarking data. 
