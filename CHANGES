@@ -3,6 +3,27 @@ viktor Changelog
 
 Here you can see the full list of changes between each viktor release.
 
+Version 1.0.0
+-------------
+
+Released on November 19, 2019
+
+- Simplified  signatures
+- Added a benchmark JAR task
+- Simplified the native methods' signatures
+- Removed transpose and reversed
+- Introduced unroll mechanics for F64Array
+- Serialization uses isFlattenable instead of isDense
+- Changed native signature of logAddExp to dst-src syntax
+- logAddExp now deals with positive infinities and NaNs
+- Corrected guessShape implementation
+- Correct JNI copy processing
+- Added extensive Markdown documentation
+- Reorganized benchmarks
+- Removed weightedSum / Mean, transpose, reversed
+- Added benchmarking data and description thereof to documentation
+- Fixed Travis builds
+
 Version 0.5.3
 -------------
 
