@@ -1,20 +1,22 @@
 package org.jetbrains.bio.viktor;
 
-import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Precision;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 
 import java.util.concurrent.TimeUnit;
 
+import static org.jetbrains.bio.viktor.MoreMathKt.logAddExp;
+
 @BenchmarkMode(Mode.Throughput)
-@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@OutputTimeUnit(TimeUnit.SECONDS)
 @State(Scope.Benchmark)
-@Warmup(iterations = 10)
+@Warmup(iterations = 5)
 @Measurement(iterations = 10)
 @Fork(value = 2, jvmArgsPrepend = "-Djava.library.path=./build/libs")
 public class LogAddExpBenchmark {
-    @Param({"100", "500", "1000"})
+
+    @Param({"1000", "100000", "1000000"})
     int arraySize;
     double[] src1;
     double[] src2;
@@ -44,8 +46,9 @@ public class LogAddExpBenchmark {
 
     @Benchmark
     public void scalar(final Blackhole bh) {
+        System.arraycopy(src1, 0, dst, 0, arraySize); // let's be fair
         for (int i = 0; i < arraySize; i++) {
-            dst[i] = logAddExp(src1[i], src2[i]);
+            dst[i] = logAddExp(dst[i], src2[i]);
         }
 
         bh.consume(dst);
@@ -53,19 +56,9 @@ public class LogAddExpBenchmark {
 
     @Benchmark
     public void vector(final Blackhole bh) {
-        NativeSpeedups.INSTANCE.unsafeLogAddExp(src1, 0, src2, 0, dst, 0, arraySize);
+        System.arraycopy(src1, 0, dst, 0, arraySize);
+        NativeSpeedups.INSTANCE.unsafeLogAddExp(dst, 0, src2, 0, arraySize);
         bh.consume(dst);
-    }
-
-    private static double logAddExp(final double a, final double b) {
-        if (Double.isInfinite(a) && a < 0) {
-            return b;
-        }
-        if (Double.isInfinite(b) && b < 0) {
-            return a;
-        }
-
-        return FastMath.max(a, b) + StrictMath.log1p(FastMath.exp(-Math.abs(a - b)));
     }
 }
 

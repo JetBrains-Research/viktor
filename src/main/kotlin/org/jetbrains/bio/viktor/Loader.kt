@@ -37,16 +37,17 @@ internal object Loader {
     private val LOG = Logger.getLogger(Loader::class.java)
 
     /** If `true` vector operations will be SIMD-optimized. */
-    internal var nativeLibraryLoaded = false
+    internal var nativeLibraryLoaded: Boolean = false
+        private set
 
-    internal var optimizationSupported = false
-    internal var architectureSupported = false
+    private var optimizationSupported = false
+    private var architectureSupported = false
+
 
     fun ensureLoaded() {}
 
     private val arch: String get() {
-        val arch = System.getProperty("os.arch").toLowerCase()
-        return when (arch) {
+        return when (val arch = System.getProperty("os.arch").toLowerCase()) {
             "amd64", "x86_64" -> "x86_64"
             else -> error("unsupported architecture: $arch")
         }
@@ -108,7 +109,3 @@ Build viktor for your system from source as described in https://github.com/JetB
 
 internal external fun isAvxSupported(): Boolean
 internal external fun isSse2Supported(): Boolean
-
-fun main(args: Array<String>) {
-    Loader.ensureLoaded()
-}

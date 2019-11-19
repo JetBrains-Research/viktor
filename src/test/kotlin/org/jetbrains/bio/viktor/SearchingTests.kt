@@ -4,10 +4,6 @@ import org.junit.Test
 import kotlin.test.assertEquals
 
 class SearchingTests {
-    @Test fun empty() {
-        assertEquals(0, F64Array(0).searchSorted(42.0))
-    }
-
     @Test fun singleLess() {
         assertEquals(0, F64Array.of(42.0).searchSorted(0.0))
         assertEquals(0, F64Array.of(42.0, 42.0, 42.0).searchSorted(0.0))

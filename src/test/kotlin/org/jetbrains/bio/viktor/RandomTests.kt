@@ -13,7 +13,7 @@ import java.util.*
 class QuickSelectTest {
     @Test fun quantileRandom() {
         val values = Random().doubles(1024).toArray().asF64Array()
-        for (i in 0..values.size - 1) {
+        for (i in 0 until values.size) {
             val q = (i.toDouble() + 1) / values.size
             assertEquals(StatUtils.percentile(values.data, q * 100),
                          values.quantile(q), Precision.EPSILON)
@@ -34,6 +34,8 @@ class QuickSelectTest {
     @Test fun quantileLarge() {
         val values = Random().doubles(1 shl 16).toArray().asF64Array()
         assertEquals(values.max(), values.quantile(1.0), Precision.EPSILON)
+        assertEquals(values.min(), values.quantile(0.0), Precision.EPSILON)
+        assertEquals(values.quantile(0.5), values.quantile(), Precision.EPSILON)
     }
 }
 
@@ -85,19 +87,26 @@ class ShuffleTest {
         val values = doubleArrayOf(0.0, 1.0, 2.0, 3.0).asF64Array()
         val counts = HashMap<F64Array, Int>()
 
-        val `n!` = CombinatoricsUtils.factorial(4).toInt()
-        for (i in 0..5000 * `n!`) {
+        val nFactorial = CombinatoricsUtils.factorial(4).toInt()
+        for (i in 0..5000 * nFactorial) {
             values.shuffle()
             val p = values.copy()
             counts[p] = (counts[p] ?: 0) + 1
         }
 
-        assertEquals(`n!`, counts.size)
+        assertEquals(nFactorial, counts.size)
 
         val total = counts.values.sum()
         for (count in counts.values) {
             val p = count.toDouble() / total
-            assertEquals(1.0 / `n!`, p, 1e-2)
+            assertEquals(1.0 / nFactorial, p, 1e-2)
         }
+    }
+
+    @Test fun trivial() {
+        val values = F64Array.of(3.14)
+        val stored = values.copy()
+        values.shuffle()
+        assertEquals(stored, values)
     }
 }

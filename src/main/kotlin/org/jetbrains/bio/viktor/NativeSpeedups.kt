@@ -1,82 +1,88 @@
 package org.jetbrains.bio.viktor
 
 internal object NativeSpeedups {
+
     init {
         Loader.ensureLoaded()
     }
 
-    external fun unsafePlus(src1: DoubleArray, srcOffset1: Int,
-                            src2: DoubleArray, srcOffset2: Int,
-                            dst: DoubleArray, dstOffset: Int, length: Int)
+    external fun unsafePlusAssign(
+            dst: DoubleArray,
+            dstOffset: Int,
+            src: DoubleArray,
+            srcOffset: Int,
+            length: Int
+    ): Boolean
 
-    external fun unsafeMinus(src1: DoubleArray, srcOffset1: Int,
-                             src2: DoubleArray, srcOffset2: Int,
-                             dst: DoubleArray, dstOffset: Int, length: Int)
+    external fun unsafeMinusAssign(
+            dst: DoubleArray,
+            dstOffset: Int,
+            src: DoubleArray,
+            srcOffset: Int,
+            length: Int
+    ): Boolean
 
-    external fun unsafeTimes(src1: DoubleArray, srcOffset1: Int,
-                             src2: DoubleArray, srcOffset2: Int,
-                             dst: DoubleArray, dstOffset: Int, length: Int)
+    external fun unsafeTimesAssign(
+            dst: DoubleArray,
+            dstOffset: Int,
+            src: DoubleArray,
+            srcOffset: Int,
+            length: Int
+    ): Boolean
 
-    external fun unsafeDiv(src1: DoubleArray, srcOffset1: Int,
-                           src2: DoubleArray, srcOffset2: Int,
-                           dst: DoubleArray, dstOffset: Int, length: Int)
+    external fun unsafeDivAssign(
+            dst: DoubleArray,
+            dstOffset: Int,
+            src: DoubleArray,
+            srcOffset: Int,
+            length: Int
+    ): Boolean
 
-    external fun unsafeNegate(src1: DoubleArray, srcOffset1: Int,
-                              dst: DoubleArray, dstOffset: Int, length: Int)
+    external fun unsafeNegateInPlace(dst: DoubleArray, dstOffset: Int, length: Int): Boolean
 
-    external fun unsafePlusScalar(src1: DoubleArray, srcOffset1: Int, update: Double,
-                                  dst: DoubleArray, dstOffset: Int, length: Int)
+    external fun unsafePlusScalarAssign(dst: DoubleArray, dstOffset: Int, length: Int, update: Double): Boolean
 
-    external fun unsafeMinusScalar(src1: DoubleArray, srcOffset1: Int, update: Double,
-                                   dst: DoubleArray, dstOffset: Int, length: Int)
+    external fun unsafeMinusScalarAssign(dst: DoubleArray, dstOffset: Int, length: Int, update: Double): Boolean
 
-    external fun unsafeTimesScalar(src1: DoubleArray, srcOffset1: Int, update: Double,
-                                   dst: DoubleArray, dstOffset: Int, length: Int)
+    external fun unsafeTimesScalarAssign(dst: DoubleArray, dstOffset: Int, length: Int, update: Double): Boolean
 
-    external fun unsafeDivScalar(src1: DoubleArray, srcOffset1: Int, update: Double,
-                                 dst: DoubleArray, dstOffset: Int, length: Int)
+    external fun unsafeDivScalarAssign(dst: DoubleArray, dstOffset: Int, length: Int, update: Double): Boolean
 
-    external fun unsafeScalarDiv(update: Double, src1: DoubleArray, srcOffset1: Int,
-                                 dst: DoubleArray, dstOffset: Int, length: Int)
+    external fun unsafeScalarDivAssign(dst: DoubleArray, dstOffset: Int, length: Int, update: Double): Boolean
 
     external fun unsafeMin(values: DoubleArray, offset: Int, length: Int): Double
 
     external fun unsafeMax(values: DoubleArray, offset: Int, length: Int): Double
 
-    external fun unsafeExp(src: DoubleArray, srcOffset: Int,
-                           dst: DoubleArray, dstOffset: Int, length: Int)
+    external fun unsafeExpInPlace(dst: DoubleArray, dstOffset: Int, length: Int): Boolean
 
-    external fun unsafeExpm1(src: DoubleArray, srcOffset: Int,
-                             dst: DoubleArray, dstOffset: Int, length: Int)
+    external fun unsafeExpm1InPlace(dst: DoubleArray, dstOffset: Int, length: Int): Boolean
 
-    external fun unsafeLog(src: DoubleArray, srcOffset: Int,
-                           dst: DoubleArray, dstOffset: Int, length: Int)
+    external fun unsafeLogInPlace(dst: DoubleArray, dstOffset: Int, length: Int): Boolean
 
-    external fun unsafeLog1p(src: DoubleArray, srcOffset: Int,
-                             dst: DoubleArray, dstOffset: Int, length: Int)
+    external fun unsafeLog1pInPlace(dst: DoubleArray, dstOffset: Int, length: Int): Boolean
 
     external fun unsafeLogSumExp(src: DoubleArray, srcOffset: Int, length: Int): Double
 
-    external fun unsafeLogAddExp(src1: DoubleArray, srcOffset1: Int,
-                                 src2: DoubleArray, srcOffset2: Int,
-                                 dst: DoubleArray, dstOffset: Int, length: Int)
+    external fun unsafeLogAddExp(
+            dst: DoubleArray,
+            dstOffset: Int,
+            src: DoubleArray,
+            srcOffset: Int,
+            length: Int
+    ): Boolean
 
-    external fun unsafeLogRescale(src: DoubleArray, srcOffset: Int,
-                                  dst: DoubleArray, dstOffset: Int, length: Int)
+    external fun unsafeDot(
+            src1: DoubleArray,
+            srcOffset1: Int,
+            src2: DoubleArray,
+            srcOffset2: Int,
+            length: Int
+    ): Double
 
-    external fun unsafeDot(src1: DoubleArray, srcOffset1: Int,
-                           src2: DoubleArray, srcOffset2: Int, length: Int): Double
+    external fun unsafeSum(values: DoubleArray, offset: Int, length: Int): Double
 
-    external fun sum(values: DoubleArray, offset: Int, length: Int): Double
+    external fun unsafeSD(values: DoubleArray, offset: Int, length: Int): Double
 
-    external fun weightedSum(values: DoubleArray, valuesOffset: Int,
-                             weights: DoubleArray, weightsOffset: Int, length: Int): Double
-
-    external fun weightedMean(values: DoubleArray, valuesOffset: Int,
-                              weights: DoubleArray, weightsOffset: Int, length: Int): Double
-
-    external fun sd(values: DoubleArray, offset: Int, length: Int): Double
-
-    external fun cumSum(source: DoubleArray, sourceOffset: Int,
-                        dest: DoubleArray, destOffset: Int, length: Int)
+    external fun unsafeCumSum(dest: DoubleArray, destOffset: Int, length: Int): Boolean
 }

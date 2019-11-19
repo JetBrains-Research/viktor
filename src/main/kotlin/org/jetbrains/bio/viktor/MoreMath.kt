@@ -1,6 +1,8 @@
 package org.jetbrains.bio.viktor
 
 import org.apache.commons.math3.util.FastMath
+import kotlin.math.abs
+import kotlin.math.max
 
 /**
  * Evaluates log(exp(a) + exp(b)) using the following trick
@@ -12,16 +14,19 @@ import org.apache.commons.math3.util.FastMath
 infix fun Double.logAddExp(b: Double): Double {
     val a = this
     return when {
-        a.isInfinite() && a < 0 -> b
-        b.isInfinite() && b < 0 -> a
-        else -> Math.max(a, b) + StrictMath.log1p(FastMath.exp(-Math.abs(a - b)))
+        a.isNaN() || b.isNaN() -> Double.NaN
+        a.isInfinite() -> if (a < 0) b else a
+        b.isInfinite() -> if (b < 0) a else b
+        else -> max(a, b) + StrictMath.log1p(FastMath.exp(-abs(a - b)))
     }
 }
+
+fun Sequence<Double>.logSumExp(): Double = toList().toDoubleArray().asF64Array().logSumExp()
 
 /**
  * Kahan-Babuska summation.
  *
- * See http://cage.ugent.be/~klein/papers/floating-point.pdf for details.
+ * See https://en.wikipedia.org/wiki/Kahan_summation_algorithm for details.
  *
  * @author Alexey Dievsky
  * @since 0.1.0
@@ -32,10 +37,10 @@ class KahanSum @JvmOverloads constructor(private var accumulator: Double = 0.0) 
     /** Supplies a number to be added to the accumulator. */
     fun feed(value: Double): KahanSum {
         val t = accumulator + value
-        if (Math.abs(accumulator) >= Math.abs(value)) {
-            compensator += (accumulator - t) + value
+        compensator += if (abs(accumulator) >= abs(value)) {
+            (accumulator - t) + value
         } else {
-            compensator += (value - t) + accumulator
+            (value - t) + accumulator
         }
 
         accumulator = t

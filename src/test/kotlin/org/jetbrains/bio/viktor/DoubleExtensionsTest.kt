@@ -18,7 +18,7 @@ class DoubleExtensionsTest {
 
     @Test fun minusVector() {
         val v = F64Array(10) { it.toDouble() }
-        val reversed = v.reversed().copy()
+        val reversed = F64Array(10) { (9 - it).toDouble() }
         assertEquals(reversed, 9.0 - v)
     }
 

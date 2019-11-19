@@ -1,44 +1,52 @@
 package org.jetbrains.bio.viktor;
 
+import org.apache.commons.math3.util.Precision;
 import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
 
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 @BenchmarkMode(Mode.Throughput)
-@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@OutputTimeUnit(TimeUnit.SECONDS)
 @State(Scope.Benchmark)
 @Warmup(iterations = 5)
 @Measurement(iterations = 10)
 @Fork(value = 2, jvmArgsPrepend = "-Djava.library.path=./build/libs")
 public class SumBenchmark {
-	@Param({"1000", "10000", "100000"})
+
+	@Param({"1000", "100000", "1000000"})
 	int arraySize;
-	double[] values;
+	private double[] src;
+	private double res;
 
 	@Setup
 	public void generateData() {
-		final Random random = new Random();
-		values = random.doubles(arraySize).toArray();
+		src = new double[arraySize];
+		Internal.sampleUniformGamma(src);
 	}
 
-	@Benchmark
-	public double simpleSum() {
-		double res = 0.;
-		for (int i = 0; i < arraySize; i++) {
-			res += values[i];
+	@TearDown
+	public void checkAnswer() {
+		final double stored = res;
+		scalar(null);
+		if (!Precision.equals(stored, res, (stored + res) * 1E-12)) {
+			throw new IllegalStateException(String.format("expected %s, got %s", res, stored));
 		}
-		return res;
 	}
 
 	@Benchmark
-	public double javaSum() {
-		return F64ArrayKt.asF64Array(values, 0, arraySize).balancedSum();
+	public void scalar(final Blackhole bh) {
+		res = 0.;
+		for (double value : src) {
+			res += value;
+		}
+		if (bh != null) bh.consume(res);
 	}
 
 	@Benchmark
-	public double nativeSum() {
-		return NativeSpeedups.INSTANCE.sum(values, 0, arraySize);
+	public void vector(final Blackhole bh) {
+		res = NativeSpeedups.INSTANCE.unsafeSum(src, 0, arraySize);
+		bh.consume(res);
 	}
 
 }

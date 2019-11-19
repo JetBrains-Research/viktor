@@ -85,3 +85,9 @@ Publishing
 Publishing to [Bintray][bintray] is currently done via a dedicated
 build configuration of an internal TeamCity server. This allows us
 to deploy a cross-platform version.
+
+Documentation
+----
+
+Visit [viktor Documentation](./docs/docs.md) for an extensive feature overview,
+instructive code examples and benchmarking data. 

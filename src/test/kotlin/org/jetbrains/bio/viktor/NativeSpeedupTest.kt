@@ -7,7 +7,7 @@ class NativeSpeedupTest {
     @Test
     fun nativeSpeedupEnabled() {
         assertTrue(
-            Loader.optimizationSupported,
+            Loader.nativeLibraryLoaded,
             """
 Native optimizations disabled.
 If running as a project: have you added -Djava.library.path=./build/libs to JVM options?
