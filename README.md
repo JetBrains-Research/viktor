@@ -32,7 +32,7 @@ repositories {
 }
 
 dependencies {
-    compile 'org.jetbrains.bio:viktor:0.5.2'
+    compile 'org.jetbrains.bio:viktor:1.0.0'
 }
 ```
 
@@ -40,7 +40,7 @@ dependencies {
 
 The version available on Bintray currently targets only:
 - SSE2 and AVX,
-- amd64 and x86-64,
+- amd64 / x86-64,
 - Linux, Windows and MacOS.
 
 For any other setup `viktor` would fall back to pure-Kotlin

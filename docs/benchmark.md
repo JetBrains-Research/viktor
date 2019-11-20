@@ -24,14 +24,14 @@ machine | laptop | server
 --------|--------|-------
 CPU | Intel Core i7-6820HQ | Intel Xeon E5-2690
 frequency | 2.70GHz | 2.90 GHz
-cores[^cores] | 8 | 32
+cores<sup>1</sup>  | 8 | 32
 architecture | `amd64` | `amd64`
-highest SIMD extension[^simd] | `AVX` | `SSE2`
+highest SIMD extension<sup>2</sup> | `AVX` | `SSE2`
 OS | Ubuntu 18.04.3 LTS | CentOS Linux 7 (Core)
 
-[^cores]: The number of cores shouldn't matter since all benchmarks ran in a single thread.
+<sup>1</sup> The number of cores shouldn't matter since all benchmarks ran in a single thread.
 
-[^simd]: The most advanced extension that was used by `viktor`. In reality, the laptop
+<sup>2</sup> The most advanced extension that was used by `viktor`. In reality, the laptop
   had `AVX2` and the server had `SSE4.2` as the highest extension.
   
 ## Benchmark Results
