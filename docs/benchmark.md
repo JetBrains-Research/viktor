@@ -37,7 +37,7 @@ OS | Ubuntu 18.04.3 LTS | CentOS Linux 7 (Core)
 ## Benchmark Results
 
 The following data is provided for informational purposes only.
-In each benchmark, we considered arrays of size `1000`, `100_000` and `10_000_000`.
+In each benchmark, we considered arrays of size `1000`, `100_000` and `1_000_000`.
 We investigate two metrics:
 * `Array ops/s` is the number of times the operation was performed on the entire array
   per second. Shown on a logarithmic scale.
@@ -104,7 +104,9 @@ Array ops/s | FLOPS
 
 ## Cautious Conclusions
 
-`viktor` seems to perform up to three times better than the
-regular scalar computation approach. The only notable exception to that seems to be
+`viktor` seems to perform better than the
+regular scalar computation approach. The difference can reach up to `57x` (`logSumExp`
+on `AVX` _vs_ that computed with a `Math` loop).
+The only notable exception to that seems to be, curiously, the same exact
 `logSumExp` using `FastMath`, which is a little faster than `viktor`'s
-`logSumExp()` on `SSE2`.
+`logSumExp()` on `SSE2` on a `1M`-sized array.
