@@ -105,6 +105,6 @@ Array ops/s | FLOPS
 ## Cautious Conclusions
 
 `viktor` seems to perform up to three times better than the
-regular scalar computation approach. The only exception to that seems to be
-`FastMath.exp()` which is on par `viktor`'s `exp()` method on `AVX`
-(and faster than that on `SSE2`).
+regular scalar computation approach. The only notable exception to that seems to be
+`logSumExp` using `FastMath`, which is a little faster than `viktor`'s
+`logSumExp()` on `SSE2`.
