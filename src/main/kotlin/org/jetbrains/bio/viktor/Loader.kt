@@ -6,7 +6,7 @@ import java.nio.file.Path
 import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 
 internal class ResourceLibrary(private val name: String) {
-    @Suppress("unchecked_cast")
+
     fun install() {
         val resource = System.mapLibraryName(name)
         val inputStream = ResourceLibrary::class.java.getResourceAsStream("/$resource")
