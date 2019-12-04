@@ -1,8 +1,6 @@
 package org.jetbrains.bio.viktor
 
-import org.apache.log4j.ConsoleAppender
-import org.apache.log4j.Logger
-import org.apache.log4j.SimpleLayout
+import org.slf4j.LoggerFactory
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption.REPLACE_EXISTING
@@ -34,7 +32,7 @@ internal class ResourceLibrary(private val name: String) {
 
 internal object Loader {
 
-    private val LOG = Logger.getLogger(Loader::class.java)
+    private val LOG = LoggerFactory.getLogger(Loader::class.java)
 
     /** If `true` vector operations will be SIMD-optimized. */
     internal var nativeLibraryLoaded: Boolean = false
@@ -54,7 +52,6 @@ internal object Loader {
     }
 
     init {
-        LOG.addAppender(ConsoleAppender(SimpleLayout()))
 
         try {
             architectureSupported = arch.let { true }
@@ -80,14 +77,14 @@ internal object Loader {
 
     private fun warnNoOptimization() {
         if (!architectureSupported) {
-            LOG.info("SIMD optimization is not available for your architecture, use --debug for details.")
+            LOG.info("SIMD optimization is not available for your architecture, enable debug output for more details.")
             LOG.debug(
 """Currently supported architectures: x86_64, amd64.
 Fallback Kotlin implementation will be used.
 Build viktor for your system from source as described in https://github.com/JetBrains-Research/viktor"""
             )
         } else if (!nativeLibraryLoaded) {
-            LOG.info("Couldn't load native SIMD library, use --debug for details.")
+            LOG.info("Couldn't load native SIMD library, enable debug output for more details.")
             LOG.debug(
 """Native SIMD library couldn't be loaded.
 Currently supported operational systems: Linux, Windows, MacOS.
@@ -96,7 +93,7 @@ Build viktor for your system from source as described in https://github.com/JetB
             )
         }
         else if (!optimizationSupported) {
-            LOG.info("SIMD optimization is not available for your system, use --debug for details.")
+            LOG.info("SIMD optimization is not available for your system, enable debug output for more details.")
             LOG.debug(
 """No supported SIMD instruction sets were detected on your system.
 Currently supported SIMD instruction sets: SSE2, AVX.
