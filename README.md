@@ -50,6 +50,18 @@ instruction set or operating system feel free to file an issue to the
 
 [issues]: https://github.com/JetBrains-Research/viktor/issues
 
+Logging
+-------
+
+`viktor` uses [`slf4j`](http://www.slf4j.org/) logging API to provide error messages.
+To see them, you have to add a `slf4j` implementation (also called a binding)
+to your project. For example, add the following Gradle dependency to use `log4j`:
+```gradle
+dependencies {
+    compile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.25'
+}
+```
+
 Building from source
 --------------------
 
