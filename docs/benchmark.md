@@ -28,6 +28,7 @@ cores<sup>1</sup>  | 8 | 32
 architecture | `amd64` | `amd64`
 highest SIMD extension<sup>2</sup> | `AVX` | `SSE2`
 OS | Ubuntu 18.04.3 LTS | CentOS Linux 7 (Core)
+JVM | Java(TM) SE Runtime Environment (build 1.8.0_201-b09) | OpenJDK Runtime Environment (build 1.8.0_242-b08)
 
 <sup>1</sup> The number of cores shouldn't matter since all benchmarks ran in a single thread.
 
