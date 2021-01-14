@@ -625,7 +625,7 @@ open class F64Array protected constructor(
      *
      * Optimized for dense arrays.
      */
-    open fun max(): Double = unrollToFlat().map { it.max() }.max() ?: Double.NEGATIVE_INFINITY
+    open fun max(): Double = unrollToFlat().map { it.max() }.maxOrNull() ?: Double.NEGATIVE_INFINITY
 
     /**
      * Returns the index of the maximum element.
@@ -643,7 +643,7 @@ open class F64Array protected constructor(
      *
      * Optimized for dense arrays.
      */
-    open fun min(): Double = unrollToFlat().map { it.min() }.min() ?: Double.POSITIVE_INFINITY
+    open fun min(): Double = unrollToFlat().map { it.min() }.minOrNull() ?: Double.POSITIVE_INFINITY
 
     /**
      * Returns the index of the minimum element.
