@@ -3,6 +3,13 @@ viktor Changelog
 
 Here you can see the full list of changes between each viktor release.
 
+Version 1.0.2
+-------------
+
+Released on January 14, 2021
+
+- Bumped Kotlin, Gradle, Bintray plugin and NPY versions
+
 Version 1.0.1
 -------------
 
