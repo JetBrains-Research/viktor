@@ -41,6 +41,8 @@ open class F64FlatArray protected constructor(
         }
     }
 
+    override fun copy(): F64FlatArray = super.copy().flatten()
+
     override fun fill(init: Double) {
         for (pos in 0 until size) {
             unsafeSet(pos, init)

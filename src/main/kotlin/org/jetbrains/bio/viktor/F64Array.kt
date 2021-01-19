@@ -447,7 +447,7 @@ open class F64Array protected constructor(
      *
      * Copying method.
      */
-    fun copy(): F64Array {
+    open fun copy(): F64Array {
         val copy = invoke(*shape)
         copyTo(copy)
         return copy
