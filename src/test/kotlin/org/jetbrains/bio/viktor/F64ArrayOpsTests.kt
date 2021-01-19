@@ -1,5 +1,6 @@
 package org.jetbrains.bio.viktor
 
+import org.apache.commons.math3.special.Gamma
 import org.apache.commons.math3.stat.StatUtils
 import org.apache.commons.math3.util.FastMath
 import org.apache.commons.math3.util.Precision
@@ -204,6 +205,14 @@ class F64ArrayOpsTest {
 
 @RunWith(Parameterized::class)
 class F64VectorMathTest(private val v: F64Array) {
+
+    @Test fun transform() {
+        val logGamma = v.transform(Gamma::logGamma)
+        v.asSequence().zip(logGamma.asSequence()).forEach { (vx, logGammaVx) ->
+            assertEquals(Gamma.logGamma(vx), logGammaVx, 1E-30)
+        }
+    }
+
     @Test fun exp() {
         val vMax = v.max()
         val expV = (v / vMax).exp()
