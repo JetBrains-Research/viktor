@@ -35,8 +35,28 @@ repositories {
 }
 
 dependencies {
-    compile 'org.jetbrains.bio:viktor:1.0.0'
+    compile 'org.jetbrains.bio:viktor:1.0.2'
 }
+```
+
+With Maven, use the dependency
+```xml
+<dependency>
+    <groupId>org.jetbrains.bio</groupId>
+    <artifactId>viktor</artifactId>
+    <version>1.0.2</version>
+</dependency>
+```
+and don't forget to add the repository
+```xml
+<repository>
+  <snapshots>
+    <enabled>false</enabled>
+  </snapshots>
+  <id>bintray-jetbrains-research-maven</id>
+  <name>bintray</name>
+  <url>https://dl.bintray.com/jetbrains-research/maven</url>
+</repository>
 ```
 
 [bintray]: https://bintray.com/jetbrains-research/maven/viktor/view
