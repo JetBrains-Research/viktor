@@ -6,10 +6,10 @@ package org.jetbrains.bio.viktor
  * @author Sergei Lebedev
  * @since 0.1.0
  */
-sealed class F64DenseFlatArray(
-        data: DoubleArray,
-        offset: Int,
-        size: Int
+internal sealed class F64DenseFlatArray(
+    data: DoubleArray,
+    offset: Int,
+    size: Int
 ) : F64FlatArray(data, offset, 1, size) {
 
     override fun fill(init: Double) = data.fill(init, offset, offset + size)
@@ -47,10 +47,10 @@ sealed class F64DenseFlatArray(
  * @author Sergei Lebedev
  * @since 0.1.0
  */
-class F64SmallDenseArray(
-        data: DoubleArray,
-        offset: Int,
-        size: Int
+internal class F64SmallDenseArray(
+    data: DoubleArray,
+    offset: Int,
+    size: Int
 ) : F64DenseFlatArray(data, offset, size)
 
 /**
@@ -59,10 +59,10 @@ class F64SmallDenseArray(
  * @author Sergei Lebedev
  * @since 0.1.0
  */
-class F64LargeDenseArray(
-        data: DoubleArray,
-        offset: Int,
-        size: Int
+internal class F64LargeDenseArray(
+    data: DoubleArray,
+    offset: Int,
+    size: Int
 ) : F64DenseFlatArray(data, offset, size) {
 
     override fun sd() = NativeSpeedups.unsafeSD(data, offset, size)
