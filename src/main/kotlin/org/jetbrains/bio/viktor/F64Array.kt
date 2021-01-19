@@ -655,6 +655,38 @@ open class F64Array protected constructor(
     open fun argMin(): Int = unsupported()
 
     /**
+     * Replaces each element x of this array with op(x) for the given unary operation [op].
+     *
+     * If you need to apply one of the `exp`, `expm1`, `log`, `log1p`, use the appropriate specialized method instead
+     * (see the list below); these will generally be much more efficient. The same goes for arithmetic operations
+     * with a scalar.
+     *
+     * In-place method.
+     *
+     * @param op the unary operation to be applied.
+     *
+     * @since 1.0.3
+     * @see [expInPlace], [expm1InPlace], [logInPlace], [log1pInPlace] for the optimized specialized methods.
+     */
+    open fun transformInPlace(op: (Double) -> Double): Unit = unrollToFlat().forEach { it.transformInPlace(op) }
+
+    /**
+     * A copying version of [transformInPlace].
+     *
+     * If you need to apply one of the `exp`, `expm1`, `log`, `log1p`, use the appropriate specialized method instead
+     * (see the list below); these will generally be much more efficient. The same goes for arithmetic operations
+     * with a scalar.
+     *
+     * Copying method.
+     *
+     * @param op the unary operation to be applied.
+     *
+     * @since 1.0.3
+     * @see [exp], [expm1], [log], [log1p] for the optimized specialized methods.
+     */
+    fun transform(op: (Double) -> Double) = copy().apply { transformInPlace(op) }
+
+    /**
      * Replaces each element x of this array with its exponent exp(x).
      *
      * In-place method. Optimized for dense arrays.

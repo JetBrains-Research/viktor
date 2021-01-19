@@ -12,10 +12,10 @@ import kotlin.math.ln1p
  * @since 0.4.0
  */
 open class F64FlatArray protected constructor(
-        data: DoubleArray,
-        offset: Int,
-        stride: Int,
-        size: Int
+    data: DoubleArray,
+    offset: Int,
+    stride: Int,
+    size: Int
 ) : F64Array(data, offset, intArrayOf(stride), intArrayOf(size)) {
 
     override val isFlattenable get() = true
@@ -110,30 +110,30 @@ open class F64FlatArray protected constructor(
         var accUnaligned = 0.0
         var remaining = size
         while (remaining % 4 > 0) {
-                accUnaligned += unsafeGet(--remaining)
-            }
+            accUnaligned += unsafeGet(--remaining)
+        }
         val stack = DoubleArray(31 - 2)
         var p = 0
         var i = 0
         while (i < remaining) {
-                // Shift.
-                var v = unsafeGet(i) + unsafeGet(i + 1)
-                val w = unsafeGet(i + 2) + unsafeGet(i + 3)
-                v += w
+            // Shift.
+            var v = unsafeGet(i) + unsafeGet(i + 1)
+            val w = unsafeGet(i + 2) + unsafeGet(i + 3)
+            v += w
 
-                // Reduce.
-                var bitmask = 4
-                while (i and bitmask != 0) {
-                    v += stack[--p]
-                    bitmask = bitmask shl 1
-                }
-                stack[p++] = v
-                i += 4
+            // Reduce.
+            var bitmask = 4
+            while (i and bitmask != 0) {
+                v += stack[--p]
+                bitmask = bitmask shl 1
             }
+            stack[p++] = v
+            i += 4
+        }
         var acc = 0.0
         while (p > 0) {
-                acc += stack[--p]
-            }
+            acc += stack[--p]
+        }
         return acc + accUnaligned
     }
 
@@ -176,29 +176,19 @@ open class F64FlatArray protected constructor(
         return res
     }
 
-    override fun expInPlace() {
+    override fun transformInPlace(op: (Double) -> Double) {
         for (pos in 0 until size) {
-            unsafeSet(pos, FastMath.exp(unsafeGet(pos)))
+            unsafeSet(pos, op.invoke(unsafeGet(pos)))
         }
     }
 
-    override fun expm1InPlace() {
-        for (pos in 0 until size) {
-            unsafeSet(pos, FastMath.expm1(unsafeGet(pos)))
-        }
-    }
+    override fun expInPlace() = transformInPlace(FastMath::exp)
 
-    override fun logInPlace() {
-        for (pos in 0 until size) {
-            unsafeSet(pos, ln(unsafeGet(pos)))
-        }
-    }
+    override fun expm1InPlace() = transformInPlace(FastMath::expm1)
 
-    override fun log1pInPlace() {
-        for (pos in 0 until size) {
-            unsafeSet(pos, ln1p(unsafeGet(pos)))
-        }
-    }
+    override fun logInPlace() = transformInPlace(::ln)
+
+    override fun log1pInPlace() = transformInPlace(::ln1p)
 
     override fun logSumExp(): Double {
         val offset = max()
@@ -216,14 +206,7 @@ open class F64FlatArray protected constructor(
         }
     }
 
-    override fun unaryMinus(): F64Array {
-        val v = copy()
-        for (pos in 0 until size) {
-            v.unsafeSet(pos, -unsafeGet(pos))
-        }
-
-        return v
-    }
+    override fun unaryMinus(): F64Array = transform { -it }
 
     override fun plusAssign(other: F64Array) {
         checkShape(other)
@@ -232,11 +215,7 @@ open class F64FlatArray protected constructor(
         }
     }
 
-    override fun plusAssign(update: Double) {
-        for (pos in 0 until size) {
-            unsafeSet(pos, unsafeGet(pos) + update)
-        }
-    }
+    override fun plusAssign(update: Double) = transformInPlace { it + update }
 
     override fun minusAssign(other: F64Array) {
         checkShape(other)
@@ -245,11 +224,7 @@ open class F64FlatArray protected constructor(
         }
     }
 
-    override fun minusAssign(update: Double) {
-        for (pos in 0 until size) {
-            unsafeSet(pos, unsafeGet(pos) - update)
-        }
-    }
+    override fun minusAssign(update: Double) = transformInPlace { it - update }
 
     override fun timesAssign(other: F64Array) {
         checkShape(other)
@@ -258,11 +233,7 @@ open class F64FlatArray protected constructor(
         }
     }
 
-    override fun timesAssign(update: Double) {
-        for (pos in 0 until size) {
-            unsafeSet(pos, unsafeGet(pos) * update)
-        }
-    }
+    override fun timesAssign(update: Double) = transformInPlace { it * update }
 
     override fun divAssign(other: F64Array) {
         checkShape(other)
@@ -271,11 +242,7 @@ open class F64FlatArray protected constructor(
         }
     }
 
-    override fun divAssign(update: Double) {
-        for (pos in 0 until size) {
-            unsafeSet(pos, unsafeGet(pos) / update)
-        }
-    }
+    override fun divAssign(update: Double) = transformInPlace { it / update }
 
     override fun reshape(vararg shape: Int): F64Array {
         shape.forEach { require(it > 0) { "Shape must be positive but was $it" } }
@@ -362,10 +329,10 @@ open class F64FlatArray protected constructor(
 
     companion object {
         internal operator fun invoke(
-                data: DoubleArray,
-                offset: Int = 0,
-                stride: Int = 1,
-                size: Int = data.size
+            data: DoubleArray,
+            offset: Int = 0,
+            stride: Int = 1,
+            size: Int = data.size
         ): F64FlatArray {
             // require(offset + (size - 1) * stride < data.size) { "not enough data" }
             // this check is not needed since we control all invocations of this internal method
