@@ -5,7 +5,7 @@ viktor
 ======
 
 `viktor` implements a restricted subset of NumPy [ndarray][ndarray] features in
-Kotlin. Here're some of the highlights:
+Kotlin. Here are some highlights:
 
 * A single core data type --- `F64Array`, an n-dimensional primitive array.
 * Efficient vectorized operations, which are accelerated using SIMD whenever
@@ -76,7 +76,7 @@ instruction set or operating system feel free to file an issue to the
 Logging
 -------
 
-`viktor` uses [`slf4j`](http://www.slf4j.org/) logging API to provide error messages.
+`viktor` uses [slf4j](http://www.slf4j.org/) logging API to provide error messages.
 To see them, you have to add a `slf4j` implementation (also called a binding)
 to your project. For example, add the following Gradle dependency to use `log4j`:
 ```gradle
@@ -92,8 +92,8 @@ Building from source
 accelerations. Therefore, you would need a C++11 compiler,
 but otherwise the build process is as simple as
 
-```bash
-$ ./gradlew assemble
+```shell
+./gradlew assemble
 ```
 
 [boost.simd]: https://github.com/JetBrains-Research/boost.simd
@@ -103,14 +103,14 @@ Testing
 
 No extra configuration is required for running the tests from Gradle
 
-```bash
-$ ./gradlew test
+```shell
+./gradlew test
 ```
 
 However, you might need to alter `java.library.path` to run the tests from
 the IDE. The following Java command line option should work for IDEA
 
-```bash
+```shell
 -Djava.library.path=./build/libs
 ```
 
