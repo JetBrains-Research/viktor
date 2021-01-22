@@ -187,7 +187,6 @@ dependencies {
     testCompile 'junit:junit:4.12'
     testCompile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.25'
 
-    jmh files("$rootDir/libs/yeppp-bundle-1.0.jar")
     jmhCompile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.25'
     jmhCompile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 }
