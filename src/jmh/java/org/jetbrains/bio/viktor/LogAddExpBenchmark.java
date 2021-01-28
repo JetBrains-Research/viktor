@@ -46,18 +46,15 @@ public class LogAddExpBenchmark {
 
     @Benchmark
     public void scalar(final Blackhole bh) {
-        System.arraycopy(src1, 0, dst, 0, arraySize); // let's be fair
         for (int i = 0; i < arraySize; i++) {
             dst[i] = logAddExp(dst[i], src2[i]);
         }
-
         bh.consume(dst);
     }
 
     @Benchmark
     public void vector(final Blackhole bh) {
-        System.arraycopy(src1, 0, dst, 0, arraySize);
-        NativeSpeedups.INSTANCE.unsafeLogAddExp(dst, 0, src2, 0, arraySize);
+        NativeSpeedups.INSTANCE.unsafeLogAddExp(dst, 0, src1, 0, src2, 0, arraySize);
         bh.consume(dst);
     }
 }

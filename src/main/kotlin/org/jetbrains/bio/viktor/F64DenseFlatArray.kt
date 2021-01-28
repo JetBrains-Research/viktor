@@ -14,6 +14,12 @@ internal sealed class F64DenseFlatArray(
 
     override fun fill(init: Double) = data.fill(init, offset, offset + size)
 
+    override fun copy(): F64FlatArray {
+        val copyData = DoubleArray(size)
+        System.arraycopy(data, offset, copyData, 0, size)
+        return create(copyData, 0, size)
+    }
+
     override fun copyTo(other: F64Array) {
         if (other is F64DenseFlatArray) {
             checkShape(other)
@@ -87,19 +93,51 @@ internal class F64LargeDenseArray(
     }
 
     override fun expInPlace() {
-        if (!NativeSpeedups.unsafeExpInPlace(data, offset, size)) super.expInPlace()
+        if (!NativeSpeedups.unsafeExp(data, offset, data, offset, size)) super.expInPlace()
+    }
+
+    override fun exp(): F64Array {
+        val res = DoubleArray(size)
+        if (NativeSpeedups.unsafeExp(res, 0, data, offset, size)) {
+            return F64FlatArray(res)
+        }
+        return super.exp()
     }
 
     override fun expm1InPlace() {
-        if (!NativeSpeedups.unsafeExpm1InPlace(data, offset, size)) super.expm1InPlace()
+        if (!NativeSpeedups.unsafeExpm1(data, offset, data, offset, size)) super.expm1InPlace()
+    }
+
+    override fun expm1(): F64Array {
+        val res = DoubleArray(size)
+        if (NativeSpeedups.unsafeExpm1(res, 0, data, offset, size)) {
+            return F64FlatArray(res)
+        }
+        return super.expm1()
     }
 
     override fun logInPlace() {
-        if (!NativeSpeedups.unsafeLogInPlace(data, offset, size)) super.logInPlace()
+        if (!NativeSpeedups.unsafeLog(data, offset, data, offset, size)) super.logInPlace()
+    }
+
+    override fun log(): F64Array {
+        val res = DoubleArray(size)
+        if (NativeSpeedups.unsafeLog(res, 0, data, offset, size)) {
+            return F64FlatArray(res)
+        }
+        return super.log()
     }
 
     override fun log1pInPlace(){
-        if (!NativeSpeedups.unsafeLog1pInPlace(data, offset, size)) super.log1pInPlace()
+        if (!NativeSpeedups.unsafeLog1p(data, offset, data, offset, size)) super.log1pInPlace()
+    }
+
+    override fun log1p(): F64Array {
+        val res = DoubleArray(size)
+        if (NativeSpeedups.unsafeLog1p(res, 0, data, offset, size)) {
+            return F64FlatArray(res)
+        }
+        return super.log1p()
     }
 
     override fun logSumExp() = NativeSpeedups.unsafeLogSumExp(data, offset, size)
@@ -107,59 +145,19 @@ internal class F64LargeDenseArray(
     override fun logAddExpAssign(other: F64Array) {
         if (other is F64LargeDenseArray) {
             checkShape(other)
-            if (NativeSpeedups.unsafeLogAddExp(data, offset, other.data, other.offset, size)) return
+            if (NativeSpeedups.unsafeLogAddExp(data, offset, data, offset, other.data, other.offset, size)) return
         }
         super.logAddExpAssign(other)
     }
 
-    override fun unaryMinus() = copy().apply { NativeSpeedups.unsafeNegateInPlace(data, offset, size) }
-
-    override fun plusAssign(update: Double) {
-        if (!NativeSpeedups.unsafePlusScalarAssign(data, offset, size, update)) super.plusAssign(update)
-    }
-
-    override fun plusAssign(other: F64Array) {
-        if (other is F64DenseFlatArray) {
+    override fun logAddExp(other: F64Array): F64Array {
+        if (other is F64LargeDenseArray) {
             checkShape(other)
-            if (NativeSpeedups.unsafePlusAssign(data, offset, other.data, other.offset, size)) return
+            val res = DoubleArray(size)
+            if (NativeSpeedups.unsafeLogAddExp(res, 0, data, offset, other.data, other.offset, size)) {
+                return F64FlatArray(res)
+            }
         }
-        super.plusAssign(other)
-    }
-
-    override fun minusAssign(update: Double) {
-        if (!NativeSpeedups.unsafeMinusScalarAssign(data, offset, size, update)) super.minusAssign(update)
-    }
-
-    override fun minusAssign(other: F64Array) {
-        if (other is F64DenseFlatArray) {
-            checkShape(other)
-            if (NativeSpeedups.unsafeMinusAssign(data, offset, other.data, other.offset, size)) return
-        }
-        super.minusAssign(other)
-    }
-
-    override fun timesAssign(update: Double) {
-        if (!NativeSpeedups.unsafeTimesScalarAssign(data, offset, size, update)) super.timesAssign(update)
-    }
-
-    override fun timesAssign(other: F64Array) {
-        if (other is F64DenseFlatArray) {
-            checkShape(other)
-            if (NativeSpeedups.unsafeTimesAssign(data, offset, other.data, other.offset, size)) return
-        }
-        super.timesAssign(other)
-    }
-
-    override fun divAssign(update: Double) {
-        if (!NativeSpeedups.unsafeDivScalarAssign(data, offset, size, update)) super.divAssign(update)
-    }
-
-    override fun divAssign(other: F64Array) {
-        if (other is F64DenseFlatArray) {
-            checkShape(other)
-            if (NativeSpeedups.unsafeDivAssign(data, offset, other.data, other.offset, size)) return
-        } else {
-            super.divAssign(other)
-        }
+        return super.logAddExp(other)
     }
 }

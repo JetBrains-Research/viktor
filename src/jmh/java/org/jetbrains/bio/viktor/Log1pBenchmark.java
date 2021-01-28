@@ -1,9 +1,7 @@
 package org.jetbrains.bio.viktor;
 
 import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.Precision;
 import org.openjdk.jmh.annotations.*;
-import org.openjdk.jmh.infra.Blackhole;
 
 import java.util.concurrent.TimeUnit;
 import java.util.function.DoubleUnaryOperator;
@@ -31,7 +29,7 @@ public class Log1pBenchmark extends AbstractMathBenchmark {
 
     @Override
     VectorOp getVectorOp() {
-        return NativeSpeedups.INSTANCE::unsafeLog1pInPlace;
+        return NativeSpeedups.INSTANCE::unsafeLog1p;
     }
 
     @Override

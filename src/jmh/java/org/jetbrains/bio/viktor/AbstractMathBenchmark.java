@@ -32,7 +32,6 @@ public abstract class AbstractMathBenchmark {
     @Setup
     public void generateData() {
         src = new double[getArraySize()];
-        dst = new double[getArraySize()];
         Internal.sampleUniformGamma(src);
     }
 
@@ -68,8 +67,8 @@ public abstract class AbstractMathBenchmark {
 
     @Benchmark
     public void vector(final Blackhole bh) {
-        System.arraycopy(src, 0, dst, 0, getArraySize());
-        vectorOp.apply(dst, 0, getArraySize());
+        dst = new double[getArraySize()];
+        vectorOp.apply(dst, 0, src, 0, getArraySize());
         bh.consume(dst);
     }
 
@@ -77,6 +76,6 @@ public abstract class AbstractMathBenchmark {
 
 interface VectorOp {
 
-    void apply(final double[] array, final int offset, final int size);
+    void apply(final double[] dst, final int dstOffset, final double[] src, final int srcOffset, final int size);
 
 }

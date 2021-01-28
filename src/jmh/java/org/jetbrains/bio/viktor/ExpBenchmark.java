@@ -29,7 +29,7 @@ public class ExpBenchmark extends AbstractMathBenchmark {
 
     @Override
     VectorOp getVectorOp() {
-        return NativeSpeedups.INSTANCE::unsafeExpInPlace;
+        return NativeSpeedups.INSTANCE::unsafeExp;
     }
 
     @Override
