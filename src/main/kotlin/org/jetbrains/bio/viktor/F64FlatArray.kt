@@ -18,8 +18,6 @@ open class F64FlatArray protected constructor(
     size: Int
 ) : F64Array(data, offset, intArrayOf(stride), intArrayOf(size)) {
 
-    override val isFlattenable get() = true
-
     override fun flatten() = this
 
     override fun contains(other: Double): Boolean {
@@ -34,6 +32,8 @@ open class F64FlatArray protected constructor(
 
     override fun along(axis: Int) = unsupported()
 
+    override fun view(index: Int, axis: Int) = unsupported()
+
     override fun copyTo(other: F64Array) {
         checkShape(other)
         for (pos in 0 until size) {
@@ -41,7 +41,11 @@ open class F64FlatArray protected constructor(
         }
     }
 
-    override fun copy(): F64FlatArray = super.copy().flatten()
+    override fun copy(): F64FlatArray {
+        val copy = F64FlatArray(DoubleArray(size))
+        copyTo(copy)
+        return copy
+    }
 
     override fun fill(init: Double) {
         for (pos in 0 until size) {
@@ -203,12 +207,11 @@ open class F64FlatArray protected constructor(
     }
 
     override fun logAddExpAssign(other: F64Array) {
+        checkShape(other)
         for (pos in 0 until size) {
             unsafeSet(pos, unsafeGet(pos) logAddExp other.unsafeGet(pos))
         }
     }
-
-    override fun unaryMinus(): F64Array = transform { -it }
 
     override fun plusAssign(other: F64Array) {
         checkShape(other)
@@ -246,11 +249,15 @@ open class F64FlatArray protected constructor(
 
     override fun divAssign(update: Double) = transformInPlace { it / update }
 
-    override fun reshape(vararg shape: Int): F64Array {
-        shape.forEach { require(it > 0) { "Shape must be positive but was $it" } }
-        check(shape.product() == size) {
-            "total size of the new array must be unchanged"
+    override fun checkShape(other: F64Array) {
+        check (this === other || (other is F64FlatArray && shape[0] == other.shape[0])) {
+            "operands shapes do not match: ${shape.contentToString()} vs ${other.shape.contentToString()}"
         }
+    }
+
+    override fun reshape(vararg shape: Int): F64Array {
+        shape.forEach { require(it > 0) { "shape must be positive but was $it" } }
+        check(shape.product() == size) { "total size of the new array must be unchanged" }
         return when {
             this.shape.contentEquals(shape) -> this
             else -> {
