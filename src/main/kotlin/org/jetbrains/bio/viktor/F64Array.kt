@@ -54,7 +54,7 @@ open class F64Array protected constructor(
     val nDim: Int get() = shape.size
 
     /** Number of elements along the first axis. */
-    val size: Int get() = shape.first()
+    val size: Int get() = shape[0]
 
     /**
      * The maximum number of dimensions suitable for unrolling, see [unrollOnce].
@@ -71,43 +71,46 @@ open class F64Array protected constructor(
      */
     private val unrollStride: Int
 
+    init {
+        // calculation of unrollDim, unrollStride and unrollSize
+        if (strides.size == 1) {
+            unrollDim = 1
+            unrollStride = strides[0]
+            unrollSize = shape[0]
+        } else {
+            var prevStride = 0
+            var unrollable = true
+            var d = 0
+            var s = 0
+            for (i in strides.indices) {
+                if (shape[i] == 1) {
+                    if (unrollable) d = i + 1
+                    continue
+                }
+                if (unrollable && (prevStride == 0 || prevStride == strides[i] * shape[i])) {
+                    d = i + 1
+                    s = strides[i]
+                } else {
+                    unrollable = false
+                }
+                prevStride = strides[i]
+            }
+            unrollDim = d
+            unrollStride = s
+            unrollSize = shape.slice(0 until d).toIntArray().product()
+        }
+    }
+
     /**
      * Returns `true` if this array can be flattened using [flatten].
      *
-     * Flattenable array's elements are laid out with a constant stride. This allows to use simple loops when iterating.
+     * Flattenable array's elements are laid out with a constant stride. This allows using simple loops when iterating.
      * Calling [flatten] on a non-flattenable array will produce an [IllegalStateException].
      *
      * A particular case of a flattenable array is a dense array whose elements occupy a contiguous block of memory.
      * Large dense arrays employ native SIMD optimizations, see [F64LargeDenseArray].
      */
-    open val isFlattenable get() = (unrollDim == nDim)
-
-    init {
-        require(strides.size == shape.size) {
-            "Strides and shape have different sizes (${strides.size} and ${shape.size})"
-        }
-        // calculation of unrollDim, unrollStride and unrollSize
-        var prevStride = 0
-        var unrollable = true
-        var d = 0
-        var s = 0
-        for (i in strides.indices) {
-            if (shape[i] == 1) {
-                if (unrollable) d = i + 1
-                continue
-            }
-            if (unrollable && (prevStride == 0 || prevStride == strides[i] * shape[i])) {
-                d = i + 1
-                s = strides[i]
-            } else {
-                unrollable = false
-            }
-            prevStride = strides[i]
-        }
-        unrollDim = d
-        unrollStride = s
-        unrollSize = shape.slice(0 until d).toIntArray().product()
-    }
+    val isFlattenable = (unrollDim == nDim)
 
     /**
      * Generic getter.
@@ -214,6 +217,8 @@ open class F64Array protected constructor(
      * For example, for a 2D array `axis = 0` means "for each row",
      * and `axis = 1` "for each column".
      *
+     * The array must have at least two dimensions.
+     *
      * Viewer method.
      */
     open fun along(axis: Int): Sequence<F64Array> = (0 until shape[axis]).asSequence().map { view(it, axis) }
@@ -221,9 +226,11 @@ open class F64Array protected constructor(
     /**
      * Returns a view of this array along the specified [axis].
      *
+     * The array must have at least two dimensions. Consider using [V] with easier syntax.
+     *
      * Viewer method.
      */
-    fun view(index: Int, axis: Int = 0): F64Array {
+    open fun view(index: Int, axis: Int = 0): F64Array {
         checkIndex("axis", axis, nDim)
         checkIndex("index", index, shape[axis])
         return invoke(
@@ -463,7 +470,7 @@ open class F64Array protected constructor(
     /**
      * Reshapes this array.
      *
-     * The original and the new array contain the same elements in the same orider, if both are enumerated row-major.
+     * The original and the new array contain the same elements in the same order, if both are enumerated row-major.
      *
      * For example,
      *     F64Array.of(1.0, 2.0, 3.0, 4.0, 5.0, 6.0).reshape(2, 3)
@@ -684,7 +691,7 @@ open class F64Array protected constructor(
      * @since 1.0.3
      * @see [exp], [expm1], [log], [log1p] for the optimized specialized methods.
      */
-    fun transform(op: (Double) -> Double) = copy().apply { transformInPlace(op) }
+    open fun transform(op: (Double) -> Double) = copy().apply { transformInPlace(op) }
 
     /**
      * Replaces each element x of this array with its exponent exp(x).
@@ -698,7 +705,7 @@ open class F64Array protected constructor(
      *
      * Copying method. Optimized for dense arrays.
      */
-    fun exp() = copy().apply { expInPlace() }
+    open fun exp() = copy().apply { expInPlace() }
 
     /**
      * Replaces each element x of this array with exp(x) - 1.
@@ -714,7 +721,7 @@ open class F64Array protected constructor(
      *
      * Copying method. Optimized for dense arrays.
      */
-    fun expm1() = copy().apply { expm1InPlace() }
+    open fun expm1() = copy().apply { expm1InPlace() }
 
     /**
      * Replaces each element x of this array with its natural logarithm log(x).
@@ -728,7 +735,7 @@ open class F64Array protected constructor(
      *
      * Copying method. Optimized for dense arrays.
      */
-    fun log() = copy().apply { logInPlace() }
+    open fun log() = copy().apply { logInPlace() }
 
     /**
      * Replaces each element x of this array with log(1 + x).
@@ -744,7 +751,7 @@ open class F64Array protected constructor(
      *
      * Copying method. Optimized for dense arrays.
      */
-    fun log1p() = copy().apply { log1pInPlace() }
+    open fun log1p() = copy().apply { log1pInPlace() }
 
     /**
      * Rescales the elements so that the sum is 1.0.
@@ -795,11 +802,11 @@ open class F64Array protected constructor(
      *
      * Copying method.
      */
-    infix fun logAddExp(other: F64Array): F64Array = copy().apply { logAddExpAssign(other) }
+    open infix fun logAddExp(other: F64Array): F64Array = copy().apply { logAddExpAssign(other) }
 
     operator fun unaryPlus() = this
 
-    open operator fun unaryMinus(): F64Array = copy().apply { (-flatten()).reshape(*shape) }
+    open operator fun unaryMinus(): F64Array = transform { -it }
 
     operator fun plus(other: F64Array) = copy().apply { this += other }
 
@@ -817,7 +824,7 @@ open class F64Array protected constructor(
 
     open operator fun minusAssign(update: Double): Unit = unrollToFlat().forEach { it -= update }
 
-    operator fun times(other: F64Array) = copy().apply { this *= other }
+    open operator fun times(other: F64Array) = copy().apply { this *= other }
 
     open operator fun timesAssign(other: F64Array): Unit = commonUnrollToFlat(other) { a, b -> a *= b }
 
@@ -834,12 +841,10 @@ open class F64Array protected constructor(
     open operator fun divAssign(update: Double): Unit = unrollToFlat().forEach { it /= update }
 
     /** Ensures a given array has the same dimensions as this array. */
-    protected fun checkShape(other: F64Array): F64Array {
-        // Could relax this to "broadcastable".
+    protected open fun checkShape(other: F64Array) {
         check(this === other || shape.contentEquals(other.shape)) {
             "operands shapes do not match: ${shape.contentToString()} vs ${other.shape.contentToString()}"
         }
-        return other
     }
 
     /**
