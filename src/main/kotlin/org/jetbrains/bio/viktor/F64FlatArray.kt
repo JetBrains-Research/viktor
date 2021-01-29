@@ -16,7 +16,7 @@ open class F64FlatArray protected constructor(
     offset: Int,
     stride: Int,
     size: Int
-) : F64Array(data, offset, intArrayOf(stride), intArrayOf(size)) {
+) : F64Array(data, offset, intArrayOf(stride), intArrayOf(size), 1, stride, size) {
 
     override fun flatten() = this
 
