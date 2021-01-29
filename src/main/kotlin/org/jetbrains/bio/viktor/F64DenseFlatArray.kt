@@ -29,6 +29,90 @@ internal sealed class F64DenseFlatArray(
         }
     }
 
+    private inline fun denseTransformInPlace(op: (Double) -> Double) {
+        for (i in 0 until size) {
+            data[i + offset] = op.invoke(data[i + offset])
+        }
+    }
+
+    private inline fun denseTransform(op: (Double) -> Double): F64FlatArray {
+        val res = DoubleArray(size)
+        for (i in 0 until size) {
+            res[i] = op.invoke(data[i + offset])
+        }
+        return create(res, 0, size)
+    }
+
+    private inline fun denseEBEInPlace(other: F64DenseFlatArray, op: (Double, Double) -> Double) {
+        for (i in 0 until size) {
+            data[i + offset] = op.invoke(data[i + offset], other.data[i + other.offset])
+        }
+    }
+
+    private inline fun ebeInPlace(
+        other: F64Array,
+        op: (Double, Double) -> Double,
+        superOp: F64Array.(F64Array) -> Unit
+    ) {
+        if (other is F64DenseFlatArray) {
+            checkShape(other)
+            denseEBEInPlace(other, op)
+        } else {
+            this.superOp(other)
+        }
+    }
+
+    private inline fun denseEBE(other: F64DenseFlatArray, op: (Double, Double) -> Double): F64DenseFlatArray {
+        val res = DoubleArray(size)
+        for (i in 0 until size) {
+            res[i] = op.invoke(data[i + offset], other.data[i + other.offset])
+        }
+        return create(res, 0, size)
+    }
+
+    private inline fun ebe(
+        other: F64Array,
+        op: (Double, Double) -> Double,
+        superOp: F64Array.(F64Array) -> F64FlatArray
+    ): F64FlatArray = if (other is F64DenseFlatArray) {
+        checkShape(other)
+        denseEBE(other, op)
+    } else {
+        this.superOp(other)
+    }
+
+    override fun transformInPlace(op: (Double) -> Double) = denseTransformInPlace(op)
+
+    override fun transform(op: (Double) -> Double): F64FlatArray = denseTransform(op)
+
+    /* Arithmetic */
+
+    /* Arithmetic binary operations */
+
+    /* Addition */
+
+    override fun plusAssign(other: F64Array) = ebeInPlace(other, { a, b -> a + b }, { super.plusAssign(it) })
+
+    override fun plus(other: F64Array) = ebe(other, { a, b -> a + b }, { super.plus(it) })
+
+    /* Subtraction */
+
+    override fun minusAssign(other: F64Array) = ebeInPlace(other, { a, b -> a - b }, { super.minusAssign(it) })
+
+    override fun minus(other: F64Array) = ebe(other, { a, b -> a - b }, { super.minus(it) })
+
+    /* Multiplication */
+
+    override fun timesAssign(other: F64Array) = ebeInPlace(other, { a, b -> a * b }, { super.timesAssign(it) })
+
+    override fun times(other: F64Array) = ebe(other, { a, b -> a * b }, { super.times(it) })
+
+    /* Division */
+
+    override fun divAssign(other: F64Array) = ebeInPlace(other, { a, b -> a / b }, { super.divAssign(it) })
+
+    override fun div(other: F64Array) = ebe(other, { a, b -> a / b }, { super.div(it) })
+
     override fun toDoubleArray() = data.copyOfRange(offset, offset + size)
 
     companion object {
@@ -92,53 +176,40 @@ internal class F64LargeDenseArray(
         }
     }
 
+    private inline fun nativeTransform(
+        nativeOp: (DoubleArray, Int, DoubleArray, Int, Int) -> Boolean,
+        superOp: F64FlatArray.() -> F64FlatArray
+    ): F64FlatArray {
+        val res = DoubleArray(size)
+        if (nativeOp(res, 0, data, offset, size)) {
+            return create(res, 0, size)
+        }
+        return superOp()
+    }
+
     override fun expInPlace() {
         if (!NativeSpeedups.unsafeExp(data, offset, data, offset, size)) super.expInPlace()
     }
 
-    override fun exp(): F64Array {
-        val res = DoubleArray(size)
-        if (NativeSpeedups.unsafeExp(res, 0, data, offset, size)) {
-            return F64FlatArray(res)
-        }
-        return super.exp()
-    }
+    override fun exp() = nativeTransform(NativeSpeedups::unsafeExp) { super.exp() }
 
     override fun expm1InPlace() {
         if (!NativeSpeedups.unsafeExpm1(data, offset, data, offset, size)) super.expm1InPlace()
     }
 
-    override fun expm1(): F64Array {
-        val res = DoubleArray(size)
-        if (NativeSpeedups.unsafeExpm1(res, 0, data, offset, size)) {
-            return F64FlatArray(res)
-        }
-        return super.expm1()
-    }
+    override fun expm1() = nativeTransform(NativeSpeedups::unsafeExpm1) { super.expm1() }
 
     override fun logInPlace() {
         if (!NativeSpeedups.unsafeLog(data, offset, data, offset, size)) super.logInPlace()
     }
 
-    override fun log(): F64Array {
-        val res = DoubleArray(size)
-        if (NativeSpeedups.unsafeLog(res, 0, data, offset, size)) {
-            return F64FlatArray(res)
-        }
-        return super.log()
-    }
+    override fun log() = nativeTransform(NativeSpeedups::unsafeLog) { super.log() }
 
     override fun log1pInPlace(){
         if (!NativeSpeedups.unsafeLog1p(data, offset, data, offset, size)) super.log1pInPlace()
     }
 
-    override fun log1p(): F64Array {
-        val res = DoubleArray(size)
-        if (NativeSpeedups.unsafeLog1p(res, 0, data, offset, size)) {
-            return F64FlatArray(res)
-        }
-        return super.log1p()
-    }
+    override fun log1p() = nativeTransform(NativeSpeedups::unsafeLog1p) { super.log1p() }
 
     override fun logSumExp() = NativeSpeedups.unsafeLogSumExp(data, offset, size)
 
@@ -150,12 +221,12 @@ internal class F64LargeDenseArray(
         super.logAddExpAssign(other)
     }
 
-    override fun logAddExp(other: F64Array): F64Array {
+    override fun logAddExp(other: F64Array): F64FlatArray {
         if (other is F64LargeDenseArray) {
             checkShape(other)
             val res = DoubleArray(size)
             if (NativeSpeedups.unsafeLogAddExp(res, 0, data, offset, other.data, other.offset, size)) {
-                return F64FlatArray(res)
+                return create(res, 0, size)
             }
         }
         return super.logAddExp(other)
