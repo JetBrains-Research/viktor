@@ -41,11 +41,7 @@ open class F64FlatArray protected constructor(
         }
     }
 
-    override fun copy(): F64FlatArray {
-        val copy = F64FlatArray(DoubleArray(size))
-        copyTo(copy)
-        return copy
-    }
+    override fun copy(): F64FlatArray = F64DenseFlatArray.create(toDoubleArray(), 0, size)
 
     override fun fill(init: Double) {
         for (pos in 0 until size) {
@@ -182,19 +178,52 @@ open class F64FlatArray protected constructor(
         return res
     }
 
-    override fun transformInPlace(op: (Double) -> Double) {
+    private inline fun flatTransformInPlace(op: (Double) -> Double) {
         for (pos in 0 until size) {
             unsafeSet(pos, op.invoke(unsafeGet(pos)))
         }
     }
 
-    override fun expInPlace() = transformInPlace(FastMath::exp)
+    private inline fun flatTransform(op: (Double) -> Double): F64FlatArray {
+        val res = DoubleArray(size)
+        for (pos in 0 until size) {
+            res[pos] = op.invoke(unsafeGet(pos))
+        }
+        return invoke(res)
+    }
 
-    override fun expm1InPlace() = transformInPlace(FastMath::expm1)
+    private inline fun flatEBEInPlace(other: F64Array, op: (Double, Double) -> Double) {
+        checkShape(other)
+        for (pos in 0 until size) {
+            unsafeSet(pos, op.invoke(unsafeGet(pos), other.unsafeGet(pos)))
+        }
+    }
 
-    override fun logInPlace() = transformInPlace(::ln)
+    private inline fun flatEBE(other: F64Array, op: (Double, Double) -> Double): F64FlatArray {
+        checkShape(other)
+        val res = DoubleArray(size)
+        for (pos in 0 until size) {
+            res[pos] = op.invoke(unsafeGet(pos), other.unsafeGet(pos))
+        }
+        return F64DenseFlatArray.create(res, 0, size)
+    }
 
-    override fun log1pInPlace() = transformInPlace(::ln1p)
+    override fun transformInPlace(op: (Double) -> Double) = flatTransformInPlace(op)
+
+    override fun transform(op: (Double) -> Double): F64FlatArray = flatTransform(op)
+
+    /* Mathematics */
+
+    // FastMath is faster with exp and expm1, but slower with log and log1p
+    // (confirmed by benchmarks on several JDK and hardware combinations)
+
+    override fun exp() = transform(FastMath::exp)
+
+    override fun expm1() = transform(FastMath::expm1)
+
+    override fun log() = transform(::ln)
+
+    override fun log1p() = transform(::ln1p)
 
     override fun logSumExp(): Double {
         val offset = max()
@@ -202,55 +231,33 @@ open class F64FlatArray protected constructor(
         for (pos in 0 until size) {
             acc += FastMath.exp(unsafeGet(pos) - offset)
         }
-
         return ln(acc.result()) + offset
     }
 
-    override fun logAddExpAssign(other: F64Array) {
-        checkShape(other)
-        for (pos in 0 until size) {
-            unsafeSet(pos, unsafeGet(pos) logAddExp other.unsafeGet(pos))
-        }
-    }
+    override fun logAddExpAssign(other: F64Array) = flatEBEInPlace(other) { a, b -> a logAddExp b }
 
-    override fun plusAssign(other: F64Array) {
-        checkShape(other)
-        for (pos in 0 until size) {
-            unsafeSet(pos, unsafeGet(pos) + other.unsafeGet(pos))
-        }
-    }
+    override fun logAddExp(other: F64Array): F64FlatArray = flatEBE(other) { a, b -> a logAddExp b }
 
-    override fun plusAssign(update: Double) = transformInPlace { it + update }
+    /* Arithmetic */
 
-    override fun minusAssign(other: F64Array) {
-        checkShape(other)
-        for (pos in 0 until size) {
-            unsafeSet(pos, unsafeGet(pos) - other.unsafeGet(pos))
-        }
-    }
+    override fun plusAssign(other: F64Array) = flatEBEInPlace(other) { a, b -> a + b }
 
-    override fun minusAssign(update: Double) = transformInPlace { it - update }
+    override fun plus(other: F64Array): F64FlatArray = flatEBE(other) { a, b -> a + b }
 
-    override fun timesAssign(other: F64Array) {
-        checkShape(other)
-        for (pos in 0 until size) {
-            unsafeSet(pos, unsafeGet(pos) * other.unsafeGet(pos))
-        }
-    }
+    override fun minusAssign(other: F64Array) = flatEBEInPlace(other) { a, b -> a - b }
 
-    override fun timesAssign(update: Double) = transformInPlace { it * update }
+    override fun minus(other: F64Array): F64FlatArray = flatEBE(other) { a, b -> a - b }
 
-    override fun divAssign(other: F64Array) {
-        checkShape(other)
-        for (pos in 0 until size) {
-            unsafeSet(pos, unsafeGet(pos) / other.unsafeGet(pos))
-        }
-    }
+    override fun timesAssign(other: F64Array) = flatEBEInPlace(other) { a, b -> a * b }
 
-    override fun divAssign(update: Double) = transformInPlace { it / update }
+    override fun times(other: F64Array): F64FlatArray = flatEBE(other) { a, b -> a * b }
 
-    override fun checkShape(other: F64Array) {
-        check (this === other || (other is F64FlatArray && shape[0] == other.shape[0])) {
+    override fun divAssign(other: F64Array) = flatEBEInPlace(other) { a, b -> a / b }
+
+    override fun div(other: F64Array): F64FlatArray = flatEBE(other) { a, b -> a / b }
+
+    protected fun checkShape(other: F64Array) {
+        check(this === other || (other is F64FlatArray && shape[0] == other.shape[0])) {
             "operands shapes do not match: ${shape.contentToString()} vs ${other.shape.contentToString()}"
         }
     }
@@ -266,7 +273,6 @@ open class F64FlatArray protected constructor(
                 for (i in reshaped.lastIndex - 1 downTo 0) {
                     reshaped[i] = reshaped[i + 1] * shape[i + 1]
                 }
-
                 invoke(data, offset, reshaped, shape)
             }
         }
