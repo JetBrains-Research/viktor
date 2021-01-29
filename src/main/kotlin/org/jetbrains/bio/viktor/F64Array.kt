@@ -43,14 +43,26 @@ import kotlin.math.sqrt
  * @since 0.4.0
  */
 open class F64Array protected constructor(
-        /** Raw data array. */
-        val data: DoubleArray,
-        /** Offset of the first vector element in the raw data array. */
-        val offset: Int,
-        /** Indexing steps along each axis. */
-        val strides: IntArray,
-        /** Number of elements along each axis. */
-        val shape: IntArray
+    /** Raw data array. */
+    val data: DoubleArray,
+    /** Offset of the first vector element in the raw data array. */
+    val offset: Int,
+    /** Indexing steps along each axis. */
+    val strides: IntArray,
+    /** Number of elements along each axis. */
+    val shape: IntArray,
+    /**
+     * The maximum number of dimensions suitable for unrolling, see [unrollOnce].
+     */
+    private val unrollDim: Int,
+    /**
+     * The stride of the maximum unrolled subarray sequence, see [unrollOnce].
+     */
+    private val unrollStride: Int,
+    /**
+     * The size of the maximum unrolled subarray sequence, see [unrollOnce].
+     */
+    private val unrollSize: Int
 ) {
 
     /** Number of axes in this array. */
@@ -58,51 +70,6 @@ open class F64Array protected constructor(
 
     /** Number of elements along the first axis. */
     val size: Int = shape[0]
-
-    /**
-     * The maximum number of dimensions suitable for unrolling, see [unrollOnce].
-     */
-    private val unrollDim: Int
-
-    /**
-     * The size of the maximum unrolled subarray sequence, see [unrollOnce].
-     */
-    private val unrollSize: Int
-
-    /**
-     * The stride of the maximum unrolled subarray sequence, see [unrollOnce].
-     */
-    private val unrollStride: Int
-
-    init {
-        // calculation of unrollDim, unrollStride and unrollSize
-        if (strides.size == 1) {
-            unrollDim = 1
-            unrollStride = strides[0]
-            unrollSize = shape[0]
-        } else {
-            var prevStride = 0
-            var unrollable = true
-            var d = 0
-            var s = 0
-            for (i in strides.indices) {
-                if (shape[i] == 1) {
-                    if (unrollable) d = i + 1
-                    continue
-                }
-                if (unrollable && (prevStride == 0 || prevStride == strides[i] * shape[i])) {
-                    d = i + 1
-                    s = strides[i]
-                } else {
-                    unrollable = false
-                }
-                prevStride = strides[i]
-            }
-            unrollDim = d
-            unrollStride = s
-            unrollSize = shape.slice(0 until d).toIntArray().product()
-        }
-    }
 
     /**
      * Returns `true` if this array can be flattened using [flatten].
@@ -275,8 +242,8 @@ open class F64Array protected constructor(
      * in the signature.
      */
     private fun commonUnrollToFlat(
-            other: F64Array,
-            action: (F64FlatArray, F64FlatArray) -> Unit
+        other: F64Array,
+        action: (F64FlatArray, F64FlatArray) -> Unit
     ) {
         checkShape(other)
         val commonUnrollDim = min(unrollDim, other.unrollDim)
@@ -903,8 +870,8 @@ open class F64Array protected constructor(
      * At most [maxDisplay] elements are printed for each dimension.
      */
     open fun toString(
-            maxDisplay: Int,
-            format: DecimalFormat = DecimalFormat("#.####")
+        maxDisplay: Int,
+        format: DecimalFormat = DecimalFormat("#.####")
     ): String {
         val sb = StringBuilder()
         sb.append('[')
@@ -971,9 +938,9 @@ open class F64Array protected constructor(
          * Creates a matrix with a given number of rows and columns and fills it using [block].
          */
         inline operator fun invoke(
-                numRows: Int,
-                numColumns: Int,
-                block: (Int, Int) -> Double
+            numRows: Int,
+            numColumns: Int,
+            block: (Int, Int) -> Double
         ): F64Array {
             return invoke(numRows, numColumns).apply {
                 for (r in 0 until numRows) {
@@ -988,10 +955,10 @@ open class F64Array protected constructor(
          * Creates a 3D array with given dimensions and fills it using [block].
          */
         inline operator fun invoke(
-                depth: Int,
-                numRows: Int,
-                numColumns: Int,
-                block: (Int, Int, Int) -> Double
+            depth: Int,
+            numRows: Int,
+            numColumns: Int,
+            block: (Int, Int, Int) -> Double
         ): F64Array {
             return invoke(depth, numRows, numColumns).apply {
                 for (d in 0 until depth) {
@@ -1058,10 +1025,10 @@ open class F64Array protected constructor(
 
         /** "Smart" constructor. */
         internal operator fun invoke(
-                data: DoubleArray,
-                offset: Int,
-                strides: IntArray,
-                shape: IntArray
+            data: DoubleArray,
+            offset: Int,
+            strides: IntArray,
+            shape: IntArray
         ): F64Array {
             require(strides.isNotEmpty()) { "singleton arrays are not supported" }
             require(shape.isNotEmpty()) { "singleton arrays are not supported" }
@@ -1069,8 +1036,32 @@ open class F64Array protected constructor(
             return if (shape.size == 1) {
                 F64FlatArray(data, offset, strides.single(), shape.single())
             } else {
-                F64Array(data, offset, strides, shape)
+                val (unrollDim, unrollStride, unrollSize) = calculateUnroll(strides, shape)
+                F64Array(data, offset, strides, shape, unrollDim, unrollStride, unrollSize)
             }
+        }
+
+        private data class Unroll(val dim: Int, val stride: Int, val size: Int)
+
+        private fun calculateUnroll(strides: IntArray, shape: IntArray): Unroll {
+            var prevStride = 0
+            var unrollable = true
+            var d = 0
+            var s = 0
+            for (i in strides.indices) {
+                if (shape[i] == 1) {
+                    if (unrollable) d = i + 1
+                    continue
+                }
+                if (unrollable && (prevStride == 0 || prevStride == strides[i] * shape[i])) {
+                    d = i + 1
+                    s = strides[i]
+                } else {
+                    unrollable = false
+                }
+                prevStride = strides[i]
+            }
+            return Unroll(d, s, shape.slice(0 until d).toIntArray().product())
         }
     }
 }
@@ -1149,6 +1140,8 @@ private fun Array<*>.guessShape(): IntArray {
         else -> unsupported()
     }
 }
+
+
 
 /**
  * A special object used to denote all indices.
