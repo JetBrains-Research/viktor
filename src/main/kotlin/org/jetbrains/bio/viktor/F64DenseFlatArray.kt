@@ -30,22 +30,50 @@ internal sealed class F64DenseFlatArray(
     }
 
     private inline fun denseTransformInPlace(op: (Double) -> Double) {
-        for (i in 0 until size) {
-            data[i + offset] = op.invoke(data[i + offset])
+        val dst = data
+        var dstOffset = offset
+        val dstEnd = dstOffset + size
+        while (dstOffset < dstEnd) {
+            dst[dstOffset] = op.invoke(dst[dstOffset])
+            dstOffset++
         }
     }
 
     private inline fun denseTransform(op: (Double) -> Double): F64FlatArray {
-        val res = DoubleArray(size)
-        for (i in 0 until size) {
-            res[i] = op.invoke(data[i + offset])
+        val dst = DoubleArray(size)
+        val src = data
+        var srcOffset = offset
+        val length = size
+        if (srcOffset == 0) {
+            for (i in 0 until length) {
+                dst[i] = op.invoke(src[i])
+            }
+        } else {
+            for (i in 0 until length) {
+                dst[i] = op.invoke(src[srcOffset])
+                srcOffset++
+            }
         }
-        return create(res, 0, size)
+        return create(dst, 0, size)
     }
 
     private inline fun denseEBEInPlace(other: F64DenseFlatArray, op: (Double, Double) -> Double) {
-        for (i in 0 until size) {
-            data[i + offset] = op.invoke(data[i + offset], other.data[i + other.offset])
+        val dst = data
+        val src = other.data
+        var dstOffset = offset
+        var srcOffset = other.offset
+        val length = size
+        if (dstOffset == 0 && srcOffset == 0) {
+            for (i in 0 until length) {
+                dst[i] = op.invoke(dst[i], src[i])
+            }
+        } else {
+            val dstEnd = dstOffset + length
+            while (dstOffset < dstEnd) {
+                dst[dstOffset] = op.invoke(dst[dstOffset], src[srcOffset])
+                dstOffset++
+                srcOffset++
+            }
         }
     }
 
@@ -63,11 +91,24 @@ internal sealed class F64DenseFlatArray(
     }
 
     private inline fun denseEBE(other: F64DenseFlatArray, op: (Double, Double) -> Double): F64DenseFlatArray {
-        val res = DoubleArray(size)
-        for (i in 0 until size) {
-            res[i] = op.invoke(data[i + offset], other.data[i + other.offset])
+        val dst = DoubleArray(size)
+        val src1 = data
+        val src2 = other.data
+        var src1Offset = offset
+        var src2Offset = other.offset
+        val length = size
+        if (src1Offset == 0 && src2Offset == 0) {
+            for (i in 0 until length) {
+                dst[i] = op.invoke(src1[i], src2[i])
+            }
+        } else {
+            for (i in 0 until length) {
+                dst[i] = op.invoke(src1[src1Offset], src2[src2Offset])
+                src1Offset++
+                src2Offset++
+            }
         }
-        return create(res, 0, size)
+        return create(dst, 0, size)
     }
 
     private inline fun ebe(
@@ -180,9 +221,9 @@ internal class F64LargeDenseArray(
         nativeOp: (DoubleArray, Int, DoubleArray, Int, Int) -> Boolean,
         superOp: F64FlatArray.() -> F64FlatArray
     ): F64FlatArray {
-        val res = DoubleArray(size)
-        if (nativeOp(res, 0, data, offset, size)) {
-            return create(res, 0, size)
+        val dst = DoubleArray(size)
+        if (nativeOp(dst, 0, data, offset, size)) {
+            return create(dst, 0, size)
         }
         return superOp()
     }
