@@ -1,8 +1,11 @@
 package org.jetbrains.bio.viktor
 
+import org.apache.commons.math3.util.FastMath
 import org.apache.commons.math3.util.Precision
 import java.text.DecimalFormat
 import java.util.*
+import kotlin.math.ln
+import kotlin.math.ln1p
 import kotlin.math.min
 import kotlin.math.sqrt
 
@@ -63,10 +66,10 @@ open class F64Array protected constructor(
 ) {
 
     /** Number of axes in this array. */
-    val nDim: Int get() = shape.size
+    val nDim: Int = shape.size
 
     /** Number of elements along the first axis. */
-    val size: Int get() = shape[0]
+    val size: Int = shape[0]
 
     /**
      * Returns `true` if this array can be flattened using [flatten].
@@ -632,8 +635,7 @@ open class F64Array protected constructor(
      * Replaces each element x of this array with op(x) for the given unary operation [op].
      *
      * If you need to apply one of the `exp`, `expm1`, `log`, `log1p`, use the appropriate specialized method instead
-     * (see the list below); these will generally be much more efficient. The same goes for arithmetic operations
-     * with a scalar.
+     * (see the list below); these will generally be much more efficient.
      *
      * In-place method.
      *
@@ -648,8 +650,7 @@ open class F64Array protected constructor(
      * A copying version of [transformInPlace].
      *
      * If you need to apply one of the `exp`, `expm1`, `log`, `log1p`, use the appropriate specialized method instead
-     * (see the list below); these will generally be much more efficient. The same goes for arithmetic operations
-     * with a scalar.
+     * (see the list below); these will generally be much more efficient.
      *
      * Copying method.
      *
@@ -658,21 +659,26 @@ open class F64Array protected constructor(
      * @since 1.0.3
      * @see [exp], [expm1], [log], [log1p] for the optimized specialized methods.
      */
-    open fun transform(op: (Double) -> Double) = copy().apply { transformInPlace(op) }
+    open fun transform(op: (Double) -> Double): F64Array {
+        if (isFlattenable) {
+            return flatten().transform(op).reshape(*shape)
+        }
+        return copy().apply { transformInPlace(op) }
+    }
 
     /**
      * Replaces each element x of this array with its exponent exp(x).
      *
      * In-place method. Optimized for dense arrays.
      */
-    open fun expInPlace(): Unit = unrollToFlat().forEach { it.expInPlace() }
+    open fun expInPlace(): Unit = transformInPlace(FastMath::exp)
 
     /**
      * A copying version of [expInPlace].
      *
      * Copying method. Optimized for dense arrays.
      */
-    open fun exp() = copy().apply { expInPlace() }
+    open fun exp() = transform(FastMath::exp)
 
     /**
      * Replaces each element x of this array with exp(x) - 1.
@@ -681,28 +687,28 @@ open class F64Array protected constructor(
      *
      * @since 0.3.0
      */
-    open fun expm1InPlace(): Unit = unrollToFlat().forEach { it.expm1InPlace() }
+    open fun expm1InPlace(): Unit = transformInPlace(FastMath::expm1)
 
     /**
      * A copying version of [expm1InPlace].
      *
      * Copying method. Optimized for dense arrays.
      */
-    open fun expm1() = copy().apply { expm1InPlace() }
+    open fun expm1() = transform(FastMath::expm1)
 
     /**
      * Replaces each element x of this array with its natural logarithm log(x).
      *
      * In-place method. Optimized for dense arrays.
      */
-    open fun logInPlace(): Unit = unrollToFlat().forEach { it.logInPlace() }
+    open fun logInPlace(): Unit = transformInPlace(::ln)
 
     /**
      * A copying version of [logInPlace].
      *
      * Copying method. Optimized for dense arrays.
      */
-    open fun log() = copy().apply { logInPlace() }
+    open fun log() = transform(::ln)
 
     /**
      * Replaces each element x of this array with log(1 + x).
@@ -711,14 +717,14 @@ open class F64Array protected constructor(
      *
      * @since 0.3.0
      */
-    open fun log1pInPlace(): Unit = unrollToFlat().forEach { it.log1pInPlace() }
+    open fun log1pInPlace(): Unit = transformInPlace(::ln1p)
 
     /**
      * A copying version of [log1pInPlace].
      *
      * Copying method. Optimized for dense arrays.
      */
-    open fun log1p() = copy().apply { log1pInPlace() }
+    open fun log1p() = transform(::ln1p)
 
     /**
      * Rescales the elements so that the sum is 1.0.
@@ -771,44 +777,58 @@ open class F64Array protected constructor(
      */
     open infix fun logAddExp(other: F64Array): F64Array = copy().apply { logAddExpAssign(other) }
 
+    /* Arithmetic operations */
+
+    /* Arithmetic unary operations */
+
     operator fun unaryPlus() = this
 
     open operator fun unaryMinus(): F64Array = transform { -it }
 
-    operator fun plus(other: F64Array) = copy().apply { this += other }
+    /* Arithmetic binary operations */
+
+    /* Addition */
 
     open operator fun plusAssign(other: F64Array): Unit = commonUnrollToFlat(other) { a, b -> a += b }
 
-    operator fun plus(update: Double) = copy().apply { this += update }
+    open operator fun plus(other: F64Array) = copy().apply { this += other }
 
-    open operator fun plusAssign(update: Double): Unit = unrollToFlat().forEach { it += update }
+    open operator fun plusAssign(update: Double): Unit = transformInPlace { it + update }
 
-    operator fun minus(other: F64Array) = copy().apply { this -= other }
+    operator fun plus(update: Double) = transform { it + update }
+
+    /* Subtraction */
 
     open operator fun minusAssign(other: F64Array): Unit = commonUnrollToFlat(other) { a, b -> a -= b }
 
-    operator fun minus(update: Double) = copy().apply { this -= update }
+    open operator fun minus(other: F64Array) = copy().apply { this -= other }
 
-    open operator fun minusAssign(update: Double): Unit = unrollToFlat().forEach { it -= update }
+    open operator fun minusAssign(update: Double): Unit = transformInPlace { it - update }
 
-    open operator fun times(other: F64Array) = copy().apply { this *= other }
+    operator fun minus(update: Double) = transform { it - update }
+
+    /* Multiplication */
 
     open operator fun timesAssign(other: F64Array): Unit = commonUnrollToFlat(other) { a, b -> a *= b }
 
-    operator fun times(update: Double) = copy().apply { this *= update }
+    open operator fun times(other: F64Array) = copy().apply { this *= other }
 
-    open operator fun timesAssign(update: Double): Unit = unrollToFlat().forEach { it *= update }
+    open operator fun timesAssign(update: Double): Unit = transformInPlace { it * update }
 
-    operator fun div(other: F64Array) = copy().apply { this /= other }
+    operator fun times(update: Double) = transform { it * update }
+
+    /* Division */
 
     open operator fun divAssign(other: F64Array): Unit = commonUnrollToFlat(other) { a, b -> a /= b }
 
-    operator fun div(update: Double) = copy().apply { this /= update }
+    open operator fun div(other: F64Array) = copy().apply { this /= other }
 
-    open operator fun divAssign(update: Double): Unit = unrollToFlat().forEach { it /= update }
+    open operator fun divAssign(update: Double): Unit = transformInPlace { it / update }
+
+    operator fun div(update: Double) = transform { it / update }
 
     /** Ensures a given array has the same dimensions as this array. */
-    protected open fun checkShape(other: F64Array) {
+    private fun checkShape(other: F64Array) {
         check(this === other || shape.contentEquals(other.shape)) {
             "operands shapes do not match: ${shape.contentToString()} vs ${other.shape.contentToString()}"
         }
