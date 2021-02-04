@@ -1,6 +1,9 @@
 [![JetBrains Research](https://jb.gg/badges/research.svg)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub)
 [![tests](http://teamcity.jetbrains.com/app/rest/builds/buildType:(id:Epigenome_Tools_Viktor)/statusIcon.svg)](http://teamcity.jetbrains.com/viewType.html?buildTypeId=Epigenome_Tools_Viktor&guest=1)
-[![Download](https://api.bintray.com/packages/jetbrains-research/maven/viktor/images/download.svg?version=1.0.2)](https://bintray.com/jetbrains-research/maven/viktor/1.0.2/link)
+
+[![](https://api.bintray.com/packages/jetbrains-research/maven/viktor/images/download.svg?version=1.0.2)](https://bintray.com/jetbrains-research/maven/viktor/1.0.2/link)
+[![](https://jitpack.io/v/JetBrains-Research/viktor.svg)](https://jitpack.io/#JetBrains-Research/viktor)
+
 
 viktor 
 ======
@@ -30,7 +33,7 @@ Installation
 The latest version of `viktor` is available on [Bintray][bintray]. If you're using
 Gradle just add the following to your `build.gradle`:
 
-```gradle
+```groovy
 repositories {
     jCenter()
 }
