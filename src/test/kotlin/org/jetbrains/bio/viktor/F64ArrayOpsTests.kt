@@ -243,6 +243,43 @@ class F64VectorMathTest(private val v: F64Array) {
         }
     }
 
+    @Test fun transformInPlace() {
+        assertEquals(v.transform(Gamma::logGamma), v.copy().apply { transformInPlace(Gamma::logGamma) })
+    }
+
+    @Test fun transformInPlaceNotDense() {
+        if (v.nDim != 1) return // flat arrays only
+        val notDense = F64Array(v.size, 2).V[_I, 0]
+        notDense.V[_I] = v
+        notDense.transformInPlace(Gamma::logGamma)
+        assertEquals(v.transform(Gamma::logGamma), notDense)
+    }
+
+    @Test fun transformInPlaceNotFlattenable() {
+        if (v.nDim != 1) return // flat arrays only
+        val notFlattenable = F64Array(2, 3, v.size).V[_I, 1]
+        val doubleV = F64Array.concatenate(v.reshape(1, v.size), v.reshape(1, v.size))
+        notFlattenable.V[_I] = doubleV
+        notFlattenable.transformInPlace(Gamma::logGamma)
+        assertEquals(doubleV.transform(Gamma::logGamma), notFlattenable)
+    }
+
+    @Test fun expInPlace() {
+        assertEquals(v.exp(), v.copy().apply { expInPlace() })
+    }
+
+    @Test fun expm1InPlace() {
+        assertEquals(v.expm1(), v.copy().apply { expm1InPlace() })
+    }
+
+    @Test fun logInPlace() {
+        assertEquals(v.log(), v.copy().apply { logInPlace() })
+    }
+
+    @Test fun log1pInPlace() {
+        assertEquals(v.log1p(), v.copy().apply { log1pInPlace() })
+    }
+
     @Test fun rescale() {
         val scaled = v.copy()
         scaled.rescale()
@@ -269,6 +306,16 @@ class F64VectorMathTest(private val v: F64Array) {
         (0 until v.size).forEach { pos ->
             assertEquals(v[pos] logAddExp other[pos], vLaeO[pos], Precision.EPSILON)
         }
+    }
+
+    @Test fun logAddExpAssign() {
+        assertEquals(v logAddExp v, v.copy().apply { logAddExpAssign(v) })
+    }
+
+    @Test fun logAddExpAssignWithNotDense() {
+        if (v.nDim != 1) return // only applicable to flat arrays
+        val other = F64Array(v.size, 2) { _, _ -> Random().nextDouble() }.V[_I, 0]
+        assertEquals(v logAddExp other, v.copy().apply { logAddExpAssign(other) })
     }
 
     @Test fun logSumExp() {
@@ -313,7 +360,7 @@ class F64VectorMathTest(private val v: F64Array) {
 }
 
 @RunWith(Parameterized::class)
-class F64FlatVectorArithTest(private val v: F64Array) {
+class F64FlatVectorArithmeticTest(private val v: F64Array) {
     @Test fun unaryPlus() = assertEquals(v, +v)
 
     @Test fun unaryMinus() = assertEquals(v, -(-v))
@@ -339,6 +386,12 @@ class F64FlatVectorArithTest(private val v: F64Array) {
         (0 until v.size).forEach { pos ->
             assertEquals(v[pos] + other[pos], u[pos], Precision.EPSILON)
         }
+    }
+
+    @Test fun plusAssignWithNotDense() {
+        if (v.nDim != 1) return // this is a test for flat arrays
+        val other = F64Array(v.size, 2) { _, _ -> Random().nextDouble() }.V[_I, 0]
+        assertEquals(v + other, v.copy().apply { this += other })
     }
 
     @Test fun minus() {

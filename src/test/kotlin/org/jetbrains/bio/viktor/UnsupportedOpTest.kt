@@ -25,6 +25,11 @@ class UnsupportedOpTest {
     }
 
     @Test(expected = UnsupportedOperationException::class)
+    fun flatArrayView() {
+        F64Array.of(1.0, 2.0, 3.0).view(0, 0)
+    }
+
+    @Test(expected = UnsupportedOperationException::class)
     fun flatArrayReorder() {
         F64Array.of(1.0, 2.0, 3.0).reorder(intArrayOf(2, 1, 0), 1)
     }
