@@ -118,7 +118,7 @@ class F64ArrayOperationTest(private val v: F64Array) {
             assertEquals("v $opName other != other $opName v", voCopy, ovCopy)
         }
     }
-    
+
     @Test fun plus() = doTestBinary(
         F64Array::plus, F64Array::plusAssign, Double::plus, true, EXACT_DELTA, "plus"
     )
@@ -136,7 +136,7 @@ class F64ArrayOperationTest(private val v: F64Array) {
     )
 
     /* Binary array-scalar operations */
-    
+
     private fun doTestBinaryArrayScalar(
         copyOp: (F64Array, Double) -> F64Array,
         inplaceOp: (F64Array, Double) -> Unit,
@@ -157,7 +157,7 @@ class F64ArrayOperationTest(private val v: F64Array) {
         val scalar = 42.0
         doTestUnary({ copyOp(scalar, this) }, null, { scalarOp(scalar, it) }, delta, opName)
     }
-    
+
     private fun doTestBinaryScalar(
         asCopyOp: (F64Array, Double) -> F64Array,
         saCopyOp: (Double, F64Array) -> F64Array,
@@ -173,7 +173,7 @@ class F64ArrayOperationTest(private val v: F64Array) {
             assertEquals("$opName (scalar) should be commutative", asCopyOp(v, 42.0), saCopyOp(42.0, v))
         }
     }
-    
+
     @Test fun plusScalar() = doTestBinaryScalar(
         F64Array::plus, Double::plus, F64Array::plusAssign, Double::plus,
         true, EXACT_DELTA, "plusScalar"
@@ -192,7 +192,7 @@ class F64ArrayOperationTest(private val v: F64Array) {
     )
 
     /* Fold (reduce) array operations */
-    
+
     private fun doTestFold(
         arrayOp: (F64Array) -> Double,
         scalarOp: (Double, Double) -> Double,
@@ -204,7 +204,7 @@ class F64ArrayOperationTest(private val v: F64Array) {
         val expected = v.asSequence().fold(initial, scalarOp)
         assertEquals(opName, expected, actual, delta)
     }
-    
+
     @Test fun max() = doTestFold(F64Array::max, Math::max, Double.NEGATIVE_INFINITY, EXACT_DELTA, "max")
     @Test fun min() = doTestFold(F64Array::min, Math::min, Double.POSITIVE_INFINITY, EXACT_DELTA, "min")
     @Test fun sum() = doTestFold(F64Array::sum, Double::plus, 0.0, DELTA, "plus")
@@ -282,12 +282,12 @@ private val CASES = listOf(
     // Gapped large.
     gappedArray(1..LARGE_SIZE),
     // Dense small.
-    doubleArrayOf(1.0, 2.0, 3.0).asF64Array(),
+    doubleArrayOf(4.0, 5.0, 6.0).asF64Array(),
     // Dense large.
     Random().doubles(LARGE_SIZE.toLong()).toArray().asF64Array(),
     // Dense large subarray.
     Random().doubles(3L * LARGE_SIZE).toArray()
-            .asF64Array(LARGE_SIZE, LARGE_SIZE),
+        .asF64Array(LARGE_SIZE, LARGE_SIZE),
     // Non-flattenable array.
     Random().doubles(4L * 3 * LARGE_SIZE).toArray().asF64Array()
         .reshape(4, 3, LARGE_SIZE).view(1, 1)
@@ -299,9 +299,9 @@ internal fun gappedArray(r: IntRange): F64Array {
     // 1. to ensure 'offset' and 'stride' are used correctly,
     // 2. to force the use of fallback implementation.
     val values = IntStream.range(r.first, r.last + 1)
-            .mapToDouble(Int::toDouble)
-            .flatMap { DoubleStream.of(Double.NaN, it) }
-            .toArray()
+        .mapToDouble(Int::toDouble)
+        .flatMap { DoubleStream.of(Double.NaN, it) }
+        .toArray()
     return F64FlatArray.create(values, offset = 1, size = r.last + 1 - r.first, stride = 2)
 }
 
