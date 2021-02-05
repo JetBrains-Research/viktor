@@ -12,13 +12,8 @@ internal fun IntArray.remove(pos: Int) = when (pos) {
 @Suppress("nothing_to_inline")
 internal inline fun checkIndex(label: String, pos: Int, size: Int) {
     if (pos < 0 || pos >= size) {
-        throw IndexOutOfBoundsException("$label must be in [0, $size)")
+        throw IndexOutOfBoundsException("$label must be in [0, $size), but was $pos")
     }
-}
-
-@Suppress("nothing_to_inline")
-internal inline fun check1D(a: F64Array) {
-    check(a.nDim == 1) { "expected a 1-D array" }
 }
 
 @Suppress("nothing_to_inline")

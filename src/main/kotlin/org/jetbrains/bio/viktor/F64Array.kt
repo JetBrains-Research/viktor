@@ -89,22 +89,27 @@ open class F64Array protected constructor(
      */
     operator fun get(vararg indices: Int): Double {
         check(indices.size == nDim) { "broadcasting get is not supported" }
-        return safeIndex({ indices }) { data[unsafeIndex(indices)] }
+        for (d in 0 until nDim) {
+            checkIndex("index", indices[d], shape[d])
+        }
+        return data[unsafeIndex(indices)]
     }
 
-    operator fun get(pos: Int): Double {
-        check(nDim == 1) { "broadcasting get is not supported" }
-        return safeIndex({ intArrayOf(pos) }) { data[unsafeIndex(pos)] }
-    }
+    open operator fun get(pos: Int): Double = unsupported()
 
     operator fun get(r: Int, c: Int): Double {
         check(nDim == 2) { "broadcasting get is not supported" }
-        return safeIndex({ intArrayOf(r, c) }) { data[unsafeIndex(r, c)] }
+        checkIndex("row", r, shape[0])
+        checkIndex("column", c, shape[1])
+        return data[unsafeIndex(r, c)]
     }
 
     operator fun get(d: Int, r: Int, c: Int): Double {
         check(nDim == 3) { "broadcasting get is not supported" }
-        return safeIndex({ intArrayOf(d, r, c) }) { data[unsafeIndex(d, r, c)] }
+        checkIndex("depth", r, shape[0])
+        checkIndex("row", r, shape[1])
+        checkIndex("column", c, shape[2])
+        return data[unsafeIndex(d, r, c)]
     }
 
     /**
@@ -114,35 +119,27 @@ open class F64Array protected constructor(
      */
     operator fun set(vararg indices: Int, value: Double) {
         check(indices.size == nDim) { "broadcasting set is not supported" }
-        safeIndex({ indices }) { data[unsafeIndex(indices)] = value }
+        for (d in 0 until nDim) {
+            checkIndex("index", indices[d], shape[d])
+        }
+        data[unsafeIndex(indices)] = value
     }
 
-    operator fun set(pos: Int, value: Double) {
-        check(nDim == 1) { "broadcasting set is not supported" }
-        safeIndex({ intArrayOf(pos) }) { data[unsafeIndex(pos)] = value }
-    }
+    open operator fun set(pos: Int, value: Double): Unit = unsupported()
 
     operator fun set(r: Int, c: Int, value: Double) {
         check(nDim == 2) { "broadcasting set is not supported" }
-        safeIndex({ intArrayOf(r, c) }) { data[unsafeIndex(r, c)] = value }
+        checkIndex("row", r, shape[0])
+        checkIndex("column", c, shape[1])
+        data[unsafeIndex(r, c)] = value
     }
 
     operator fun set(d: Int, r: Int, c: Int, value: Double) {
         check(nDim == 3) { "broadcasting set is not supported" }
-        safeIndex({ intArrayOf(d, r, c) }) { data[unsafeIndex(d, r, c)] = value }
-    }
-
-    @Suppress("nothing_to_inline")
-    internal inline fun unsafeGet(pos: Int): Double = data[unsafeIndex(pos)]
-
-    @Suppress("nothing_to_inline")
-    internal inline fun unsafeSet(pos: Int, value: Double) {
-        data[unsafeIndex(pos)] = value
-    }
-
-    @Suppress("nothing_to_inline")
-    private inline fun unsafeIndex(pos: Int): Int {
-        return offset + pos * strides[0]
+        checkIndex("depth", d, shape[0])
+        checkIndex("row", r, shape[1])
+        checkIndex("column", c, shape[2])
+        data[unsafeIndex(d, r, c)] = value
     }
 
     @Suppress("nothing_to_inline")
@@ -158,27 +155,6 @@ open class F64Array protected constructor(
     @Suppress("nothing_to_inline")
     private inline fun unsafeIndex(indices: IntArray): Int {
         return strides.foldIndexed(offset) { i, acc, stride -> acc + indices[i] * stride }
-    }
-
-    private inline fun <T> safeIndex(indices: () -> IntArray, block: () -> T): T {
-        try {
-            return block()
-        } catch (e: IndexOutOfBoundsException) {
-            outOfBounds(indices(), shape)
-        }
-    }
-
-    @Suppress("nothing_to_inline")
-    private inline fun outOfBounds(indices: IntArray, shape: IntArray): Nothing {
-        val nDim = shape.size
-        val reason = when {
-            indices.size > nDim -> "too many indices"
-            indices.size < nDim -> "too few indices"
-            else -> "(${indices.joinToString(", ")}) out of bounds " +
-                    "for shape ${shape.joinToString(", ")}"
-        }
-
-        throw IndexOutOfBoundsException(reason)
     }
 
     /**
@@ -980,7 +956,7 @@ open class F64Array protected constructor(
         /**
          * Creates a vector from given elements.
          */
-        fun of(first: Double, vararg rest: Double): F64Array {
+        fun of(first: Double, vararg rest: Double): F64FlatArray {
             val data = DoubleArray(rest.size + 1)
             data[0] = first
             System.arraycopy(rest, 0, data, 1, rest.size)
@@ -1036,9 +1012,8 @@ open class F64Array protected constructor(
             strides: IntArray,
             shape: IntArray
         ): F64Array {
-            require(strides.isNotEmpty()) { "singleton arrays are not supported" }
-            require(shape.isNotEmpty()) { "singleton arrays are not supported" }
             require(strides.size == shape.size) { "strides and shape size don't match" }
+            require(strides.isNotEmpty()) { "singleton arrays are not supported" }
             return if (shape.size == 1) {
                 F64FlatArray.create(data, offset, strides.single(), shape.single())
             } else {
@@ -1077,8 +1052,8 @@ open class F64Array protected constructor(
  *
  * Viewer method.
  */
-fun DoubleArray.asF64Array(): F64Array {
-    return F64FlatArray.create(this, 0, 1, size)
+fun DoubleArray.asF64Array(): F64FlatArray {
+    return F64FlatArray.create(this)
 }
 
 /**
@@ -1086,7 +1061,7 @@ fun DoubleArray.asF64Array(): F64Array {
  *
  * Viewer method.
  */
-fun DoubleArray.asF64Array(offset: Int, size: Int): F64Array {
+fun DoubleArray.asF64Array(offset: Int, size: Int): F64FlatArray {
     return F64FlatArray.create(this, offset, 1, size)
 }
 

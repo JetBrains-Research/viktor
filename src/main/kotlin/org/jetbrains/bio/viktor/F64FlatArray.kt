@@ -18,6 +18,19 @@ open class F64FlatArray protected constructor(
     size: Int
 ) : F64Array(data, offset, intArrayOf(stride), intArrayOf(size), 1, stride, size) {
 
+    internal open val unsafeGet: (Int) -> Double = { data[it * stride + offset] }
+    internal open val unsafeSet: (Int, Double) -> Unit = { i, v -> data[i * stride + offset] = v }
+
+    override operator fun get(pos: Int): Double {
+        checkIndex("pos", pos, size)
+        return unsafeGet(pos)
+    }
+
+    override operator fun set(pos: Int, value: Double) {
+        checkIndex("pos", pos, size)
+        unsafeSet(pos, value)
+    }
+
     override fun flatten() = this
 
     override fun contains(other: Double): Boolean {
@@ -35,9 +48,9 @@ open class F64FlatArray protected constructor(
     override fun view(index: Int, axis: Int) = unsupported()
 
     override fun copyTo(other: F64Array) {
-        checkShape(other)
+        val o = checkShape(other)
         for (pos in 0 until size) {
-            other.unsafeSet(pos, unsafeGet(pos))
+            o.unsafeSet(pos, unsafeGet(pos))
         }
     }
 
@@ -59,46 +72,11 @@ open class F64FlatArray protected constructor(
         }
     }
 
-    override fun dot(other: ShortArray) = balancedDot { other[it].toDouble() }
+    override fun dot(other: ShortArray) = balancedSum { unsafeGet(it) * other[it].toDouble() }
 
-    override fun dot(other: IntArray) = balancedDot { other[it].toDouble() }
+    override fun dot(other: IntArray) = balancedSum { unsafeGet(it) * other[it].toDouble() }
 
-    override fun dot(other: F64Array) = balancedDot { other[it] }
-
-    /** See [sum]. */
-    private inline fun balancedDot(getter: (Int) -> Double): Double {
-        var accUnaligned = 0.0
-        var remaining = size
-        while (remaining % 4 != 0) {
-            remaining--
-            accUnaligned += unsafeGet(remaining) * getter(remaining)
-        }
-
-        val stack = DoubleArray(31 - 2)
-        var p = 0
-        var i = 0
-        while (i < remaining) {
-            // Shift.
-            var v = unsafeGet(i) * getter(i) + unsafeGet(i + 1) * getter(i + 1)
-            val w = unsafeGet(i + 2) * getter(i + 2) + unsafeGet(i + 3) * getter(i + 3)
-            v += w
-
-            // Reduce.
-            var bitmask = 4
-            while (i and bitmask != 0) {
-                v += stack[--p]
-                bitmask = bitmask shl 1
-            }
-            stack[p++] = v
-            i += 4
-        }
-
-        var acc = 0.0
-        while (p > 0) {
-            acc += stack[--p]
-        }
-        return acc + accUnaligned
-    }
+    override fun dot(other: F64Array) = balancedSum { unsafeGet(it) * other[it] }
 
     /**
      * Summation algorithm balancing accuracy with throughput.
@@ -108,19 +86,20 @@ open class F64FlatArray protected constructor(
      *
      * Dalton et al. "SIMDizing pairwise sums", 2014.
      */
-    override fun sum(): Double {
+    private inline fun balancedSum(getter: (Int) -> Double): Double {
         var accUnaligned = 0.0
         var remaining = size
         while (remaining % 4 > 0) {
-            accUnaligned += unsafeGet(--remaining)
+            remaining--
+            accUnaligned += getter(remaining)
         }
         val stack = DoubleArray(31 - 2)
         var p = 0
         var i = 0
         while (i < remaining) {
             // Shift.
-            var v = unsafeGet(i) + unsafeGet(i + 1)
-            val w = unsafeGet(i + 2) + unsafeGet(i + 3)
+            var v = getter(i) + getter(i + 1)
+            val w = getter(i + 2) + getter(i + 3)
             v += w
 
             // Reduce.
@@ -139,6 +118,8 @@ open class F64FlatArray protected constructor(
         return acc + accUnaligned
     }
 
+    override fun sum(): Double = balancedSum { unsafeGet(it) }
+
     override fun cumSum() {
         val acc = KahanSum()
         for (pos in 0 until size) {
@@ -146,7 +127,6 @@ open class F64FlatArray protected constructor(
             unsafeSet(pos, acc.result())
         }
     }
-
 
     override fun min() = unsafeGet(argMin())
 
@@ -193,17 +173,17 @@ open class F64FlatArray protected constructor(
     }
 
     private inline fun flatEBEInPlace(other: F64Array, op: (Double, Double) -> Double) {
-        checkShape(other)
+        val o = checkShape(other)
         for (pos in 0 until size) {
-            unsafeSet(pos, op.invoke(unsafeGet(pos), other.unsafeGet(pos)))
+            unsafeSet(pos, op.invoke(unsafeGet(pos), o.unsafeGet(pos)))
         }
     }
 
     private inline fun flatEBE(other: F64Array, op: (Double, Double) -> Double): F64FlatArray {
-        checkShape(other)
+        val o = checkShape(other)
         val res = DoubleArray(size)
         for (pos in 0 until size) {
-            res[pos] = op.invoke(unsafeGet(pos), other.unsafeGet(pos))
+            res[pos] = op.invoke(unsafeGet(pos), o.unsafeGet(pos))
         }
         return F64DenseFlatArray.create(res, 0, size)
     }
@@ -256,10 +236,11 @@ open class F64FlatArray protected constructor(
 
     override fun div(other: F64Array): F64FlatArray = flatEBE(other) { a, b -> a / b }
 
-    protected fun checkShape(other: F64Array) {
+    protected fun checkShape(other: F64Array): F64FlatArray {
         check(this === other || (other is F64FlatArray && shape[0] == other.shape[0])) {
             "operands shapes do not match: ${shape.contentToString()} vs ${other.shape.contentToString()}"
         }
+        return other as F64FlatArray
     }
 
     override fun reshape(vararg shape: Int): F64Array {
@@ -278,7 +259,7 @@ open class F64FlatArray protected constructor(
         }
     }
 
-    override fun asSequence(): Sequence<Double> = (0 until size).asSequence().map(this::unsafeGet)
+    override fun asSequence(): Sequence<Double> = (0 until size).asSequence().map { unsafeGet(it) }
 
     override fun clone(): F64FlatArray = F64FlatArray(data.clone(), offset, strides[0], shape[0])
 
@@ -353,6 +334,7 @@ open class F64FlatArray protected constructor(
         ): F64FlatArray {
             // require(offset + (size - 1) * stride < data.size) { "not enough data" }
             // this check is not needed since we control all invocations of this internal method
+            require(size > 0) { "empty arrays not supported" }
             return if (stride == 1) {
                 F64DenseFlatArray.create(data, offset, size)
             } else {

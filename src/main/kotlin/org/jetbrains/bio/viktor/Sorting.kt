@@ -18,7 +18,7 @@ fun F64Array.sort(reverse: Boolean = false) = reorder(argSort(reverse))
  * @param reverse see [sort] for details.
  */
 fun F64Array.argSort(reverse: Boolean = false): IntArray {
-    check1D(this)
+    check(this is F64FlatArray) { "expected a 1-D array" }
     val comparator = Comparator(IndexedDoubleValue::compareTo)
     val indexedValues = Array(size) { IndexedDoubleValue(it, unsafeGet(it)) }
     indexedValues.sortWith(if (reverse) comparator.reversed() else comparator)
@@ -27,7 +27,7 @@ fun F64Array.argSort(reverse: Boolean = false): IntArray {
 
 /** A version of [IndexedValue] specialized to [Double]. */
 private data class IndexedDoubleValue(val index: Int, val value: Double) :
-        Comparable<IndexedDoubleValue> {
+    Comparable<IndexedDoubleValue> {
     override fun compareTo(other: IndexedDoubleValue): Int {
         val res = value.compareTo(other.value)
         return if (res != 0) {
@@ -39,11 +39,11 @@ private data class IndexedDoubleValue(val index: Int, val value: Double) :
 }
 
 internal inline fun <T> reorderInternal(
-        a: F64Array,
-        indices: IntArray,
-        axis: Int,
-        get: (Int) -> T,
-        set: (Int, T) -> Unit
+    a: F64Array,
+    indices: IntArray,
+    axis: Int,
+    get: (Int) -> T,
+    set: (Int, T) -> Unit
 ) {
     require(indices.size == a.shape[axis])
 
@@ -80,7 +80,7 @@ internal inline fun <T> reorderInternal(
  * @since 0.2.3
  */
 fun F64Array.partition(p: Int) {
-    check1D(this)
+    check(this is F64FlatArray) { "expected a 1-D array" }
     require(p in 0 until size) { "p must be in [0, $size)" }
     partition(p, 0, size - 1)
 }
@@ -98,7 +98,7 @@ fun F64Array.partition(p: Int) {
  * @param left start index (inclusive).
  * @param right end index (inclusive).
  */
-internal fun F64Array.partition(p: Int, left: Int, right: Int): Int {
+internal fun F64FlatArray.partition(p: Int, left: Int, right: Int): Int {
     val pivot = this[p]
     swap(p, right)  // move to end.
 
@@ -115,7 +115,7 @@ internal fun F64Array.partition(p: Int, left: Int, right: Int): Int {
 }
 
 @Suppress("nothing_to_inline")
-internal inline fun F64Array.swap(i: Int, j: Int) {
+internal inline fun F64FlatArray.swap(i: Int, j: Int) {
     val tmp = unsafeGet(i)
     unsafeSet(i, unsafeGet(j))
     unsafeSet(j, tmp)

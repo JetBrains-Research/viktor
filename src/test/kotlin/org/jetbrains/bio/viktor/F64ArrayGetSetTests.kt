@@ -26,7 +26,7 @@ class F64FlatArrayGetSetTest(
     }
 
     @Test(expected = IndexOutOfBoundsException::class) fun getOutOfBounds() {
-        v[100500]
+        v[v.size]
     }
 
     @Test fun set() {
@@ -47,7 +47,7 @@ class F64FlatArrayGetSetTest(
     }
 
     @Test(expected = IndexOutOfBoundsException::class) fun setOutOfBounds() {
-        v[100500] = 42.0
+        v[v.size] = 42.0
     }
 
     @Test fun setMagicScalar() {
@@ -94,6 +94,9 @@ class F64ArrayGetSetTest {
         assertFailsWith<IndexOutOfBoundsException> {
             m[42, 42]
         }
+        assertFailsWith<IndexOutOfBoundsException> {
+            m[0, 4]
+        }
     }
 
     @Test fun set() {
@@ -108,6 +111,9 @@ class F64ArrayGetSetTest {
 
         assertFailsWith<IndexOutOfBoundsException> {
             m[42, 42] = 100500.0
+        }
+        assertFailsWith<IndexOutOfBoundsException> {
+            m[0, 4] = 42.0
         }
     }
 

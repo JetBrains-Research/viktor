@@ -20,11 +20,11 @@ internal object QuickSelect {
      * Invariant:  left <= n <= right
      */
     tailrec fun select(
-            values: F64Array,
-            left: Int,
-            right: Int,
-            n: Int,
-            randomGenerator: RandomGenerator
+        values: F64FlatArray,
+        left: Int,
+        right: Int,
+        n: Int,
+        randomGenerator: RandomGenerator
     ): Double {
         // assert(n in left..right) unnecessary since we control all invocations
 
@@ -36,7 +36,7 @@ internal object QuickSelect {
         split = values.partition(split, left, right)
         return when {
             split == n -> values[n]
-            split > n  -> select(values, left, split - 1, n, randomGenerator)
+            split > n -> select(values, left, split - 1, n, randomGenerator)
             else -> select(values, split + 1, right, n, randomGenerator)
         }
     }
@@ -54,11 +54,10 @@ internal object QuickSelect {
  * @since 0.2.0
  */
 fun F64Array.quantile(
-        q: Double = 0.5,
-        randomGenerator: RandomGenerator = DEFAULT_RANDOM
+    q: Double = 0.5,
+    randomGenerator: RandomGenerator = DEFAULT_RANDOM
 ): Double {
-    require(size > 0) { "no data" }
-    check1D(this)
+    check(this is F64FlatArray) { "expected a 1-D array" }
 
     val pos = (size + 1) * q
     val d = pos - floor(pos)
@@ -85,7 +84,7 @@ fun F64Array.quantile(
  * @since 0.2.0
  */
 fun F64Array.shuffle(randomGenerator: RandomGenerator = DEFAULT_RANDOM) {
-    check1D(this)  // although this could be generalized.
+    check(this is F64FlatArray) { "expected a 1-D array" }
 
     if (size <= 1) {
         return
