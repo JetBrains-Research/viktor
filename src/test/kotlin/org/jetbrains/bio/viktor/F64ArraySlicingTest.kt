@@ -149,7 +149,7 @@ class F64ArraySlicing {
     }
 
     @Test fun reshape2WithStride() {
-        val v = F64FlatArray(
+        val v = F64FlatArray.create(
             doubleArrayOf(
                 0.0, 1.0, 2.0, 3.0,
                 4.0, 5.0, 6.0, 7.0
@@ -188,7 +188,7 @@ class F64ArraySlicing {
 
 
     @Test fun reshape3WithStride() {
-        val v = F64FlatArray(doubleArrayOf(0.0, 1.0, 2.0, 3.0,
+        val v = F64FlatArray.create(doubleArrayOf(0.0, 1.0, 2.0, 3.0,
             4.0, 5.0, 6.0, 7.0),
             0, size = 4, stride = 2)
         assertArrayEquals(

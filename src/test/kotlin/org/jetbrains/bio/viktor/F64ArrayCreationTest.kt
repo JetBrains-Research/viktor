@@ -8,9 +8,9 @@ import kotlin.test.assertTrue
 
 class F64ArrayCreationTest {
     @Test fun specialization() {
-        assertTrue(F64FlatArray(doubleArrayOf(1.0), stride = 10) !is F64DenseFlatArray)
-        assertTrue(F64FlatArray(doubleArrayOf(1.0)) is F64DenseFlatArray)
-        assertTrue(F64FlatArray(doubleArrayOf(1.0, 2.0), offset = 1, size = 1) is F64DenseFlatArray)
+        assertTrue(F64FlatArray.create(doubleArrayOf(1.0), stride = 10) !is F64DenseFlatArray)
+        assertTrue(F64FlatArray.create(doubleArrayOf(1.0)) is F64DenseFlatArray)
+        assertTrue(F64FlatArray.create(doubleArrayOf(1.0, 2.0), offset = 1, size = 1) is F64DenseFlatArray)
     }
 
     @Test fun of() {

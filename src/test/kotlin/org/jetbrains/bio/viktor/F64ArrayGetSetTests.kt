@@ -17,7 +17,7 @@ class F64FlatArrayGetSetTest(
         private val stride: Int
 ) {
 
-    private val v = F64FlatArray(values, offset, stride, size)
+    private val v = F64FlatArray.create(values, offset, stride, size)
 
     @Test fun get() {
         for (i in 0 until v.size) {

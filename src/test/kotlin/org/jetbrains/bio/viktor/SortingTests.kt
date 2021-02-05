@@ -10,8 +10,8 @@ import kotlin.test.assertTrue
 class SortingTests {
     @Test fun partition() {
         assertEquals(
-                F64Array.of(1.0, 2.0, 3.0, 4.0),
-                F64Array.of(3.0, 4.0, 2.0, 1.0).apply { partition(2) }
+            F64Array.of(1.0, 2.0, 3.0, 4.0),
+            F64Array.of(3.0, 4.0, 2.0, 1.0).apply { partition(2) }
         )
     }
 
@@ -37,7 +37,7 @@ class SortingTests {
         val v = values.clone().asF64Array()
         v.sort()
         assertArrayEquals(values.sortedArray(), v.toDoubleArray(),
-                          Precision.EPSILON)
+            Precision.EPSILON)
     }
 
     @Test fun argSort() {
@@ -67,21 +67,21 @@ class SortingTests {
         val indices = values.asF64Array().argSort()
         assertArrayEquals(intArrayOf(2, 3, 1, 5, 4, 0), indices)
 
-        val v = F64FlatArray(
+        val v = F64FlatArray.create(
             doubleArrayOf(
                 Double.NaN, Double.NaN,  // Prefix.
-                                           42.0, Double.NaN, 2.0,
-                                           Double.NaN, -1.0,
-                                           Double.NaN, 0.0,
-                                           Double.NaN, 4.0,
-                                           Double.NaN, 2.0
+                42.0, Double.NaN, 2.0,
+                Double.NaN, -1.0,
+                Double.NaN, 0.0,
+                Double.NaN, 4.0,
+                Double.NaN, 2.0
             ),
-                             offset = 2, size = values.size, stride = 2
+            offset = 2, size = values.size, stride = 2
         )
         v.reorder(indices)
         assertArrayEquals(
             doubleArrayOf(-1.0, 0.0, 2.0, 2.0, 4.0, 42.0),
-                          v.toDoubleArray(), Precision.EPSILON
+            v.toDoubleArray(), Precision.EPSILON
         )
     }
 
@@ -94,30 +94,30 @@ class SortingTests {
     @Test fun reorderMatrix0() {
         val m = F64Array.of(
             1.0, 2.0, 3.0,
-                            4.0, 5.0, 6.0
+            4.0, 5.0, 6.0
         ).reshape(2, 3)
         m.reorder(intArrayOf(1, 0))
         assertEquals(
             F64Array.of(
                 4.0, 5.0, 6.0,
-                                 1.0, 2.0, 3.0
+                1.0, 2.0, 3.0
             ).reshape(2, 3),
-                     m
+            m
         )
     }
 
     @Test fun reorderMatrix1() {
         val m = F64Array.of(
             1.0, 2.0, 3.0,
-                            4.0, 5.0, 6.0
+            4.0, 5.0, 6.0
         ).reshape(2, 3)
         m.reorder(intArrayOf(2, 1, 0), axis = 1)
         assertEquals(
             F64Array.of(
                 3.0, 2.0, 1.0,
-                                 6.0, 5.0, 4.0
+                6.0, 5.0, 4.0
             ).reshape(2, 3),
-                     m
+            m
         )
     }
 
