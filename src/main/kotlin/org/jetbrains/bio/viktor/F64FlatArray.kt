@@ -189,7 +189,7 @@ open class F64FlatArray protected constructor(
         for (pos in 0 until size) {
             res[pos] = op.invoke(unsafeGet(pos))
         }
-        return invoke(res)
+        return create(res)
     }
 
     private inline fun flatEBEInPlace(other: F64Array, op: (Double, Double) -> Double) {
@@ -273,12 +273,14 @@ open class F64FlatArray protected constructor(
                 for (i in reshaped.lastIndex - 1 downTo 0) {
                     reshaped[i] = reshaped[i + 1] * shape[i + 1]
                 }
-                invoke(data, offset, reshaped, shape)
+                create(data, offset, reshaped, shape)
             }
         }
     }
 
     override fun asSequence(): Sequence<Double> = (0 until size).asSequence().map(this::unsafeGet)
+
+    override fun clone(): F64FlatArray = F64FlatArray(data.clone(), offset, strides[0], shape[0])
 
     override fun toArray() = toDoubleArray()
 
@@ -343,7 +345,7 @@ open class F64FlatArray protected constructor(
     }
 
     companion object {
-        internal operator fun invoke(
+        internal fun create(
             data: DoubleArray,
             offset: Int = 0,
             stride: Int = 1,

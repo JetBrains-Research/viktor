@@ -203,7 +203,7 @@ open class F64Array protected constructor(
     open fun view(index: Int, axis: Int = 0): F64Array {
         checkIndex("axis", axis, nDim)
         checkIndex("index", index, shape[axis])
-        return invoke(
+        return create(
             data, offset + strides[axis] * index,
             strides.remove(axis), shape.remove(axis)
         )
@@ -280,7 +280,7 @@ open class F64Array protected constructor(
         }
         val currentUnrollSize = if (n == unrollDim) unrollSize else shape.slice(0 until n).toIntArray().product()
         return (0 until currentUnrollSize).asSequence().map { i ->
-            invoke(data, offset + currentUnrollStride * i, newStrides, newShape)
+            create(data, offset + currentUnrollStride * i, newStrides, newShape)
         }
     }
 
@@ -475,7 +475,7 @@ open class F64Array protected constructor(
      */
     open fun flatten(): F64FlatArray {
         check(isFlattenable) { "array can't be flattened" }
-        return F64FlatArray.invoke(data, offset, unrollStride, unrollSize)
+        return F64FlatArray.create(data, offset, unrollStride, unrollSize)
     }
 
     /**
@@ -504,7 +504,7 @@ open class F64Array protected constructor(
         val sliceShape = shape.clone().apply {
             this[axis] = (actualTo - from + step - 1) / step
         }
-        return invoke(data, offset + from * strides[axis], sliceStrides, sliceShape)
+        return create(data, offset + from * strides[axis], sliceStrides, sliceShape)
     }
 
     open operator fun contains(other: Double): Boolean = unrollToFlat().any { it.contains(other) }
@@ -840,6 +840,12 @@ open class F64Array protected constructor(
     internal open fun asSequence(): Sequence<Double> = unrollToFlat().flatMap { it.asSequence() }
 
     /**
+     * Returns a clone of this array. Useful for testing.
+     */
+    internal open fun clone(): F64Array =
+        F64Array(data.clone(), offset, strides.clone(), shape.clone(), unrollDim, unrollStride, unrollSize)
+
+    /**
      * Converts this array to a conventional Kotlin structure.
      *
      * For example, a vector will be converted to a [DoubleArray], a matrix will become `Array<DoubleArray>` etc.
@@ -920,7 +926,7 @@ open class F64Array protected constructor(
          * Creates a zero-filled flat array of a given [shape].
          */
         operator fun invoke(vararg shape: Int): F64Array {
-            return F64FlatArray(DoubleArray(shape.product())).reshape(*shape)
+            return F64FlatArray.create(DoubleArray(shape.product())).reshape(*shape)
         }
 
         /**
@@ -1024,7 +1030,7 @@ open class F64Array protected constructor(
         }
 
         /** "Smart" constructor. */
-        internal operator fun invoke(
+        internal fun create(
             data: DoubleArray,
             offset: Int,
             strides: IntArray,
@@ -1034,7 +1040,7 @@ open class F64Array protected constructor(
             require(shape.isNotEmpty()) { "singleton arrays are not supported" }
             require(strides.size == shape.size) { "strides and shape size don't match" }
             return if (shape.size == 1) {
-                F64FlatArray(data, offset, strides.single(), shape.single())
+                F64FlatArray.create(data, offset, strides.single(), shape.single())
             } else {
                 val (unrollDim, unrollStride, unrollSize) = calculateUnroll(strides, shape)
                 F64Array(data, offset, strides, shape, unrollDim, unrollStride, unrollSize)
@@ -1072,7 +1078,7 @@ open class F64Array protected constructor(
  * Viewer method.
  */
 fun DoubleArray.asF64Array(): F64Array {
-    return F64FlatArray(this, 0, 1, size)
+    return F64FlatArray.create(this, 0, 1, size)
 }
 
 /**
@@ -1081,7 +1087,7 @@ fun DoubleArray.asF64Array(): F64Array {
  * Viewer method.
  */
 fun DoubleArray.asF64Array(offset: Int, size: Int): F64Array {
-    return F64FlatArray(this, offset, 1, size)
+    return F64FlatArray.create(this, offset, 1, size)
 }
 
 /**
@@ -1110,29 +1116,29 @@ private fun Array<*>.guessShape(): IntArray {
     check(isNotEmpty())
     return when (val tip = first()) {
         is DoubleArray -> {
-            (1 until size).forEach {
-                val el = get(it)
+            (1 until size).forEach { pos ->
+                val el = get(pos)
                 check(el is DoubleArray) {
                     "array has elements of different types: element 0 is a double array, " +
-                            "but element $it is ${el?.let { it::class.java.name } ?: "null"}"
+                            "but element $pos is ${el?.let { it::class.java.name } ?: "null"}"
                 }
                 check(el.size == tip.size) {
                     "array has elements of different sizes: element 0 is ${tip.size} long, " +
-                            "but element $it is ${el.size} long"
+                            "but element $pos is ${el.size} long"
                 }
             }
             intArrayOf(size, tip.size)
         }
         is Array<*> -> {
-            (1 until size).forEach {
-                val el = get(it)
+            (1 until size).forEach { pos ->
+                val el = get(pos)
                 check(el is Array<*>) {
                     "array has elements of different types: element 0 is a generic array, " +
-                            "but element $it is ${el?.let { it::class.java.name } ?: "null"}"
+                            "but element $pos is ${el?.let { it::class.java.name } ?: "null"}"
                 }
                 check(el.size == tip.size) {
                     "array has elements of different sizes: element 0 is ${tip.size} long, " +
-                            "but element $it is ${el.size} long"
+                            "but element $pos is ${el.size} long"
                 }
             }
             intArrayOf(size) + tip.guessShape()

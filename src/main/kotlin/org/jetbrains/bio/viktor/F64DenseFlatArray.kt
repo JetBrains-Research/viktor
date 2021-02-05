@@ -29,6 +29,8 @@ internal sealed class F64DenseFlatArray(
         }
     }
 
+    override fun clone(): F64DenseFlatArray = create(data.clone(), offset, size)
+
     private inline fun denseTransformInPlace(op: (Double) -> Double) {
         val dst = data
         var dstOffset = offset
