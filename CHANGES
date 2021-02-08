@@ -3,6 +3,18 @@ viktor Changelog
 
 Here you can see the full list of changes between each viktor release.
 
+Version 1.1.0
+
+Released on February 9, 2021
+
+- added "transform" and "transformInPlace" methods
+- improved performance of multiple operations
+- F64FlatArray is specified as return type whenever possible
+- types other than F64Array and F64FlatArray are now internal
+- improved index and dimensionality checks
+- improved test coverage
+- removed the benchmarks that were bundled with the project
+
 Version 1.0.2
 -------------
 
