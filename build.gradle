@@ -205,6 +205,12 @@ test {
 
 apply plugin: 'idea'
 
+idea {
+    module {
+        name = 'viktor'
+    }
+}
+
 jar {
     archivesBaseName = 'viktor'
     dependsOn 'buildAllVariants'
