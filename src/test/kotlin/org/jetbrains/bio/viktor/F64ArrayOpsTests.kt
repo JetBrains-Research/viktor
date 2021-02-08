@@ -77,10 +77,10 @@ class F64ArrayOperationTest(private val v: F64Array) {
     @Test fun transform() = doTestUnary(
         { transform(Gamma::logGamma) }, { transformInPlace(Gamma::logGamma) }, Gamma::logGamma, EXACT_DELTA, "transform"
     )
-    @Test fun exp() = doTestUnary(F64Array::exp, F64Array::expInPlace, FastMath::exp, DELTA, "exp")
-    @Test fun expm1() = doTestUnary(F64Array::expm1, F64Array::expm1InPlace, FastMath::expm1, DELTA, "expm1")
-    @Test fun log() = doTestUnary(F64Array::log, F64Array::logInPlace, Math::log, DELTA, "log")
-    @Test fun log1p() = doTestUnary(F64Array::log1p, F64Array::log1pInPlace, Math::log1p, DELTA, "log1p")
+    @Test fun exp() = doTestUnary(F64Array::exp, F64Array::expInPlace, FastMath::exp, PRECISE_DELTA, "exp")
+    @Test fun expm1() = doTestUnary(F64Array::expm1, F64Array::expm1InPlace, FastMath::expm1, PRECISE_DELTA, "expm1")
+    @Test fun log() = doTestUnary(F64Array::log, F64Array::logInPlace, Math::log, PRECISE_DELTA, "log")
+    @Test fun log1p() = doTestUnary(F64Array::log1p, F64Array::log1pInPlace, Math::log1p, PRECISE_DELTA, "log1p")
     @Test fun unaryMinus() = doTestUnary(
         F64Array::unaryMinus, { transformInPlace { -it } }, Double::unaryMinus, EXACT_DELTA, "unaryMinus"
     )
@@ -271,7 +271,8 @@ class F64FlatArrayOperationTest(private val v: F64FlatArray) {
  * have slightly different implementation (like exponent or logarithm), some are executed out-of-order
  * (like sum), so you can't always expect the results to be exactly the same.
  */
-private const val DELTA = 2E-14
+private const val DELTA = 1E-13
+private const val PRECISE_DELTA = 1E-15
 private const val EXACT_DELTA = 0.0
 
 private const val LARGE_SIZE = F64DenseFlatArray.DENSE_SPLIT_SIZE + 1
