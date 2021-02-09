@@ -1,7 +1,7 @@
 [![JetBrains Research](https://jb.gg/badges/research.svg)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub)
 [![tests](http://teamcity.jetbrains.com/app/rest/builds/buildType:(id:Epigenome_Tools_Viktor)/statusIcon.svg)](http://teamcity.jetbrains.com/viewType.html?buildTypeId=Epigenome_Tools_Viktor&guest=1)
 
-[![](https://api.bintray.com/packages/jetbrains-research/maven/viktor/images/download.svg?version=1.0.2)](https://bintray.com/jetbrains-research/maven/viktor/1.0.2/link)
+[![](https://api.bintray.com/packages/jetbrains-research/maven/viktor/images/download.svg?version=1.1.0)](https://bintray.com/jetbrains-research/maven/viktor/1.1.0/link)
 [![](https://jitpack.io/v/JetBrains-Research/viktor.svg)](https://jitpack.io/#JetBrains-Research/viktor)
 
 
@@ -39,7 +39,7 @@ repositories {
 }
 
 dependencies {
-    compile 'org.jetbrains.bio:viktor:1.0.2'
+    compile 'org.jetbrains.bio:viktor:1.1.0'
 }
 ```
 
@@ -48,7 +48,7 @@ With Maven, use the dependency
 <dependency>
     <groupId>org.jetbrains.bio</groupId>
     <artifactId>viktor</artifactId>
-    <version>1.0.2</version>
+    <version>1.1.0</version>
 </dependency>
 ```
 and don't forget to add the repository
