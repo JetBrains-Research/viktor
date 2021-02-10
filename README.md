@@ -2,8 +2,6 @@
 [![tests](http://teamcity.jetbrains.com/app/rest/builds/buildType:(id:Epigenome_Tools_Viktor)/statusIcon.svg)](http://teamcity.jetbrains.com/viewType.html?buildTypeId=Epigenome_Tools_Viktor&guest=1)
 
 [![](https://api.bintray.com/packages/jetbrains-research/maven/viktor/images/download.svg?version=1.1.0)](https://bintray.com/jetbrains-research/maven/viktor/1.1.0/link)
-[![](https://jitpack.io/v/JetBrains-Research/viktor.svg)](https://jitpack.io/#JetBrains-Research/viktor)
-
 
 viktor 
 ======
