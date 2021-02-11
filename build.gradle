@@ -223,7 +223,7 @@ task javadocJar(type: Jar, dependsOn: dokkaJavadoc) {
 }
 
 artifacts {
-    archives sourcesJar
+    archives sourcesJar, javadocJar
 }
 
 publishing {
