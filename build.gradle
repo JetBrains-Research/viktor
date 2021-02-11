@@ -186,16 +186,15 @@ dependencies {
     testCompile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.25'
 }
 
-dokka {
-    moduleName = "$version"
-    outputFormat = 'gfm'
-    outputDirectory = "$rootDir/docs"
+task dokkaJavadoc(type: org.jetbrains.dokka.gradle.DokkaTask) {
+    outputFormat = 'javadoc'
+    outputDirectory = javadoc.destinationDir
+    inputs.dir 'src/main/kotlin'
+}
 
-    linkMapping {
-        dir = 'src/main/kotlin'
-        url = "https://github.com/JetBrains-Research/viktor/blob/${project.version}/src/main/kotlin"
-        suffix = '#L'
-    }
+task javadocJar(type: Jar, dependsOn: dokkaJavadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
 }
 
 test {
