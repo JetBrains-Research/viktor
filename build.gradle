@@ -192,11 +192,6 @@ task dokkaJavadoc(type: org.jetbrains.dokka.gradle.DokkaTask) {
     inputs.dir 'src/main/kotlin'
 }
 
-task javadocJar(type: Jar, dependsOn: dokkaJavadoc) {
-    classifier = 'javadoc'
-    from javadoc.destinationDir
-}
-
 test {
     dependsOn 'buildAllVariants'
     systemProperty 'java.library.path', "$buildDir/libs"
@@ -220,6 +215,11 @@ jar {
 task sourcesJar(type: Jar) {
     classifier = 'sources'
     from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn: dokkaJavadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
 }
 
 artifacts {
