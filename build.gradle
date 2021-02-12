@@ -24,6 +24,7 @@ apply plugin: 'cpp'
 apply plugin: 'kotlin'
 apply plugin: 'maven-publish'
 apply plugin: 'org.jetbrains.dokka'
+apply plugin: 'signing'
 
 apply from: "$rootDir/gradle/jni-headers.gradle"
 apply from: "$rootDir/gradle/boost-simd.gradle"
@@ -224,6 +225,13 @@ task javadocJar(type: Jar, dependsOn: dokkaJavadoc) {
 
 artifacts {
     archives sourcesJar, javadocJar
+}
+
+signing {
+    def signingKey = findProperty("signingKey").replace("\\n", "\n")
+    def signingPassword = findProperty("signingPassword")
+    useInMemoryPgpKeys(signingKey, signingPassword)
+    sign configurations.archives
 }
 
 publishing {
