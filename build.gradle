@@ -228,7 +228,8 @@ artifacts {
 }
 
 signing {
-    def signingKey = findProperty("signingKey").replace("\\n", "\n")
+    // multiline environment variables are not fun.
+    def signingKey = findProperty("signingKey")?.replace("\\n", "\n")
     def signingPassword = findProperty("signingPassword")
     useInMemoryPgpKeys(signingKey, signingPassword)
     sign configurations.archives
