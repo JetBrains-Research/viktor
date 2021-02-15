@@ -252,6 +252,8 @@ uploadArchives {
                 authentication(userName: ossrhUsername, password: ossrhPassword)
             }
 
+            pom.groupId = 'org.jetbrains.bio'
+
             pom.project {
                 name 'viktor'
                 packaging 'jar'
