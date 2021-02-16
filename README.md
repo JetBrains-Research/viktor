@@ -28,19 +28,15 @@ Kotlin. Here are some highlights:
 Installation
 ------------
 
-The latest version of `viktor` is available on [Bintray][bintray]. If you're using
-Gradle just add the following to your `build.gradle`:
-
+Starting with `1.1.0`, the latest version of `viktor` is available on [Maven Central][maven-central].
+If you're using Gradle, just add the following to your `build.gradle` dependencies:
 ```groovy
-repositories {
-    jCenter()
-}
-
-dependencies {
-    compile 'org.jetbrains.bio:viktor:1.1.0'
-}
+implementation 'org.jetbrains.bio:viktor:1.1.0'
 ```
-
+or, equivalently, add the following to your `build.gradle.kts` dependencies:
+```kotlin
+implementation("org.jetbrains.bio:viktor:1.1.0")
+```
 With Maven, use the dependency
 ```xml
 <dependency>
@@ -49,28 +45,20 @@ With Maven, use the dependency
     <version>1.1.0</version>
 </dependency>
 ```
-and don't forget to add the repository
-```xml
-<repository>
-  <snapshots>
-    <enabled>false</enabled>
-  </snapshots>
-  <id>bintray-jetbrains-research-maven</id>
-  <name>bintray</name>
-  <url>https://dl.bintray.com/jetbrains-research/maven</url>
-</repository>
-```
 
-[bintray]: https://bintray.com/jetbrains-research/maven/viktor/view
+Earlier versions can be downloaded from [GitHub Releases][releases].
 
-The version available on Bintray currently targets only:
+[maven-central]: https://search.maven.org/artifact/org.jetbrains.bio/viktor/1.1.0/jar
+[releases]: https://github.com/JetBrains-Research/viktor/releases
+
+The JAR available on Maven Central currently targets only:
 - SSE2 and AVX,
 - amd64 / x86-64,
 - Linux, Windows and MacOS.
 
 For any other setup `viktor` would fall back to pure-Kotlin
 implementations. If you are interested in SIMD accelerations for a different
-instruction set or operating system feel free to file an issue to the
+architecture, instruction set, or operating system feel free to file an issue to the
 [bug tracker][issues].
 
 [issues]: https://github.com/JetBrains-Research/viktor/issues
@@ -92,18 +80,21 @@ Building from source
 
 `viktor` relies on [boost.simd][boost.simd] for implementing SIMD
 accelerations. Therefore, you would need a C++11 compiler,
-but otherwise the build process is as simple as
+but otherwise the build process is as simple as:
 
 ```shell
-./gradlew assemble
+./gradlew jar
 ```
+
+Note: don't use `./gradlew assemble`, since it includes signing the artifacts
+and will fail if the correct credentials are not provided.
 
 [boost.simd]: https://github.com/JetBrains-Research/boost.simd
 
 Testing
 -------
 
-No extra configuration is required for running the tests from Gradle
+No extra configuration is required for running the tests from Gradle:
 
 ```shell
 ./gradlew test
@@ -119,7 +110,7 @@ the IDE. The following Java command line option should work for IDEA
 Publishing
 ----------
 
-Publishing to [Bintray][bintray] is currently done via a dedicated
+Publishing to [Maven Central][maven-central] is currently done via a dedicated
 build configuration of an internal TeamCity server. This allows us
 to deploy a cross-platform version.
 
