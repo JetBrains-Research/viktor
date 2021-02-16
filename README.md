@@ -1,7 +1,7 @@
 [![JetBrains Research](https://jb.gg/badges/research.svg)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub)
 [![tests](http://teamcity.jetbrains.com/app/rest/builds/buildType:(id:Epigenome_Tools_Viktor)/statusIcon.svg)](http://teamcity.jetbrains.com/viewType.html?buildTypeId=Epigenome_Tools_Viktor&guest=1)
 
-[![](https://api.bintray.com/packages/jetbrains-research/maven/viktor/images/download.svg?version=1.1.0)](https://bintray.com/jetbrains-research/maven/viktor/1.1.0/link)
+[![Maven Central](https://img.shields.io/maven-central/v/org.jetbrains.bio/viktor.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22org.jetbrains.bio%22%20AND%20a:%22viktor%22)
 
 viktor 
 ======
