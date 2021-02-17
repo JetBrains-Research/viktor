@@ -4,18 +4,17 @@ buildscript {
     }
 
     repositories {
-        jcenter()
+        mavenCentral()
     }
+}
 
-    dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath "org.jetbrains.dokka:dokka-gradle-plugin:0.9.+"
-    }
+plugins {
+    id "org.jetbrains.dokka" version "0.9.18"
+    id "org.jetbrains.kotlin.jvm" version "$kotlin_version"
 }
 
 apply plugin: 'cpp'
 apply plugin: 'kotlin'
-//apply plugin: 'maven-publish'
 apply plugin: 'maven'
 apply plugin: 'org.jetbrains.dokka'
 apply plugin: 'signing'
@@ -167,7 +166,7 @@ tasks.withType(CppCompile) {
 }
 
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 dependencies {
