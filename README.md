@@ -86,7 +86,7 @@ but otherwise the build process is as simple as:
 ./gradlew jar
 ```
 
-Note: don't use `./gradlew assemble`, since it includes signing the artifacts
+Note: don't use `./gradlew assemble`, since it includes the signing of the artifacts
 and will fail if the correct credentials are not provided.
 
 [boost.simd]: https://github.com/JetBrains-Research/boost.simd

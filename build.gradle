@@ -2,14 +2,10 @@ buildscript {
     ext {
         kotlin_version = '1.4.21'
     }
-
-    repositories {
-        mavenCentral()
-    }
 }
 
 plugins {
-    id "org.jetbrains.dokka" version "0.9.18"
+    id "org.jetbrains.dokka" version "1.4.10.2"
     id "org.jetbrains.kotlin.jvm" version "$kotlin_version"
 }
 
@@ -167,6 +163,7 @@ tasks.withType(CppCompile) {
 
 repositories {
     mavenCentral()
+    jcenter()
 }
 
 dependencies {
@@ -180,8 +177,7 @@ dependencies {
     testCompile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.25'
 }
 
-task dokkaJavadoc(type: org.jetbrains.dokka.gradle.DokkaTask) {
-    outputFormat = 'javadoc'
+dokkaJavadoc {
     outputDirectory = javadoc.destinationDir
     inputs.dir 'src/main/kotlin'
 }
