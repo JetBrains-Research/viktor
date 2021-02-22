@@ -275,6 +275,11 @@ uploadArchives {
                         name 'Aleksei Dievskii'
                         email 'alexey.dievsky@jetbrains.com'
                     }
+                    developer {
+                        id 'slebedev'
+                        name 'Sergei Lebedev'
+                        email 'sergei.a.lebedev@gmail.com'
+                    }
                 }
             }
         }
