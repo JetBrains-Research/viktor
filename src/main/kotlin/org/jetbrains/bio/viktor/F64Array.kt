@@ -246,7 +246,6 @@ open class F64Array protected constructor(
      * checking e.g. whether the array [isFlattenable] and thus doesn't need any unrolling.
      */
     private fun unrollOnce(n: Int = unrollDim): Sequence<F64Array> {
-        require(n <= unrollDim) { "can't unroll $n dimensions, only $unrollDim are unrollable" }
         val newStrides = strides.slice(n until nDim).toIntArray()
         val newShape = shape.slice(n until nDim).toIntArray()
         val currentUnrollStride = if (n == unrollDim) unrollStride else run {
