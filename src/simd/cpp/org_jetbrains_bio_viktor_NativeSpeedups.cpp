@@ -8,11 +8,15 @@
 #include <boost/simd/function/log1p.hpp>
 #include <boost/simd/function/max.hpp>
 #include <boost/simd/function/min.hpp>
+#define PFFFT_ENABLE_FLOAT
+#define PFFFT_ENABLE_DOUBLE
+#include <pffft-master/pffft.hpp>
 
 #include "org_jetbrains_bio_viktor_NativeSpeedups.hpp"
 #include "simd_math.hpp"
 #include "source.hpp"
 #include "summing.hpp"
+#include "complex.hpp"
 
 #define JNI_METHOD(rtype, name)                                         \
     JNIEXPORT rtype JNICALL Java_org_jetbrains_bio_viktor_NativeSpeedups_##name
@@ -26,16 +30,16 @@ jboolean transformTo(JNIEnv *env,
     jboolean dst_is_copy = JNI_FALSE;
     jdouble *dst = reinterpret_cast<jdouble *>(
             env->GetPrimitiveArrayCritical(jdst, &dst_is_copy));
-    if (dst_is_copy == JNI_TRUE) return JNI_FALSE;
-    jdouble *src = reinterpret_cast<jdouble *>(
-            env->GetPrimitiveArrayCritical(jsrc, NULL));
-    boost::simd::transform(src + src_offset,
-                           src + src_offset + length,
-                           dst + dst_offset,
-                           op);
-    env->ReleasePrimitiveArrayCritical(jsrc, src, JNI_ABORT);
+    if (dst_is_copy == JNI_FALSE) {
+      jdouble *src = reinterpret_cast<jdouble *>(env->GetPrimitiveArrayCritical(jsrc, NULL));
+      boost::simd::transform(src + src_offset,
+                             src + src_offset + length,
+                             dst + dst_offset,
+                             op);
+      env->ReleasePrimitiveArrayCritical(jsrc, src, JNI_ABORT);
+    }
     env->ReleasePrimitiveArrayCritical(jdst, dst, JNI_ABORT);
-    return JNI_TRUE;
+    return (dst_is_copy == JNI_FALSE) ? JNI_TRUE : JNI_FALSE;
 }
 
 template<typename Fold, typename Empty>
@@ -134,20 +138,21 @@ JNI_METHOD(jboolean, unsafeLogAddExp)(JNIEnv *env, jobject,
     jboolean dst_is_copy = JNI_FALSE;
     jdouble *dst = reinterpret_cast<jdouble *>(
             env->GetPrimitiveArrayCritical(jdst, &dst_is_copy));
-    if (dst_is_copy == JNI_TRUE) return JNI_FALSE;
-    jdouble *src1 = reinterpret_cast<jdouble *>(
-            env->GetPrimitiveArrayCritical(jsrc1, NULL));
-    jdouble *src2 = reinterpret_cast<jdouble *>(
-            env->GetPrimitiveArrayCritical(jsrc2, NULL));
-    boost::simd::transform(src1 + src1_offset,
-                           src1 + src1_offset + length,
-                           src2 + src2_offset,
-                           dst + dst_offset,
-                           logaddexp());
-    env->ReleasePrimitiveArrayCritical(jsrc2, src2, JNI_ABORT);
-    env->ReleasePrimitiveArrayCritical(jsrc1, src1, JNI_ABORT);
+    if (dst_is_copy == JNI_FALSE) {
+      jdouble *src1 = reinterpret_cast<jdouble *>(
+              env->GetPrimitiveArrayCritical(jsrc1, NULL));
+      jdouble *src2 = reinterpret_cast<jdouble *>(
+              env->GetPrimitiveArrayCritical(jsrc2, NULL));
+      boost::simd::transform(src1 + src1_offset,
+                             src1 + src1_offset + length,
+                             src2 + src2_offset,
+                             dst + dst_offset,
+                             logaddexp());
+      env->ReleasePrimitiveArrayCritical(jsrc2, src2, JNI_ABORT);
+      env->ReleasePrimitiveArrayCritical(jsrc1, src1, JNI_ABORT);
+    }
     env->ReleasePrimitiveArrayCritical(jdst, dst, JNI_ABORT);
-    return JNI_TRUE;
+    return (dst_is_copy == JNI_FALSE) ? JNI_TRUE : JNI_FALSE;
 }
 
 JNI_METHOD(jdouble, unsafeDot)(JNIEnv *env, jobject,
@@ -160,8 +165,8 @@ JNI_METHOD(jdouble, unsafeDot)(JNIEnv *env, jobject,
     jdouble *src2 = reinterpret_cast<jdouble *>(
         env->GetPrimitiveArrayCritical(jsrc2, NULL));
     jdouble res = simdmath::dot(src1 + src_offset1, src2 + src_offset2, length);
-    env->ReleasePrimitiveArrayCritical(jsrc1, src1, JNI_ABORT);
     env->ReleasePrimitiveArrayCritical(jsrc2, src2, JNI_ABORT);
+    env->ReleasePrimitiveArrayCritical(jsrc1, src1, JNI_ABORT);
     return res;
 }
 
@@ -193,11 +198,48 @@ JNI_METHOD(jboolean, unsafeCumSum)(JNIEnv *env, jobject,
                                    jint length)
 {
     jboolean is_copy = JNI_FALSE;
-    jdouble *dst = reinterpret_cast<jdouble *>(
-        env->GetPrimitiveArrayCritical(jdst, &is_copy));
-    if (is_copy == JNI_TRUE) return JNI_FALSE;
-    source_1d<cum_sum_tag> f(dst + dst_offset, dst + dst_offset, length);
-    cum_sum(f);
-    env->ReleasePrimitiveArrayCritical(jdst, dst, is_copy == JNI_TRUE ? 0 : JNI_ABORT);
-    return JNI_TRUE;
+    jdouble *dst = reinterpret_cast<jdouble *>(env->GetPrimitiveArrayCritical(jdst, &is_copy));
+    if (is_copy == JNI_FALSE) {
+      source_1d<cum_sum_tag> f(dst + dst_offset, dst + dst_offset, length);
+      cum_sum(f);
+    }
+    env->ReleasePrimitiveArrayCritical(jdst, dst, JNI_ABORT);
+    return (is_copy == JNI_FALSE) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_METHOD(jboolean, unsafeFFT)(JNIEnv *env, jobject,
+                                jdoubleArray jdst, jint dst_offset,
+                                jdoubleArray jsrc, jint src_offset,
+                                jint length) {
+   jboolean is_copy = JNI_FALSE;
+   std::complex<double> *dst = reinterpret_cast<std::complex<double>*>(
+           env->GetPrimitiveArrayCritical(jdst, &is_copy));
+   if (is_copy == JNI_FALSE) {
+     std::complex<double> *src = reinterpret_cast<std::complex<double>*>(
+                env->GetPrimitiveArrayCritical(jsrc, NULL));
+     pffft::Fft<std::complex<double> > fft(length / 2);
+     fft.forward(src + src_offset / 2, dst + dst_offset / 2);
+     env->ReleasePrimitiveArrayCritical(jsrc, reinterpret_cast<double *>(src), JNI_ABORT);
+   }
+   env->ReleasePrimitiveArrayCritical(jdst, reinterpret_cast<double *>(dst), 0);
+   return (is_copy == JNI_FALSE) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNI_METHOD(jboolean, unsafeComplexTimes)(JNIEnv *env, jobject,
+                                         jdoubleArray jdst, jint dst_offset,
+                                         jdoubleArray jsrc1, jint src1_offset,
+                                         jdoubleArray jsrc2, jint src2_offset,
+                                         jint length)
+{
+  jboolean dst_is_copy = JNI_FALSE;
+  jdouble *dst = reinterpret_cast<jdouble *>(env->GetPrimitiveArrayCritical(jdst, &dst_is_copy));
+  if (dst_is_copy == JNI_FALSE) {
+    jdouble *src1 = reinterpret_cast<jdouble *>(env->GetPrimitiveArrayCritical(jsrc1, NULL));
+    jdouble *src2 = reinterpret_cast<jdouble *>(env->GetPrimitiveArrayCritical(jsrc2, NULL));
+    complex_times(src1 + src1_offset, src2 + src2_offset, dst + dst_offset, length);
+    env->ReleasePrimitiveArrayCritical(jsrc2, src2, JNI_ABORT);
+    env->ReleasePrimitiveArrayCritical(jsrc1, src1, JNI_ABORT);
+  }
+  env->ReleasePrimitiveArrayCritical(jdst, dst, JNI_ABORT);
+  return (dst_is_copy == JNI_FALSE) ? JNI_TRUE : JNI_FALSE;
 }
