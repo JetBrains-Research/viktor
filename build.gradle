@@ -16,7 +16,7 @@ apply plugin: 'org.jetbrains.dokka'
 apply plugin: 'signing'
 
 apply from: "$rootDir/gradle/jni-headers.gradle"
-apply from: "$rootDir/gradle/boost-simd.gradle"
+apply from: "$rootDir/gradle/libraries.gradle"
 apply from: "$rootDir/gradle/disable-static.gradle"
 
 compileKotlin {
@@ -91,6 +91,7 @@ model {
             targetFlavors 'sse2', 'avx'
 
             binaries.withType(SharedLibraryBinarySpec) {
+                lib library: "pffft_${flavor.name}", linkage: 'static'
                 switch (flavor) {
                     case flavors.sse2: if (targetPlatform == 'windows') {
                         cppCompiler.args '/arch:SSE2'
@@ -159,6 +160,8 @@ task jniHeaders(dependsOn: compileKotlin) {
 tasks.withType(CppCompile) {
     dependsOn 'jniHeaders'
     dependsOn 'installBoostSimd'
+    dependsOn 'renamePffftSSE2'
+    dependsOn 'renamePffftAVX'
 }
 
 repositories {
@@ -171,6 +174,7 @@ dependencies {
     compile "org.jetbrains.bio:npy:0.3.5"
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
+    compile "com.github.wendykierp:JTransforms:3.1"
 
     testCompile "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
     testCompile 'junit:junit:4.12'

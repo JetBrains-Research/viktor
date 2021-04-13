@@ -1,6 +1,7 @@
 ext {
     boostSimdBranch = 'v4.16.9.2'
     boostSimdRoot = '4.16.9.2'
+    pffftBranch = 'master'
     def os = org.gradle.internal.os.OperatingSystem.current()
     if (os.isMacOsX()) {
         cmakeURL = "https://cmake.org/files/v3.12/cmake-3.12.0-Darwin-x86_64.tar.gz"
@@ -42,6 +43,22 @@ model {
                 // generatedBy installBoostSimd
 
                 headers.srcDir "$buildDir/include"
+            }
+            pffft_sse2 {
+                headers.srcDir "$buildDir/include"
+                binaries.withType(StaticLibraryBinary) {
+                    staticLibraryFile =
+                            file("$buildDir/include/pffft-master/build/libPFFFT-sse2.a")
+                }
+                // binaries.linkFiles "$buildDir/pffft-master/build/libPFFFT.a"
+            }
+            pffft_avx {
+                headers.srcDir "$buildDir/include"
+                binaries.withType(StaticLibraryBinary) {
+                    staticLibraryFile =
+                            file("$buildDir/include/pffft-master/build/libPFFFT-avx.a")
+                }
+                // binaries.linkFiles "$buildDir/pffft-master/build/libPFFFT.a"
             }
         }
     }
@@ -110,4 +127,82 @@ task installBoostSimd(dependsOn: [unzipBoostSimd, unzipCmake]) {
             commandLine(cmakeExec, '--build', '.', '--target', 'install')
         }
     }
+}
+
+task downloadPffft(type: de.undercouch.gradle.tasks.download.Download) {
+    src "https://github.com/dievsky/pffft/archive/refs/heads/${pffftBranch}.zip"
+    dest new File(buildDir, "pffft.${pffftBranch}.zip")
+    overwrite false
+}
+
+task unzipPffft(dependsOn: downloadPffft, type: Copy) {
+    from zipTree(downloadPffft.dest)
+    into new File(buildDir, "include")
+    outputs.dir new File(buildDir, "include/pffft-$pffftBranch")
+}
+
+task installPffftSSE2(dependsOn: [unzipPffft, unzipCmake]) {
+    def cmakeDir = new File(
+            buildDir, "include/pffft-$pffftBranch/build-sse2")
+    def cmakeExec = "$buildDir/$cmakeFolder/cmake"
+    doLast {
+        cmakeDir.mkdirs()
+
+        exec {
+            workingDir cmakeDir
+            def args = [cmakeExec, '..', "-DCMAKE_INSTALL_PREFIX=$buildDir",
+                        "-DCMAKE_POSITION_INDEPENDENT_CODE=ON",
+                        "-DUSE_UNALIGNED=ON", "-DDISABLE_SIMD_AVX=ON"]
+            def os = org.gradle.internal.os.OperatingSystem.current()
+            if (os.isWindows()) {
+                args += ['-G', '"Visual Studio 14 2015"']
+            }
+            commandLine(args)
+        }
+        exec {
+            workingDir cmakeDir
+            standardOutput = nullOutputStream
+            commandLine(cmakeExec, '--build', '.')
+        }
+    }
+}
+
+tasks.register('renamePffftSSE2', Copy) {
+    dependsOn 'installPffftSSE2'
+    from "$buildDir/include/pffft-$pffftBranch/build-sse2/"
+    into "$buildDir/include/pffft-$pffftBranch/build/"
+    rename '(.+)(\\.a|\\.lib)', '$1-sse2$2'
+}
+
+task installPffftAVX(dependsOn: [unzipPffft, unzipCmake]) {
+    def cmakeDir = new File(
+            buildDir, "include/pffft-$pffftBranch/build-avx")
+    def cmakeExec = "$buildDir/$cmakeFolder/cmake"
+    doLast {
+        cmakeDir.mkdirs()
+
+        exec {
+            workingDir cmakeDir
+            def args = [cmakeExec, '..', "-DCMAKE_INSTALL_PREFIX=$buildDir",
+                        "-DCMAKE_POSITION_INDEPENDENT_CODE=ON",
+                        "-DUSE_UNALIGNED=ON", "-DDISABLE_SIMD_AVX=OFF"]
+            def os = org.gradle.internal.os.OperatingSystem.current()
+            if (os.isWindows()) {
+                args += ['-G', '"Visual Studio 14 2015"']
+            }
+            commandLine(args)
+        }
+        exec {
+            workingDir cmakeDir
+            standardOutput = nullOutputStream
+            commandLine(cmakeExec, '--build', '.')
+        }
+    }
+}
+
+tasks.register('renamePffftAVX', Copy) {
+    dependsOn 'installPffftAVX'
+    from "$buildDir/include/pffft-$pffftBranch/build-avx/"
+    into "$buildDir/include/pffft-$pffftBranch/build/"
+    rename '(.+)(\\.a|\\.lib)', '$1-avx$2'
 }
