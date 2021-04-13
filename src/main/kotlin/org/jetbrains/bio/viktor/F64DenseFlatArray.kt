@@ -156,6 +156,32 @@ internal sealed class F64DenseFlatArray(
 
     override fun div(other: F64Array) = ebe(other, { a, b -> a / b }, { super.div(it) })
 
+    /**
+     * Performs complex assignment multiplication.
+     *
+     * Flat arrays are not interpretable as complex if they have more or less than two elements.
+     * This internal function assumes that all checks and casts have already been performed.
+     */
+    override fun doComplexTimesAssign(other: F64FlatArray) {
+        val dst = data
+        val src = other.data
+        var dstOffset = offset
+        var srcOffset = other.offset
+        val length = size / 2
+        repeat(length) {
+            val xRe = dst[dstOffset]
+            dstOffset++
+            val xIm = dst[dstOffset]
+            val yRe = src[srcOffset]
+            srcOffset++
+            val yIm = src[srcOffset]
+            srcOffset++
+            dst[dstOffset - 1] = xRe * yRe - xIm * yIm
+            dst[dstOffset] = xRe * yIm + xIm * yRe
+            dstOffset++
+        }
+    }
+
     override fun toDoubleArray() = data.copyOfRange(offset, offset + size)
 
     companion object {
@@ -228,6 +254,14 @@ internal class F64LargeDenseArray(
             return create(dst, 0, size)
         }
         return superOp()
+    }
+
+    override fun doComplexTimesAssign(other: F64FlatArray) {
+        if (other is F64LargeDenseArray) {
+            checkShape(other)
+            if (NativeSpeedups.unsafeComplexTimes(data, offset, data, offset, other.data, other.offset, size)) return
+        }
+        super.doComplexTimesAssign(other)
     }
 
     override fun expInPlace() {

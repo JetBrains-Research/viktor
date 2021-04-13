@@ -325,6 +325,25 @@ open class F64FlatArray protected constructor(
         31 * acc + java.lang.Double.hashCode(unsafeGet(pos))
     }
 
+    /**
+     * Performs complex assignment multiplication.
+     *
+     * Flat arrays are not interpretable as complex if they have more or less than two elements.
+     * This internal function assumes that all checks and casts have already been performed.
+     */
+    internal open fun doComplexTimesAssign(other: F64FlatArray) {
+        (0 until size / 2).forEach { k ->
+            val posRe = 2 * k
+            val posIm = posRe + 1
+            val xRe = unsafeGet(posRe)
+            val xIm = unsafeGet(posIm)
+            val yRe = other.unsafeGet(posRe)
+            val yIm = other.unsafeGet(posIm)
+            unsafeSet(posRe, xRe * yRe - xIm * yIm)
+            unsafeSet(posIm, xRe * yIm + xIm * yRe)
+        }
+    }
+
     companion object {
         internal fun create(
             data: DoubleArray,

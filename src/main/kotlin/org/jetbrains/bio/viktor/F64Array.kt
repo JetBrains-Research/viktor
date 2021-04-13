@@ -2,6 +2,7 @@ package org.jetbrains.bio.viktor
 
 import org.apache.commons.math3.util.FastMath
 import org.apache.commons.math3.util.Precision
+import org.jtransforms.fft.DoubleFFT_1D
 import java.text.DecimalFormat
 import java.util.*
 import kotlin.math.ln
@@ -802,6 +803,42 @@ open class F64Array protected constructor(
 
     operator fun div(update: Double) = transform { it / update }
 
+    internal fun checkComplex() = check(shape[nDim - 1] == 2) {
+        "F64Array can't be cast to complex, shape is ${shape.contentToString()}"
+    }
+
+    /**
+     * Multiplies two arrays as if they were complex number arrays.
+     *
+     * The last shape must be equal to 2. It's interpreted as encoding the real and imaginary parts.
+     * For example, a 2x3x2 [F64Array] will be interpreted as a 2x3 complex array.
+     */
+    open fun complexTimes(other: F64Array): F64Array = copy().apply { complexTimesAssign(other) }
+
+    /**
+     * Multiplies two arrays in-place as if they were complex number arrays.
+     *
+     * The last shape must be equal to 2. It's interpreted as encoding the real and imaginary parts.
+     * For example, a 2x3x2 [F64Array] will be interpreted as a 2x3 complex array.
+     */
+    open fun complexTimesAssign(other: F64Array) {
+        checkComplex()
+        commonUnrollToFlat(other) {
+                a, b -> a.doComplexTimesAssign(b)
+        }
+    }
+
+    fun fft(): F64Array {
+        checkComplex()
+        check(nDim == 2) { "only flat complex arrays are supported" }
+        // check native prerequisites
+        if (this.isFlattenable && flatten() is F64LargeDenseArray && size >= 16 && isPowerOfTwo(size)) {
+            val res = F64Array(*shape)
+            if (NativeSpeedups.unsafeFFT(res.data, 0, data, offset, size * 2)) return res
+        }
+        return copy().apply { DoubleFFT_1D(size.toLong()).complexForward(data) }
+    }
+
     /** Ensures a given array has the same dimensions as this array. */
     private fun checkShape(other: F64Array) {
         check(this === other || shape.contentEquals(other.shape)) {
@@ -1042,6 +1079,13 @@ open class F64Array protected constructor(
                 prevStride = strides[i]
             }
             return Unroll(d, s, shape.slice(0 until d).toIntArray().product())
+        }
+
+        private tailrec fun isPowerOfTwo(n: Int): Boolean {
+            if (n <= 0) return false
+            if (n == 1) return true
+            if (n % 2 != 0) return false
+            return isPowerOfTwo(n / 2)
         }
     }
 }
