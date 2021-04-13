@@ -72,4 +72,10 @@ class UnsupportedOpTest {
         arrayOf(arrayOf(doubleArrayOf(1.0, 2.0, 3.0)), null).toF64Array()
     }
 
+    @Test(expected = IllegalStateException::class)
+    fun nonFlattenable() {
+        val m = F64Array.full(init = 42.0, shape = intArrayOf(2, 3, 2)).V[_I, 1]
+        m.flatten()
+    }
+
 }

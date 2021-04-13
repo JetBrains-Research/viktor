@@ -6,6 +6,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import org.junit.runners.Parameterized.Parameters
+import java.lang.IllegalArgumentException
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotEquals
 
@@ -76,7 +77,7 @@ class F64FlatArrayGetSetTest(
     }
 }
 
-class F64ArrayGetSetTest {
+class F64MatrixGetSetTest {
     @Test fun get() {
         val m = F64Array.of(
             0.0, 1.0,
@@ -229,5 +230,103 @@ class F64ArrayGetSetTest {
         assertNotEquals(copy, m)
         m.fill(42.0)
         assertEquals(copy, m)
+    }
+}
+
+class F64ArrayGetSetTest {
+    @Test fun get3D() {
+        val value = 42.0
+        val m = F64Array.full(init = value, shape = intArrayOf(2, 2, 2))
+        assertEquals(value, m[0, 0, 0], 0.0)
+        assertEquals(value, m[1, 1, 1], 0.0)
+        assertFailsWith<IndexOutOfBoundsException> {
+            m[0, 1, 2]
+        }
+        assertFailsWith<IndexOutOfBoundsException> {
+            m[2, 1, 0]
+        }
+        assertFailsWith<UnsupportedOperationException> {
+            m[0] = value
+        }
+        assertFailsWith<IllegalStateException> {
+            m[0, 0]
+        }
+        assertFailsWith<IllegalStateException> {
+            m[0, 0, 0, 0]
+        }
+        assertFailsWith<IllegalArgumentException> {
+            m.V[0, 0, 0]
+        }
+    }
+
+    @Test fun set3D() {
+        val value = 42.0
+        val m = F64Array.full(init = value - 1, shape = intArrayOf(2, 2, 2))
+        m[0, 0, 0] = value
+        assertEquals(value, m[0, 0, 0], 0.0)
+        assertNotEquals(value, m[1, 1, 1])
+        assertFailsWith<IndexOutOfBoundsException> {
+            m[0, 1, 2] = value
+        }
+        assertFailsWith<IndexOutOfBoundsException> {
+            m[2, 1, 0] = value
+        }
+        assertFailsWith<UnsupportedOperationException> {
+            m[0] = value
+        }
+        assertFailsWith<IllegalStateException> {
+            m[0, 0] = value
+        }
+        assertFailsWith<IllegalStateException> {
+            m[0, 0, 0, 0] = value
+        }
+    }
+
+    @Test fun get4D() {
+        val value = 42.0
+        val m = F64Array.full(init = value, shape = intArrayOf(2, 2, 2, 2))
+        assertEquals(value, m[0, 1, 0, 1], 0.0)
+        assertEquals(value, m[1, 0, 1, 0], 0.0)
+        assertFailsWith<IndexOutOfBoundsException> {
+            m[0, 1, 2, 3]
+        }
+        assertFailsWith<IndexOutOfBoundsException> {
+            m[3, 2, 1, 0]
+        }
+        assertFailsWith<UnsupportedOperationException> {
+            m[0]
+        }
+        assertFailsWith<IllegalStateException> {
+            m[0, 0, 0]
+        }
+        assertFailsWith<IllegalStateException> {
+            m[0, 0, 0, 0, 0]
+        }
+        assertFailsWith<IllegalArgumentException> {
+            m.V[0, 0, 0, 0]
+        }
+    }
+
+    @Test fun set4D() {
+        val value = 42.0
+        val m = F64Array.full(init = value - 1, shape = intArrayOf(2, 2, 2, 2))
+        m[0, 1, 0, 1] = value
+        assertEquals(value, m[0, 1, 0, 1], 0.0)
+        assertNotEquals(value, m[1, 0, 1, 0])
+        assertFailsWith<IndexOutOfBoundsException> {
+            m[0, 1, 2, 3] = value
+        }
+        assertFailsWith<IndexOutOfBoundsException> {
+            m[3, 2, 1, 0] = value
+        }
+        assertFailsWith<UnsupportedOperationException> {
+            m[0] = value
+        }
+        assertFailsWith<IllegalStateException> {
+            m[0, 0, 0] = value
+        }
+        assertFailsWith<IllegalStateException> {
+            m[0, 0, 0, 0, 0] = value
+        }
     }
 }

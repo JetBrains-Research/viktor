@@ -85,6 +85,10 @@ class F64FlatArraySlicingTest {
     @Test(expected = IllegalArgumentException::class) fun sliceStepNegative() {
         F64Array(7).slice(3, 5, -1)
     }
+
+    @Test(expected = IllegalArgumentException::class) fun sliceInvalidAxis() {
+        F64Array(7).slice(1, 3, axis = 1)
+    }
 }
 
 class F64ArraySlicing {
