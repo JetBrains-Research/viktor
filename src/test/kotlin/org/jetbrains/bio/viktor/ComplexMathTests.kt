@@ -19,6 +19,20 @@ class ComplexTimesTest {
             assertEquals(expected, z)
         }
     }
+
+    /**
+     * Produce unaligned (and mutually unaligned) arrays.
+     */
+    @Test
+    fun alignment() {
+        val src1 = F64Array(2 * N + 8) { RANDOM.nextDouble() }
+        val src2 = F64Array(2 * N + 8) { RANDOM.nextDouble() }
+        for (i in 0 until 8) {
+            for (j in 0 until 8) {
+                src1.slice(i, i + 2 * N).reshape(N, 2).complexTimes(src2.slice(j, j + 2 * N).reshape(N ,2))
+            }
+        }
+    }
 }
 
 class FFTTest {
@@ -46,6 +60,17 @@ class FFTTest {
         val actual = src.fft()
         DoubleFFT_1D(N.toLong()).complexForward(src.data) // in-place
         assertEquals(src, actual, 1E-14, "FFT failed")
+    }
+
+    /**
+     * Produce unaligned arrays.
+     */
+    @Test
+    fun alignment() {
+        val src = F64Array(2 * N + 8) { RANDOM.nextDouble() }
+        for (i in 0 until 8) {
+            src.slice(i, i + 2 * N).reshape(N, 2).fft()
+        }
     }
 
 }

@@ -152,8 +152,11 @@ task installPffftSSE2(dependsOn: [unzipPffft, unzipCmake]) {
             workingDir cmakeDir
             def args = [cmakeExec, '..', "-DCMAKE_INSTALL_PREFIX=$buildDir",
                         "-DCMAKE_POSITION_INDEPENDENT_CODE=ON",
-                        /*"-DUSE_UNALIGNED=ON",*/ "-DDISABLE_SIMD_AVX=ON"]
+                        "-DDISABLE_SIMD_AVX=ON"]
             def os = org.gradle.internal.os.OperatingSystem.current()
+            if (!os.isMacOsX()) {
+                args += ["-DUSE_UNALIGNED=ON"]
+            }
             if (os.isWindows()) {
                 args += ['-G', '"Visual Studio 14 2015"']
             }
@@ -185,8 +188,11 @@ task installPffftAVX(dependsOn: [unzipPffft, unzipCmake]) {
             workingDir cmakeDir
             def args = [cmakeExec, '..', "-DCMAKE_INSTALL_PREFIX=$buildDir",
                         "-DCMAKE_POSITION_INDEPENDENT_CODE=ON",
-                        /*"-DUSE_UNALIGNED=ON",*/ "-DDISABLE_SIMD_AVX=OFF"]
+                        "-DDISABLE_SIMD_AVX=OFF"]
             def os = org.gradle.internal.os.OperatingSystem.current()
+            if (!os.isMacOsX()) {
+                args += ["-DUSE_UNALIGNED=ON"]
+            }
             if (os.isWindows()) {
                 args += ['-G', '"Visual Studio 14 2015"']
             }
