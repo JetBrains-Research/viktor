@@ -164,7 +164,7 @@ task installPffftSSE2(dependsOn: [unzipPffft, unzipCmake]) {
         exec {
             workingDir cmakeDir
             // standardOutput = nullOutputStream
-            commandLine(cmakeExec, '--build', '.')
+            commandLine(cmakeExec, '--build', '.', '--target', 'PFFFT')
         }
     }
 }
@@ -201,7 +201,7 @@ task installPffftAVX(dependsOn: [unzipPffft, unzipCmake]) {
         exec {
             workingDir cmakeDir
             // standardOutput = nullOutputStream
-            commandLine(cmakeExec, '--build', '.')
+            commandLine(cmakeExec, '--build', '.', '--target', 'PFFFT')
         }
     }
 }
