@@ -37,6 +37,7 @@ apply plugin: de.undercouch.gradle.tasks.download.DownloadTaskPlugin
 model {
     repositories {
         libs(PrebuiltLibraries) {
+            def os = org.gradle.internal.os.OperatingSystem.current()
             boostSimd {
                 // This doesn't work yet. See
                 // https://discuss.gradle.org/t/prebuilt-libraries-two-things-i-would-find-useful
@@ -48,17 +49,15 @@ model {
                 headers.srcDir "$buildDir/include"
                 binaries.withType(StaticLibraryBinary) {
                     staticLibraryFile =
-                            file("$buildDir/include/pffft-master/build/libPFFFT-sse2.a")
+                            file("$buildDir/include/pffft-master/build/${os.isWindows() ? "PFFFT-sse2.lib" : "libPFFFT-sse2.a"}")
                 }
-                // binaries.linkFiles "$buildDir/pffft-master/build/libPFFFT.a"
             }
             pffft_avx {
                 headers.srcDir "$buildDir/include"
                 binaries.withType(StaticLibraryBinary) {
                     staticLibraryFile =
-                            file("$buildDir/include/pffft-master/build/libPFFFT-avx.a")
+                            file("$buildDir/include/pffft-master/build/${os.isWindows() ? "PFFFT-avx.lib" : "libPFFFT-avx.a"}")
                 }
-                // binaries.linkFiles "$buildDir/pffft-master/build/libPFFFT.a"
             }
         }
     }
@@ -154,7 +153,7 @@ task installPffftSSE2(dependsOn: [unzipPffft, unzipCmake]) {
                         "-DCMAKE_POSITION_INDEPENDENT_CODE=ON",
                         "-DDISABLE_SIMD_AVX=ON"]
             def os = org.gradle.internal.os.OperatingSystem.current()
-            if (!os.isMacOsX()) {
+            if (os.isLinux()) {
                 args += ["-DUSE_UNALIGNED=ON"]
             }
             if (os.isWindows()) {
@@ -164,15 +163,16 @@ task installPffftSSE2(dependsOn: [unzipPffft, unzipCmake]) {
         }
         exec {
             workingDir cmakeDir
-            standardOutput = nullOutputStream
+            // standardOutput = nullOutputStream
             commandLine(cmakeExec, '--build', '.')
         }
     }
 }
 
 tasks.register('renamePffftSSE2', Copy) {
+    def os = org.gradle.internal.os.OperatingSystem.current()
     dependsOn 'installPffftSSE2'
-    from "$buildDir/include/pffft-$pffftBranch/build-sse2/"
+    from "$buildDir/include/pffft-$pffftBranch/build-sse2/${os.isWindows() ? "Debug/" : ""}"
     into "$buildDir/include/pffft-$pffftBranch/build/"
     rename '(.+)(\\.a|\\.lib)', '$1-sse2$2'
 }
@@ -190,7 +190,7 @@ task installPffftAVX(dependsOn: [unzipPffft, unzipCmake]) {
                         "-DCMAKE_POSITION_INDEPENDENT_CODE=ON",
                         "-DDISABLE_SIMD_AVX=OFF"]
             def os = org.gradle.internal.os.OperatingSystem.current()
-            if (!os.isMacOsX()) {
+            if (os.isLinux()) {
                 args += ["-DUSE_UNALIGNED=ON"]
             }
             if (os.isWindows()) {
@@ -200,15 +200,16 @@ task installPffftAVX(dependsOn: [unzipPffft, unzipCmake]) {
         }
         exec {
             workingDir cmakeDir
-            standardOutput = nullOutputStream
+            // standardOutput = nullOutputStream
             commandLine(cmakeExec, '--build', '.')
         }
     }
 }
 
 tasks.register('renamePffftAVX', Copy) {
+    def os = org.gradle.internal.os.OperatingSystem.current()
     dependsOn 'installPffftAVX'
-    from "$buildDir/include/pffft-$pffftBranch/build-avx/"
+    from "$buildDir/include/pffft-$pffftBranch/build-avx/${os.isWindows() ? "Debug/" : ""}"
     into "$buildDir/include/pffft-$pffftBranch/build/"
     rename '(.+)(\\.a|\\.lib)', '$1-avx$2'
 }
