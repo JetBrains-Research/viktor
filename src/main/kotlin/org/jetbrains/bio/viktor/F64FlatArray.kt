@@ -192,6 +192,22 @@ open class F64FlatArray protected constructor(
 
     override fun transform(op: (Double) -> Double): F64FlatArray = flatTransform(op)
 
+    override fun <T> fold(initial: T, op: (T, Double) -> T): T {
+        var res = initial
+        for (pos in 0 until size) {
+                res = op(res, unsafeGet(pos))
+            }
+        return res
+    }
+
+    override fun reduce(op: (Double, Double) -> Double): Double {
+        var res = unsafeGet(0)
+        for (pos in 1 until size) {
+            res = op(res, unsafeGet(pos))
+        }
+        return res
+    }
+
     /* Mathematics */
 
     // FastMath is faster with exp and expm1, but slower with log and log1p

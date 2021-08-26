@@ -642,6 +642,61 @@ open class F64Array protected constructor(
     }
 
     /**
+     * Folds the array using the provided [initial] value and the folding operation [op].
+     *
+     * Equivalent to the following pseudo-code:
+     *
+     *     var res = initial
+     *     for (value in array) res = op(res, value)
+     *     return res
+     *
+     * If you need to fold using one of the `plus`, `max`, or `min`
+     * with standard initial values, use the appropriate specialized method
+     * instead (see the list below); these will generally be much more efficient.
+     *
+     * @param initial the starting value of the fold.
+     * @param op the folding binary operation.
+     *
+     * @since 1.2.0
+     * @see [sum], [max], [min] for the optimized specialized methods
+     * @see [reduce] for a simplified version
+     */
+    open fun <T> fold(initial: T, op: (T, Double) -> T): T {
+        if (isFlattenable) {
+            return flatten().fold(initial, op)
+        }
+        return unrollToFlat().fold(initial) { acc, f64FlatArray -> f64FlatArray.fold(acc, op) }
+    }
+
+    /**
+     * Reduces the array using the provided reduction operation [op].
+     *
+     * Equivalent to the following pseudo-code:
+     *
+     *     var res = first_element
+     *     for (value in remaining_elements) res = op(res, value)
+     *     return res
+     *
+     * If you need to reduce using one of the `plus`, `max`, or `min`,
+     * use the appropriate specialized method instead (see the list below);
+     * these will generally be much more efficient.
+     *
+     * @param op the binary reduction operation.
+     *
+     * @since 1.2.0
+     * @see [sum], [max], [min] for the optimized specialized methods
+     * @see [fold] for a more flexible version
+     */
+    open fun reduce(op: (Double, Double) -> Double): Double {
+        if (isFlattenable) {
+            return flatten().reduce(op)
+        }
+        val sequence = unrollToFlat()
+        val initial = sequence.first().reduce(op)
+        return sequence.drop(1).fold(initial) { acc, f64FlatArray -> f64FlatArray.fold(acc, op) }
+    }
+
+    /**
      * Replaces each element x of this array with its exponent exp(x).
      *
      * In-place method. Optimized for dense arrays.

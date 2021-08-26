@@ -75,7 +75,11 @@ class F64ArrayOperationTest(private val v: F64Array) {
     }
 
     @Test fun transform() = doTestUnary(
-        { transform(Gamma::logGamma) }, { transformInPlace(Gamma::logGamma) }, Gamma::logGamma, EXACT_DELTA, "transform"
+        { transform(Gamma::logGamma) },
+        { transformInPlace(Gamma::logGamma) },
+        Gamma::logGamma,
+        EXACT_DELTA,
+        "transform (log-gamma)"
     )
     @Test fun exp() = doTestUnary(F64Array::exp, F64Array::expInPlace, FastMath::exp, PRECISE_DELTA, "exp")
     @Test fun expm1() = doTestUnary(F64Array::expm1, F64Array::expm1InPlace, FastMath::expm1, PRECISE_DELTA, "expm1")
@@ -205,6 +209,20 @@ class F64ArrayOperationTest(private val v: F64Array) {
         assertEquals(opName, expected, actual, delta)
     }
 
+    @Test fun fold() = doTestFold(
+        { it.fold(1.0, Double::times) },
+        Double::times,
+        1.0,
+        EXACT_DELTA,
+        "fold (product)"
+    )
+    @Test fun reduce() = doTestFold(
+        { it.reduce(Double::times) },
+        Double::times,
+        1.0,
+        EXACT_DELTA,
+        "reduce (product)"
+    )
     @Test fun max() = doTestFold(F64Array::max, Math::max, Double.NEGATIVE_INFINITY, EXACT_DELTA, "max")
     @Test fun min() = doTestFold(F64Array::min, Math::min, Double.POSITIVE_INFINITY, EXACT_DELTA, "min")
     @Test fun sum() = doTestFold(F64Array::sum, Double::plus, 0.0, DELTA, "plus")

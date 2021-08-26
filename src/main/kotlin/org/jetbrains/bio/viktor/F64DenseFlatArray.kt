@@ -128,6 +128,31 @@ internal sealed class F64DenseFlatArray(
 
     override fun transform(op: (Double) -> Double): F64FlatArray = denseTransform(op)
 
+    override fun <T> fold(initial: T, op: (T, Double) -> T): T {
+        var res = initial
+        val dst = data
+        var dstOffset = offset
+        val dstEnd = dstOffset + size
+        while (dstOffset < dstEnd) {
+                res = op.invoke(res, dst[dstOffset])
+                dstOffset++
+            }
+        return res
+    }
+
+    override fun reduce(op: (Double, Double) -> Double): Double {
+        val dst = data
+        var dstOffset = offset
+        val dstEnd = dstOffset + size
+        var res = dst[dstOffset]
+        dstOffset++
+        while (dstOffset < dstEnd) {
+            res = op.invoke(res, dst[dstOffset])
+            dstOffset++
+        }
+        return res
+    }
+
     /* Arithmetic */
 
     /* Arithmetic binary operations */
