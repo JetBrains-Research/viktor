@@ -13,8 +13,8 @@ import java.util.*
 class QuickSelectTest {
     @Test fun quantileRandom() {
         val values = Random().doubles(1024).toArray().asF64Array()
-        for (i in 0 until values.size) {
-            val q = (i.toDouble() + 1) / values.size
+        for (i in 0 until values.length) {
+            val q = (i.toDouble() + 1) / values.length
             assertEquals(StatUtils.percentile(values.data, q * 100),
                          values.quantile(q), Precision.EPSILON)
         }

@@ -97,7 +97,7 @@ class F64ArrayCreationTest {
 
     @Test fun full() {
         val v = F64Array.full(2, 42.0)
-        assertEquals(2, v.size)
+        assertEquals(2, v.length)
         assertEquals(F64Array.of(42.0, 42.0), v)
     }
 

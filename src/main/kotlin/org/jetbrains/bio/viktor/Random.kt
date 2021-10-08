@@ -59,17 +59,17 @@ fun F64Array.quantile(
 ): Double {
     check(this is F64FlatArray) { "expected a 1-D array" }
 
-    val pos = (size + 1) * q
+    val pos = (length + 1) * q
     val d = pos - floor(pos)
     return when {
         pos < 1 -> min()
-        pos >= size -> max()
+        pos >= length -> max()
         else -> {
             val lo = QuickSelect.select(
-                this, 0, size - 1, pos.toInt() - 1, randomGenerator
+                this, 0, length - 1, pos.toInt() - 1, randomGenerator
             )
             val hi = QuickSelect.select(
-                this, 0, size - 1, pos.toInt(), randomGenerator
+                this, 0, length - 1, pos.toInt(), randomGenerator
             )
             return lo + d * (hi - lo)
         }
@@ -86,12 +86,12 @@ fun F64Array.quantile(
 fun F64Array.shuffle(randomGenerator: RandomGenerator = DEFAULT_RANDOM) {
     check(this is F64FlatArray) { "expected a 1-D array" }
 
-    if (size <= 1) {
+    if (length <= 1) {
         return
     }
 
-    for (i in 0..size - 2) {
-        val j = randomGenerator.nextInt(size - i)
+    for (i in 0..length - 2) {
+        val j = randomGenerator.nextInt(length - i)
         swap(i, i + j)
     }
 }

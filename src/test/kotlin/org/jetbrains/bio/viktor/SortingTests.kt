@@ -17,7 +17,7 @@ class SortingTests {
 
     @Test fun partitionInternal() {
         val values = F64Array.of(0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0)
-        val length = values.size
+        val length = values.length
         for (p in 0 until length) {
             values.shuffle()
             val pivot = values[p]

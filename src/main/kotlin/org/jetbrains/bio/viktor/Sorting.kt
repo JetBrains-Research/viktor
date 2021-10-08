@@ -20,9 +20,9 @@ fun F64Array.sort(reverse: Boolean = false) = reorder(argSort(reverse))
 fun F64Array.argSort(reverse: Boolean = false): IntArray {
     check(this is F64FlatArray) { "expected a 1-D array" }
     val comparator = Comparator(IndexedDoubleValue::compareTo)
-    val indexedValues = Array(size) { IndexedDoubleValue(it, unsafeGet(it)) }
+    val indexedValues = Array(length) { IndexedDoubleValue(it, unsafeGet(it)) }
     indexedValues.sortWith(if (reverse) comparator.reversed() else comparator)
-    return IntArray(size) { indexedValues[it].index }
+    return IntArray(length) { indexedValues[it].index }
 }
 
 /** A version of [IndexedValue] specialized to [Double]. */
@@ -81,8 +81,8 @@ internal inline fun <T> reorderInternal(
  */
 fun F64Array.partition(p: Int) {
     check(this is F64FlatArray) { "expected a 1-D array" }
-    require(p in 0 until size) { "p must be in [0, $size)" }
-    partition(p, 0, size - 1)
+    require(p in 0 until length) { "p must be in [0, $length)" }
+    partition(p, 0, length - 1)
 }
 
 /**

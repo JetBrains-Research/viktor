@@ -13,7 +13,7 @@ class BalancedSumTest(private val size: Int) {
         val v = Random().doubles(size.toLong()).toArray().asF64Array()
 
         val expected = KahanSum()
-        for (i in 0 until v.size) {
+        for (i in 0 until v.length) {
             expected.feed(v[i])
         }
 
@@ -34,7 +34,7 @@ class BalancedDotTest(private val size: Int) {
         val w = r.doubles(size.toLong()).toArray().asF64Array()
 
         val expected = KahanSum()
-        for (i in 0 until v.size) {
+        for (i in 0 until v.length) {
             expected.feed(v[i] * w[i])
         }
 
@@ -47,7 +47,7 @@ class BalancedDotTest(private val size: Int) {
         val w = r.ints(-1000, 1000).limit(size.toLong()).toArray()
 
         val expected = KahanSum()
-        for (i in 0 until v.size) {
+        for (i in 0 until v.length) {
             expected.feed(v[i] * w[i])
         }
 
@@ -63,7 +63,7 @@ class BalancedDotTest(private val size: Int) {
             w[i] = (r.nextInt(2000) - 1000).toShort()
         }
         val expected = KahanSum()
-        for (i in 0 until v.size) {
+        for (i in 0 until v.length) {
             expected.feed(v[i] * w[i])
         }
 

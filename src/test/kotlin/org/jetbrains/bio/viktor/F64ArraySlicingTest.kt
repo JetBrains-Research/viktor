@@ -10,7 +10,7 @@ class F64FlatArraySlicingTest {
     @Test fun slice() {
         val v = F64Array.of(1.0, 2.0, 3.0)
         val slice = v.slice(1, 2)
-        assertEquals(1, slice.size)
+        assertEquals(1, slice.length)
         assertEquals(F64Array.of(2.0), slice)
 
         slice[0] = 42.0
@@ -50,22 +50,22 @@ class F64FlatArraySlicingTest {
         val v = F64Array.of(1.0, 2.0, 3.0, 4.0, 5.0, 6.0)
 
         v.slice(step = 2).let {
-            assertEquals(3, it.size)
+            assertEquals(3, it.length)
             assertEquals(F64Array.of(1.0, 3.0, 5.0), it)
         }
 
         v.slice(1, step = 2).let {
-            assertEquals(3, it.size)
+            assertEquals(3, it.length)
             assertEquals(F64Array.of(2.0, 4.0, 6.0), it)
         }
 
         v.slice(1, step = 3).let {
-            assertEquals(2, it.size)
+            assertEquals(2, it.length)
             assertEquals(F64Array.of(2.0, 5.0), it)
         }
 
         v.slice(1, step = 4).let {
-            assertEquals(2, it.size)
+            assertEquals(2, it.length)
             assertEquals(F64Array.of(2.0, 6.0), it)
         }
     }

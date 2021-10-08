@@ -22,19 +22,19 @@ open class F64FlatArray protected constructor(
     internal open val unsafeSet: (Int, Double) -> Unit = { i, v -> data[i * stride + offset] = v }
 
     override operator fun get(pos: Int): Double {
-        checkIndex("pos", pos, size)
+        checkIndex("pos", pos, length)
         return unsafeGet(pos)
     }
 
     override operator fun set(pos: Int, value: Double) {
-        checkIndex("pos", pos, size)
+        checkIndex("pos", pos, length)
         unsafeSet(pos, value)
     }
 
     override fun flatten() = this
 
     override fun contains(other: Double): Boolean {
-        for (pos in 0 until size) {
+        for (pos in 0 until length) {
             if (unsafeGet(pos) == other) {
                 return true
             }
@@ -49,15 +49,15 @@ open class F64FlatArray protected constructor(
 
     override fun copyTo(other: F64Array) {
         val o = checkShape(other)
-        for (pos in 0 until size) {
+        for (pos in 0 until length) {
             o.unsafeSet(pos, unsafeGet(pos))
         }
     }
 
-    override fun copy(): F64FlatArray = F64DenseFlatArray.create(toDoubleArray(), 0, size)
+    override fun copy(): F64FlatArray = F64DenseFlatArray.create(toDoubleArray(), 0, length)
 
     override fun fill(init: Double) {
-        for (pos in 0 until size) {
+        for (pos in 0 until length) {
             unsafeSet(pos, init)
         }
     }
@@ -88,7 +88,7 @@ open class F64FlatArray protected constructor(
      */
     private inline fun balancedSum(getter: (Int) -> Double): Double {
         var accUnaligned = 0.0
-        var remaining = size
+        var remaining = length
         while (remaining % 4 > 0) {
             remaining--
             accUnaligned += getter(remaining)
@@ -122,7 +122,7 @@ open class F64FlatArray protected constructor(
 
     override fun cumSum() {
         val acc = KahanSum()
-        for (pos in 0 until size) {
+        for (pos in 0 until length) {
             acc += unsafeGet(pos)
             unsafeSet(pos, acc.result())
         }
@@ -133,7 +133,7 @@ open class F64FlatArray protected constructor(
     override fun argMin(): Int {
         var minValue = Double.POSITIVE_INFINITY
         var res = 0
-        for (pos in 0 until size) {
+        for (pos in 0 until length) {
             val value = unsafeGet(pos)
             if (value <= minValue) {
                 minValue = value
@@ -148,7 +148,7 @@ open class F64FlatArray protected constructor(
     override fun argMax(): Int {
         var maxValue = Double.NEGATIVE_INFINITY
         var res = 0
-        for (pos in 0 until size) {
+        for (pos in 0 until length) {
             val value = unsafeGet(pos)
             if (value >= maxValue) {
                 maxValue = value
@@ -159,14 +159,14 @@ open class F64FlatArray protected constructor(
     }
 
     private inline fun flatTransformInPlace(op: (Double) -> Double) {
-        for (pos in 0 until size) {
+        for (pos in 0 until length) {
             unsafeSet(pos, op.invoke(unsafeGet(pos)))
         }
     }
 
     private inline fun flatTransform(op: (Double) -> Double): F64FlatArray {
-        val res = DoubleArray(size)
-        for (pos in 0 until size) {
+        val res = DoubleArray(length)
+        for (pos in 0 until length) {
             res[pos] = op.invoke(unsafeGet(pos))
         }
         return create(res)
@@ -174,18 +174,18 @@ open class F64FlatArray protected constructor(
 
     private inline fun flatEBEInPlace(other: F64Array, op: (Double, Double) -> Double) {
         val o = checkShape(other)
-        for (pos in 0 until size) {
+        for (pos in 0 until length) {
             unsafeSet(pos, op.invoke(unsafeGet(pos), o.unsafeGet(pos)))
         }
     }
 
     private inline fun flatEBE(other: F64Array, op: (Double, Double) -> Double): F64FlatArray {
         val o = checkShape(other)
-        val res = DoubleArray(size)
-        for (pos in 0 until size) {
+        val res = DoubleArray(length)
+        for (pos in 0 until length) {
             res[pos] = op.invoke(unsafeGet(pos), o.unsafeGet(pos))
         }
-        return F64DenseFlatArray.create(res, 0, size)
+        return F64DenseFlatArray.create(res, 0, length)
     }
 
     override fun transformInPlace(op: (Double) -> Double) = flatTransformInPlace(op)
@@ -194,7 +194,7 @@ open class F64FlatArray protected constructor(
 
     override fun <T> fold(initial: T, op: (T, Double) -> T): T {
         var res = initial
-        for (pos in 0 until size) {
+        for (pos in 0 until length) {
                 res = op(res, unsafeGet(pos))
             }
         return res
@@ -202,7 +202,7 @@ open class F64FlatArray protected constructor(
 
     override fun reduce(op: (Double, Double) -> Double): Double {
         var res = unsafeGet(0)
-        for (pos in 1 until size) {
+        for (pos in 1 until length) {
             res = op(res, unsafeGet(pos))
         }
         return res
@@ -228,7 +228,7 @@ open class F64FlatArray protected constructor(
     override fun logSumExp(): Double {
         val offset = max()
         val acc = KahanSum()
-        for (pos in 0 until size) {
+        for (pos in 0 until length) {
             acc += FastMath.exp(unsafeGet(pos) - offset)
         }
         return ln(acc.result()) + offset
@@ -265,7 +265,7 @@ open class F64FlatArray protected constructor(
 
     override fun reshape(vararg shape: Int): F64Array {
         shape.forEach { require(it > 0) { "shape must be positive but was $it" } }
-        check(shape.product() == size) { "total size of the new array must be unchanged" }
+        check(shape.product() == length) { "total size of the new array must be unchanged" }
         return when {
             this.shape.contentEquals(shape) -> this
             else -> {
@@ -279,7 +279,7 @@ open class F64FlatArray protected constructor(
         }
     }
 
-    override fun asSequence(): Sequence<Double> = (0 until size).asSequence().map { unsafeGet(it) }
+    override fun asSequence(): Sequence<Double> = (0 until length).asSequence().map { unsafeGet(it) }
 
     override fun clone(): F64FlatArray = F64FlatArray(data.clone(), offset, strides[0], shape[0])
 
@@ -287,7 +287,7 @@ open class F64FlatArray protected constructor(
 
     override fun toGenericArray() = unsupported()
 
-    override fun toDoubleArray() = DoubleArray(size) { unsafeGet(it) }
+    override fun toDoubleArray() = DoubleArray(length) { unsafeGet(it) }
 
     /**
      * A version of [DecimalFormat.format] which doesn't produce ?
@@ -304,7 +304,7 @@ open class F64FlatArray protected constructor(
         val sb = StringBuilder()
         sb.append('[')
 
-        if (maxDisplay < size) {
+        if (maxDisplay < length) {
             for (pos in 0 until maxDisplay / 2) {
                 sb.append(format.safeFormat(this[pos])).append(", ")
             }
@@ -312,16 +312,16 @@ open class F64FlatArray protected constructor(
             sb.append("..., ")
 
             val leftover = maxDisplay - maxDisplay / 2
-            for (pos in size - leftover until size) {
+            for (pos in length - leftover until length) {
                 sb.append(format.safeFormat(this[pos]))
-                if (pos < size - 1) {
+                if (pos < length - 1) {
                     sb.append(", ")
                 }
             }
         } else {
-            for (pos in 0 until size) {
+            for (pos in 0 until length) {
                 sb.append(format.safeFormat(this[pos]))
-                if (pos < size - 1) {
+                if (pos < length - 1) {
                     sb.append(", ")
                 }
             }
@@ -334,13 +334,13 @@ open class F64FlatArray protected constructor(
     override fun equals(other: Any?) = when {
         this === other -> true
         other !is F64FlatArray -> false // an instance of F64Array can't be flat
-        size != other.size -> false
-        else -> (0 until size).all {
+        length != other.length -> false
+        else -> (0 until length).all {
             Precision.equals(unsafeGet(it), other.unsafeGet(it))
         }
     }
 
-    override fun hashCode() = (0 until size).fold(1) { acc, pos ->
+    override fun hashCode() = (0 until length).fold(1) { acc, pos ->
         // XXX calling #hashCode results in boxing, see KT-7571.
         31 * acc + java.lang.Double.hashCode(unsafeGet(pos))
     }

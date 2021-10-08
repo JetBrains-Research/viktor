@@ -270,7 +270,7 @@ class F64FlatArrayOperationTest(private val v: F64FlatArray) {
     @Test fun cumSum() {
         val actual = v.clone().apply { cumSum() }
         val acc = KahanSum()
-        for (i in 0 until v.size) {
+        for (i in 0 until v.length) {
             acc.feed(v[i])
             assertEquals(acc.result(), actual[i], DELTA)
         }
@@ -278,7 +278,7 @@ class F64FlatArrayOperationTest(private val v: F64FlatArray) {
 
     @Test fun dot() {
         val random = Random()
-        val other = DoubleArray(v.size) { random.nextDouble() }.asF64Array()
+        val other = DoubleArray(v.length) { random.nextDouble() }.asF64Array()
         val voActual = v.checkConstant(other, F64Array::dot)
         val ovActual = other.checkConstant(v, F64Array::dot)
         val voExpected = v.asSequence().zip(other.asSequence()).map { (a, b) ->  a * b }.sum()

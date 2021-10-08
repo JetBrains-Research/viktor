@@ -21,23 +21,23 @@ class F64FlatArrayGetSetTest(
     private val v = F64FlatArray.create(values, offset, stride, size)
 
     @Test fun get() {
-        for (i in 0 until v.size) {
+        for (i in 0 until v.length) {
             assertEquals(values[offset + i * stride], v[i], Precision.EPSILON)
         }
     }
 
     @Test(expected = IndexOutOfBoundsException::class) fun getOutOfBounds() {
-        v[v.size]
+        v[v.length]
     }
 
     @Test fun set() {
-        for (i in 0 until v.size) {
+        for (i in 0 until v.length) {
             val copy = v.copy()
             copy[i] = 42.0
             assertEquals(42.0, copy[i], Precision.EPSILON)
 
             // Ensure all other elements are unchanged.
-            for (j in 0 until v.size) {
+            for (j in 0 until v.length) {
                 if (j == i) {
                     continue
                 }
@@ -48,18 +48,18 @@ class F64FlatArrayGetSetTest(
     }
 
     @Test(expected = IndexOutOfBoundsException::class) fun setOutOfBounds() {
-        v[v.size] = 42.0
+        v[v.length] = 42.0
     }
 
     @Test fun setMagicScalar() {
         val copy = v.copy()
         copy.V[_I] = 42.0
 
-        assertEquals(F64Array.full(copy.size, 42.0), copy)
+        assertEquals(F64Array.full(copy.length, 42.0), copy)
     }
 
     @Test fun setMagicVector() {
-        val other = F64Array.full(v.size, 42.0)
+        val other = F64Array.full(v.length, 42.0)
         val copy = v.copy()
         copy.V[_I] = other
 

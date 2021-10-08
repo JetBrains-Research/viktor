@@ -69,7 +69,13 @@ open class F64Array protected constructor(
     val nDim: Int = shape.size
 
     /** Number of elements along the first axis. */
-    val size: Int = shape[0]
+    val length: Int = shape[0]
+
+    @Deprecated(
+        "This property will change semantics in 2.0.0, see https://github.com/JetBrains-Research/viktor/issues/37",
+        ReplaceWith("length")
+    )
+    val size: Int get() = length
 
     /**
      * Returns `true` if this array can be flattened using [flatten].
@@ -549,7 +555,7 @@ open class F64Array protected constructor(
     open fun sd(): Double {
         val s = sum()
         val s2 = dot(this)
-        return sqrt((s2 - s * s / size) / (size - 1))
+        return sqrt((s2 - s * s / length) / (length - 1))
     }
 
     /**
@@ -941,7 +947,7 @@ open class F64Array protected constructor(
      *
      * Copying method. Not implemented for flat arrays.
      */
-    open fun toGenericArray(): Array<*> = Array(size) { view(it).toArray() }
+    open fun toGenericArray(): Array<*> = Array(length) { view(it).toArray() }
 
     /**
      * Converts this vector to a [DoubleArray].
@@ -961,7 +967,7 @@ open class F64Array protected constructor(
     ): String {
         val sb = StringBuilder()
         sb.append('[')
-        if (maxDisplay < size) {
+        if (maxDisplay < length) {
             for (r in 0 until maxDisplay / 2) {
                 sb.append(V[r].toString(maxDisplay, format)).append(", ")
             }
@@ -969,16 +975,16 @@ open class F64Array protected constructor(
             sb.append("..., ")
 
             val leftover = maxDisplay - maxDisplay / 2
-            for (r in size - leftover until size) {
+            for (r in length - leftover until length) {
                 sb.append(V[r].toString(maxDisplay, format))
-                if (r < size - 1) {
+                if (r < length - 1) {
                     sb.append(", ")
                 }
             }
         } else {
-            for (r in 0 until size) {
+            for (r in 0 until length) {
                 sb.append(V[r].toString(maxDisplay, format))
-                if (r < size - 1) {
+                if (r < length - 1) {
                     sb.append(", ")
                 }
             }
@@ -994,10 +1000,10 @@ open class F64Array protected constructor(
         this === other -> true
         other !is F64Array -> false
         !shape.contentEquals(other.shape) -> false
-        else -> (0 until size).all { view(it) == other.view(it) }
+        else -> (0 until length).all { view(it) == other.view(it) }
     }
 
-    override fun hashCode(): Int = (0 until size).fold(1) { acc, r ->
+    override fun hashCode(): Int = (0 until length).fold(1) { acc, r ->
         31 * acc + view(r).hashCode()
     }
 
@@ -1100,7 +1106,7 @@ open class F64Array protected constructor(
             val result = invoke(*shape)
             var offset = 0
             for (a in arrayOf(first, *rest)) {
-                if (a.size > 0) {
+                if (a.length > 0) {
                     a.copyTo(result.slice(offset, offset + a.shape[axis], axis = axis))
                     offset += a.shape[axis]
                 }

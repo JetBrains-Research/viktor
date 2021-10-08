@@ -10,7 +10,7 @@ package org.jetbrains.bio.viktor
  */
 fun F64Array.searchSorted(target: Double): Int {
     var lo = 0
-    var hi = size
+    var hi = length
     while (lo < hi) {
         val mid = (lo + hi) ushr 1
         when {
