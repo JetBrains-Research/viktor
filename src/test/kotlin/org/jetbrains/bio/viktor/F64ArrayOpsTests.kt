@@ -1,5 +1,6 @@
 package org.jetbrains.bio.viktor
 
+import org.apache.commons.math3.special.Beta
 import org.apache.commons.math3.special.Gamma
 import org.apache.commons.math3.stat.StatUtils
 import org.apache.commons.math3.util.FastMath
@@ -122,6 +123,15 @@ class F64ArrayOperationTest(private val v: F64Array) {
             assertEquals("v $opName other != other $opName v", voCopy, ovCopy)
         }
     }
+
+    @Test fun combine() = doTestBinary(
+        { other -> combine(other) { a, b -> Beta.logBeta(a, b) } },
+        { other -> combineInPlace(other) { a, b -> Beta.logBeta(a, b) } },
+        { a, b -> Beta.logBeta(a, b) },
+        true,
+        DELTA,
+        "combine (log-beta)"
+    )
 
     @Test fun plus() = doTestBinary(
         F64Array::plus, F64Array::plusAssign, Double::plus, true, EXACT_DELTA, "plus"
