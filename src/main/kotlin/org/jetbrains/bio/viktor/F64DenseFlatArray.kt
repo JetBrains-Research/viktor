@@ -153,6 +153,12 @@ internal sealed class F64DenseFlatArray(
         return res
     }
 
+    override fun combineInPlace(other: F64Array, op: (Double, Double) -> Double) =
+        ebeInPlace(other, op) { super.combineInPlace(it, op) }
+
+    override fun combine(other: F64Array, op: (Double, Double) -> Double): F64FlatArray =
+        ebe(other, op) { super.combine(other, op) }
+
     /* Arithmetic */
 
     /* Arithmetic binary operations */

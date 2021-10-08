@@ -208,6 +208,10 @@ open class F64FlatArray protected constructor(
         return res
     }
 
+    override fun combineInPlace(other: F64Array, op: (Double, Double) -> Double) = flatEBEInPlace(other, op)
+
+    override fun combine(other: F64Array, op: (Double, Double) -> Double): F64FlatArray = flatEBE(other, op)
+
     /* Mathematics */
 
     // FastMath is faster with exp and expm1, but slower with log and log1p

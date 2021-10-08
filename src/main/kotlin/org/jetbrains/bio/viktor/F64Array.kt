@@ -697,6 +697,56 @@ open class F64Array protected constructor(
     }
 
     /**
+     * Apply the binary operation [op] in-place.
+     *
+     * If you need to apply an arithmetic operation (including [logAddExp]),
+     * use the appropriate specialized method instead (see the list below);
+     * these will generally be more efficient.
+     *
+     * In-place method.
+     *
+     * @param [other] the array to combine with.
+     * @param [op] the binary operation.
+     *
+     * @since 1.2.0
+     * @see [plusAssign]
+     * @see [minusAssign]
+     * @see [timesAssign]
+     * @see [divAssign]
+     * @see [logAddExpAssign]
+     * @see [combine]
+     */
+    open fun combineInPlace(other: F64Array, op: (Double, Double) -> Double) =
+        commonUnrollToFlat(other) { a, b -> a.combineInPlace(b, op) }
+
+    /**
+     * Apply the binary operation [op] and return a new array.
+     *
+     * If you need to apply an arithmetic operation (including [logAddExp]),
+     * use the appropriate specialized method instead (see the list below);
+     * these will generally be more efficient.
+     *
+     * Copying method.
+     *
+     * @param [other] the array to combine with.
+     * @param [op] the binary operation.
+     *
+     * @since 1.2.0
+     * @see [plus]
+     * @see [minus]
+     * @see [times]
+     * @see [div]
+     * @see [logAddExp]
+     * @see [combineInPlace]
+     */
+    open fun combine(other: F64Array, op: (Double, Double) -> Double): F64Array {
+        if (isFlattenable && other.isFlattenable) {
+            return flatten().combine(other.flatten(), op).reshape(*shape)
+        }
+        return copy().apply { combineInPlace(other, op) }
+    }
+
+    /**
      * Replaces each element x of this array with its exponent exp(x).
      *
      * In-place method. Optimized for dense arrays.
