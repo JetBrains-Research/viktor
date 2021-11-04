@@ -28,27 +28,27 @@ Kotlin. Here are some highlights:
 Installation
 ------------
 
-Starting with `1.1.0`, the latest version of `viktor` is available on [Maven Central][maven-central].
+The latest version of `viktor` is available on [Maven Central][maven-central].
 If you're using Gradle, just add the following to your `build.gradle` dependencies:
 ```groovy
-implementation 'org.jetbrains.bio:viktor:1.1.0'
+implementation 'org.jetbrains.bio:viktor:1.2.0'
 ```
 or, equivalently, add the following to your `build.gradle.kts` dependencies:
 ```kotlin
-implementation("org.jetbrains.bio:viktor:1.1.0")
+implementation("org.jetbrains.bio:viktor:1.2.0")
 ```
 With Maven, use the dependency
 ```xml
 <dependency>
     <groupId>org.jetbrains.bio</groupId>
     <artifactId>viktor</artifactId>
-    <version>1.1.0</version>
+    <version>1.2.0</version>
 </dependency>
 ```
 
-Earlier versions can be downloaded from [GitHub Releases][releases].
+Versions older than `1.1.0` can be downloaded from [GitHub Releases][releases].
 
-[maven-central]: https://search.maven.org/artifact/org.jetbrains.bio/viktor/1.1.0/jar
+[maven-central]: https://search.maven.org/artifact/org.jetbrains.bio/viktor/1.2.0/jar
 [releases]: https://github.com/JetBrains-Research/viktor/releases
 
 The JAR available on Maven Central currently targets only:
