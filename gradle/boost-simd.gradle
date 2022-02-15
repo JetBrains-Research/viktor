@@ -65,7 +65,7 @@ task unzipCmake(dependsOn: downloadCmake, type: Copy) {
 }
 
 task downloadBoostSimd(type: de.undercouch.gradle.tasks.download.Download) {
-    src "https://github.com/JetBrains-Research/boost.simd/archive/${boostSimdBranch}.zip"
+    src "https://github.com/JetBrains-Research/boost.simd/archive/refs/tags/${boostSimdBranch}.zip"
     dest new File(buildDir, "boost.simd.${boostSimdBranch}.zip")
     overwrite false
 }
