@@ -6,8 +6,8 @@
 viktor 
 ======
 
-`viktor` implements a restricted subset of NumPy [ndarray][ndarray] features in
-Kotlin. Here are some highlights:
+`viktor` implements a restricted subset of NumPy [ndarray](http://docs.scipy.org/doc/numpy/reference/arrays.ndarray.html) features in
+Kotlin using Java Vector API. Here are some highlights:
 
 * A single core data type --- `F64Array`, an n-dimensional primitive array.
 * Efficient vectorized operations, which are accelerated using SIMD whenever
@@ -23,45 +23,44 @@ Kotlin. Here are some highlights:
     m.V[0].exp() + 1.0               // math functions.
     ```
 
-[ndarray]: http://docs.scipy.org/doc/numpy/reference/arrays.ndarray.html
-
 Installation
 ------------
 
 The latest version of `viktor` is available on [Maven Central][maven-central].
 If you're using Gradle, just add the following to your `build.gradle` dependencies:
 ```groovy
-implementation 'org.jetbrains.bio:viktor:1.2.0'
+implementation 'org.jetbrains.bio:viktor:2.0.0'
 ```
 or, equivalently, add the following to your `build.gradle.kts` dependencies:
 ```kotlin
-implementation("org.jetbrains.bio:viktor:1.2.0")
+implementation("org.jetbrains.bio:viktor:2.0.0")
 ```
 With Maven, use the dependency
 ```xml
 <dependency>
     <groupId>org.jetbrains.bio</groupId>
     <artifactId>viktor</artifactId>
-    <version>1.2.0</version>
+    <version>2.0.0</version>
 </dependency>
 ```
 
-Versions older than `1.1.0` can be downloaded from [GitHub Releases][releases].
 
-[maven-central]: https://search.maven.org/artifact/org.jetbrains.bio/viktor/1.2.0/jar
-[releases]: https://github.com/JetBrains-Research/viktor/releases
+Versions
+--------
 
-The JAR available on Maven Central currently targets only:
-- SSE2 and AVX,
-- amd64 / x86-64,
-- Linux, Windows and MacOS.
+* Viktor `2.0.0` relies fully on [Java Vector API](https://openjdk.org/jeps/448) and requires at least Java 21.
+  - Supports Vector API acceleration on all Java compatible platforms.
 
-For any other setup `viktor` would fall back to pure-Kotlin
-implementations. If you are interested in SIMD accelerations for a different
-architecture, instruction set, or operating system feel free to file an issue to the
-[bug tracker][issues].
+* Viktor `1.2.0` supports Java 8, and fully relies on the [boost.simd](https://github.com/JetBrains-Research/boost.simd) for SIMD acceleration.
+  - SSE2 and AVX,
+  - amd64 / x86-64,
+  - Linux, Windows and MacOS.
 
-[issues]: https://github.com/JetBrains-Research/viktor/issues
+  
+Versions older than `1.1.0` can be downloaded from [GitHub Releases](https://github.com/JetBrains-Research/viktor/releases).
+
+Should you have any problems feel free to file an issue to the
+[bug tracker](https://github.com/JetBrains-Research/viktor/issues).
 
 Logging
 -------
@@ -69,18 +68,17 @@ Logging
 `viktor` uses [slf4j](http://www.slf4j.org/) logging API to provide error messages.
 To see them, you have to add a `slf4j` implementation (also called a binding)
 to your project. For example, add the following Gradle dependency to use `log4j`:
-```gradle
+
+```kotlin
 dependencies {
-    compile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.25'
+    compile('org.slf4j:slf4j-log4j12:2.0.17')
 }
 ```
 
 Building from source
 --------------------
 
-`viktor` relies on [boost.simd][boost.simd] for implementing SIMD
-accelerations. Therefore, you would need a C++11 compiler,
-but otherwise the build process is as simple as:
+Use the following command line: 
 
 ```shell
 ./gradlew jar
@@ -88,8 +86,6 @@ but otherwise the build process is as simple as:
 
 Note: don't use `./gradlew assemble`, since it includes the signing of the artifacts
 and will fail if the correct credentials are not provided.
-
-[boost.simd]: https://github.com/JetBrains-Research/boost.simd
 
 Testing
 -------
@@ -100,12 +96,10 @@ No extra configuration is required for running the tests from Gradle:
 ./gradlew test
 ```
 
-However, you might need to alter `java.library.path` to run the tests from
-the IDE. The following Java command line option should work for IDEA
+Benchmarking
+------------
 
-```shell
--Djava.library.path=./build/libs
-```
+See [benchmarking](./docs/benchmark.md) document for more details.
 
 Publishing
 ----------
@@ -119,3 +113,5 @@ Documentation
 
 Visit [viktor Documentation](./docs/docs.md) for an extensive feature overview,
 instructive code examples and benchmarking data. 
+
+[maven-central]: https://search.maven.org/artifact/org.jetbrains.bio/viktor

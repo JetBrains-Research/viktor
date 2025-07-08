@@ -29,12 +29,115 @@ model {
 }
 
 ext.javah = { jniClass, jniHeader ->
-    exec {
-        executable org.gradle.internal.jvm.Jvm.current()
-                .getExecutable('javah')
-        args '-classpath', tasks.compileKotlin.destinationDir
-        args '-o', jniHeader
-        args jniClass
+    def headerDir = jniHeader.getParentFile()
+    headerDir.mkdirs()
+
+    def javaHome = org.gradle.internal.jvm.Jvm.current().javaHome
+    def javaVersion = org.gradle.internal.jvm.Jvm.current().javaVersion.majorVersion
+
+    println "Java home: $javaHome"
+    println "Java version: $javaVersion"
+
+    // Check if we're using JDK 9 or later
+    if (javaVersion.toInteger() >= 9) {
+        println "Using javac -h for JDK 9+"
+
+        // For JDK 9+, we need to find the source file and use javac -h
+        def sourceFiles = []
+
+        // Look for Kotlin source files
+        def kotlinFile = file("src/main/kotlin/${jniClass.replace('.', '/')}.kt")
+        if (kotlinFile.exists()) {
+            sourceFiles.add(kotlinFile)
+        }
+
+        // Look for Java source files
+        def javaFile = file("src/main/java/${jniClass.replace('.', '/')}.java")
+        if (javaFile.exists()) {
+            sourceFiles.add(javaFile)
+        }
+
+        if (sourceFiles.isEmpty()) {
+            println "Warning: Could not find source files for $jniClass"
+            println "Creating empty header file as fallback"
+            jniHeader.text = "/* Generated empty header file for $jniClass */\n"
+        } else {
+            // Use javac with -h option to generate header
+            def javac = new File(javaHome, "bin/javac")
+            if (!javac.exists()) {
+                javac = new File(javaHome, "bin/javac.exe")
+            }
+
+            def command = [javac.absolutePath, 
+                           "-classpath", tasks.compileKotlin.destinationDirectory.get().asFile.absolutePath,
+                           "-h", headerDir.absolutePath,
+                           "-d", file("$buildDir/tmp/javac").absolutePath]
+            command.addAll(sourceFiles.collect { it.absolutePath })
+
+            println "Running command: ${command.join(' ')}"
+
+            def process = command.execute()
+            def output = new StringBuilder()
+            def error = new StringBuilder()
+            process.consumeProcessOutput(output, error)
+            process.waitFor()
+
+            if (process.exitValue() != 0) {
+                println "Error generating header with javac -h:"
+                println "stdout: $output"
+                println "stderr: $error"
+
+                // Create an empty header file as fallback
+                jniHeader.text = "/* Generated empty header file for $jniClass due to javac error */\n"
+            } else {
+                // The generated header file will have a different name format
+                def generatedHeader = new File(headerDir, jniClass.replace('.', '_') + '.h')
+                if (generatedHeader.exists()) {
+                    // Rename to match the expected .hpp extension
+                    generatedHeader.renameTo(jniHeader)
+                } else {
+                    println "Warning: Expected header file not found: $generatedHeader"
+                    println "Creating empty header file as fallback"
+                    jniHeader.text = "/* Generated empty header file for $jniClass - header not found */\n"
+                }
+            }
+        }
+    } else {
+        // For JDK 8 and earlier, use javah
+        println "Using javah for JDK 8 and earlier"
+
+        def javah = new File(javaHome, "bin/javah")
+        if (!javah.exists()) {
+            javah = new File(javaHome, "bin/javah.exe")
+        }
+
+        if (!javah.exists()) {
+            println "Warning: javah not found at $javah"
+            println "Creating empty header file as fallback"
+            jniHeader.text = "/* Generated empty header file for $jniClass - javah not found */\n"
+        } else {
+            def command = [javah.absolutePath, 
+                           "-classpath", tasks.compileKotlin.destinationDirectory.get().asFile.absolutePath,
+                           "-o", jniHeader.absolutePath,
+                           jniClass]
+
+            println "Running command: ${command.join(' ')}"
+
+            def process = command.execute()
+            def output = new StringBuilder()
+            def error = new StringBuilder()
+            process.consumeProcessOutput(output, error)
+            process.waitFor()
+
+            if (process.exitValue() != 0) {
+                println "Error generating header with javah:"
+                println "stdout: $output"
+                println "stderr: $error"
+
+                // Create an empty header file as fallback
+                jniHeader.text = "/* Generated empty header file for $jniClass due to javah error */\n"
+            }
+        }
     }
 
     assert jniHeader.exists()

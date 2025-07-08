@@ -134,9 +134,9 @@ internal sealed class F64DenseFlatArray(
         var dstOffset = offset
         val dstEnd = dstOffset + length
         while (dstOffset < dstEnd) {
-                res = op.invoke(res, dst[dstOffset])
-                dstOffset++
-            }
+            res = op.invoke(res, dst[dstOffset])
+            dstOffset++
+        }
         return res
     }
 
@@ -196,113 +196,11 @@ internal sealed class F64DenseFlatArray(
         const val DENSE_SPLIT_SIZE = 16
 
         internal fun create(data: DoubleArray, offset: Int, size: Int): F64DenseFlatArray {
-            return if (size <= DENSE_SPLIT_SIZE || !Loader.nativeLibraryLoaded) {
+            return if (size <= DENSE_SPLIT_SIZE) {
                 F64SmallDenseArray(data, offset, size)
             } else {
                 F64LargeDenseArray(data, offset, size)
             }
         }
-    }
-}
-
-/**
- * A contiguous vector of size at most [F64DenseFlatArray.DENSE_SPLIT_SIZE].
- *
- * @author Sergei Lebedev
- * @since 0.1.0
- */
-internal class F64SmallDenseArray(
-    data: DoubleArray,
-    offset: Int,
-    size: Int
-) : F64DenseFlatArray(data, offset, size)
-
-/**
- * A contiguous vector of size at least `[F64DenseFlatArray.DENSE_SPLIT_SIZE] + 1`.
- *
- * @author Sergei Lebedev
- * @since 0.1.0
- */
-internal class F64LargeDenseArray(
-    data: DoubleArray,
-    offset: Int,
-    size: Int
-) : F64DenseFlatArray(data, offset, size) {
-
-    override fun sd() = NativeSpeedups.unsafeSD(data, offset, length)
-
-    override fun sum() = NativeSpeedups.unsafeSum(data, offset, length)
-
-    override fun cumSum() {
-        if (!NativeSpeedups.unsafeCumSum(data, offset, length)) super.cumSum()
-    }
-
-    override fun min() = NativeSpeedups.unsafeMin(data, offset, length)
-
-    override fun max() = NativeSpeedups.unsafeMax(data, offset, length)
-
-    override fun dot(other: F64Array): Double {
-        return if (other is F64LargeDenseArray) {
-            checkShape(other)
-            NativeSpeedups.unsafeDot(data, offset, other.data, other.offset, length)
-        } else {
-            super.dot(other)
-        }
-    }
-
-    private inline fun nativeTransform(
-        nativeOp: (DoubleArray, Int, DoubleArray, Int, Int) -> Boolean,
-        superOp: F64FlatArray.() -> F64FlatArray
-    ): F64FlatArray {
-        val dst = DoubleArray(length)
-        if (nativeOp(dst, 0, data, offset, length)) {
-            return create(dst, 0, length)
-        }
-        return superOp()
-    }
-
-    override fun expInPlace() {
-        if (!NativeSpeedups.unsafeExp(data, offset, data, offset, length)) super.expInPlace()
-    }
-
-    override fun exp() = nativeTransform(NativeSpeedups::unsafeExp) { super.exp() }
-
-    override fun expm1InPlace() {
-        if (!NativeSpeedups.unsafeExpm1(data, offset, data, offset, length)) super.expm1InPlace()
-    }
-
-    override fun expm1() = nativeTransform(NativeSpeedups::unsafeExpm1) { super.expm1() }
-
-    override fun logInPlace() {
-        if (!NativeSpeedups.unsafeLog(data, offset, data, offset, length)) super.logInPlace()
-    }
-
-    override fun log() = nativeTransform(NativeSpeedups::unsafeLog) { super.log() }
-
-    override fun log1pInPlace(){
-        if (!NativeSpeedups.unsafeLog1p(data, offset, data, offset, length)) super.log1pInPlace()
-    }
-
-    override fun log1p() = nativeTransform(NativeSpeedups::unsafeLog1p) { super.log1p() }
-
-    override fun logSumExp() = NativeSpeedups.unsafeLogSumExp(data, offset, length)
-
-    override fun logAddExpAssign(other: F64Array) {
-        if (other is F64LargeDenseArray) {
-            checkShape(other)
-            if (NativeSpeedups.unsafeLogAddExp(data, offset, data, offset, other.data, other.offset, length)) return
-        }
-        super.logAddExpAssign(other)
-    }
-
-    override fun logAddExp(other: F64Array): F64FlatArray {
-        if (other is F64LargeDenseArray) {
-            checkShape(other)
-            val res = DoubleArray(length)
-            if (NativeSpeedups.unsafeLogAddExp(res, 0, data, offset, other.data, other.offset, length)) {
-                return create(res, 0, length)
-            }
-        }
-        return super.logAddExp(other)
     }
 }

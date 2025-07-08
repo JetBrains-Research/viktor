@@ -27,7 +27,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'de.undercouch:gradle-download-task:3.4.3'
+        classpath 'de.undercouch:gradle-download-task:4.1.2'
     }
 }
 
@@ -60,20 +60,21 @@ task unzipCmake(dependsOn: downloadCmake, type: Copy) {
     } else {
         from zipTree(downloadCmake.dest)
     }
-    into buildDir
-    outputs.dir new File(buildDir, cmakeFolder)
+    into new File(buildDir, "cmake-extract")
+    outputs.dir new File(buildDir, "cmake-extract/" + cmakeFolder)
 }
 
 task downloadBoostSimd(type: de.undercouch.gradle.tasks.download.Download) {
     src "https://github.com/JetBrains-Research/boost.simd/archive/refs/tags/${boostSimdBranch}.zip"
     dest new File(buildDir, "boost.simd.${boostSimdBranch}.zip")
     overwrite false
+    acceptAnyCertificate true
 }
 
 task unzipBoostSimd(dependsOn: downloadBoostSimd, type: Copy) {
     from zipTree(downloadBoostSimd.dest)
-    into buildDir
-    outputs.dir new File(buildDir, "boost.simd-$boostSimdRoot")
+    into new File(buildDir, "boost-simd-extract")
+    outputs.dir new File(buildDir, "boost-simd-extract/boost.simd-$boostSimdRoot")
 }
 
 def nullOutputStream = new OutputStream() {
@@ -83,8 +84,8 @@ def nullOutputStream = new OutputStream() {
 
 task installBoostSimd(dependsOn: [unzipBoostSimd, unzipCmake]) {
     def cmakeDir = new File(
-        buildDir, "boost.simd-$boostSimdRoot/build")
-    def cmakeExec = "$buildDir/$cmakeFolder/cmake"
+        buildDir, "boost-simd-extract/boost.simd-$boostSimdRoot/build")
+    def cmakeExec = "$buildDir/cmake-extract/$cmakeFolder/cmake"
     outputs.dir new File(buildDir, 'include/boost')
     doLast {
         cmakeDir.mkdirs()

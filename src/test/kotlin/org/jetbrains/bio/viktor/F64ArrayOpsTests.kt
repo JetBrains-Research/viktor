@@ -315,10 +315,10 @@ private val CASES = listOf(
     // Dense large.
     Random().doubles(LARGE_SIZE.toLong()).toArray().asF64Array(),
     // Dense large subarray.
-    Random().doubles(3L * LARGE_SIZE).toArray()
+    Random().doubles(3L * LARGE_SIZE.toLong()).toArray()
         .asF64Array(LARGE_SIZE, LARGE_SIZE),
     // Non-flattenable array.
-    Random().doubles(4L * 3 * LARGE_SIZE).toArray().asF64Array()
+    Random().doubles(4L * 3L * LARGE_SIZE.toLong()).toArray().asF64Array()
         .reshape(4, 3, LARGE_SIZE).view(1, 1)
 )
 

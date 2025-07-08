@@ -71,12 +71,6 @@ open class F64Array protected constructor(
     /** Number of elements along the first axis. */
     val length: Int = shape[0]
 
-    @Deprecated(
-        "This property will change semantics in 2.0.0, see https://github.com/JetBrains-Research/viktor/issues/37",
-        ReplaceWith("length")
-    )
-    val size: Int get() = length
-
     /**
      * Returns `true` if this array can be flattened using [flatten].
      *
@@ -1100,7 +1094,7 @@ open class F64Array protected constructor(
             }
 
             val shape = first.shape.clone().apply {
-                this[axis] = first.shape[axis] + rest.sumBy { it.shape[axis] }
+                this[axis] = first.shape[axis] + rest.sumOf { it.shape[axis] }
             }
 
             val result = invoke(*shape)

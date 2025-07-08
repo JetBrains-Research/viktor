@@ -3,7 +3,19 @@ viktor Changelog
 
 Here you can see the full list of changes between each viktor release.
 
+Version 2.0.0
+-------------
+
+Released on July XX, 2025
+
+- Switched to Java Vector API
+- Minimal Java version supported is 21
+- Switched to Kotlin 2.0
+- Cleanup deprecated APIs (`size` in `F64Array`)
+- Switched to Gradle 8.5 and Kotlin build scripts
+
 Version 1.2.0
+-------------
 
 Released on November 4, 2021
 
@@ -13,6 +25,7 @@ Released on November 4, 2021
 - changed the distribution method from Bintray to Maven Central
 
 Version 1.1.0
+-------------
 
 Released on February 9, 2021
 
