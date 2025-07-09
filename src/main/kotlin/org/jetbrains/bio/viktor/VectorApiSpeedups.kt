@@ -10,10 +10,13 @@ import kotlin.run
 
 /**
  * This class provides optimized implementations of various mathematical operations
- * using the Java 21 Vector API for better performance.
+ * using the Java Vector API for better performance.
  *
  * The Vector API allows for SIMD (Single Instruction, Multiple Data) operations,
  * which can significantly improve performance for these types of operations.
+ *
+ * @author Oleg Shpynov
+ * @since 2.0.0
  */
 object VectorApiSpeedups {
     /**

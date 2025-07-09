@@ -1,7 +1,9 @@
 package org.jetbrains.bio.viktor
 
 import org.apache.commons.math3.util.Precision
+import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
@@ -17,6 +19,16 @@ class F64FlatArrayGetSetTest(
         size: Int,
         private val stride: Int
 ) {
+
+    @Before
+    fun setup() {
+        System.setProperty(FORCE_VECTOR_API, "true")
+    }
+
+    @After()
+    fun tearDown() {
+        System.clearProperty(FORCE_VECTOR_API)
+    }
 
     private val v = F64FlatArray.create(values, offset, stride, size)
 
@@ -234,6 +246,16 @@ class F64MatrixGetSetTest {
 }
 
 class F64ArrayGetSetTest {
+    @Before
+    fun setup() {
+        System.setProperty(FORCE_VECTOR_API, "true")
+    }
+
+    @After()
+    fun tearDown() {
+        System.clearProperty(FORCE_VECTOR_API)
+    }
+
     @Test fun get3D() {
         val value = 42.0
         val m = F64Array.full(init = value, shape = intArrayOf(2, 2, 2))

@@ -1,9 +1,21 @@
 package org.jetbrains.bio.viktor
 
+import org.junit.After
+import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
 
 class DoubleExtensionsTest {
+    @Before
+    fun setup() {
+        System.setProperty(FORCE_VECTOR_API, "true")
+    }
+
+    @After()
+    fun tearDown() {
+        System.clearProperty(FORCE_VECTOR_API)
+    }
+
     @Test fun plusVector() {
         val v = F64Array(10) { it.toDouble() }
         val incremented = F64Array(10) { it + 1.0 }

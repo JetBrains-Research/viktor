@@ -1,5 +1,7 @@
 package org.jetbrains.bio.viktor
 
+import org.junit.After
+import org.junit.Before
 import org.junit.Test
 import java.util.*
 import kotlin.math.abs
@@ -7,6 +9,17 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class MoreMathTest {
+
+    @Before
+    fun setup() {
+        System.setProperty(FORCE_VECTOR_API, "true")
+    }
+
+    @After()
+    fun tearDown() {
+        System.clearProperty(FORCE_VECTOR_API)
+    }
+
     @Test fun testLogAddExpEdgeCases() {
         val r = Random()
         val logx = -abs(r.nextDouble())

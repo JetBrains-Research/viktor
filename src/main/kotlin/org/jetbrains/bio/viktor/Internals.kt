@@ -18,3 +18,11 @@ internal inline fun checkIndex(label: String, pos: Int, size: Int) {
 
 @Suppress("nothing_to_inline")
 internal inline fun unsupported(): Nothing = throw UnsupportedOperationException()
+
+internal fun isAarch64(): Boolean = System.getProperty("os.arch").lowercase().contains("aarch64")
+
+internal const val FORCE_VECTOR_API = "viktor-force-vector-api"
+
+internal fun forceVectorApi(): Boolean {
+    return System.getProperty(FORCE_VECTOR_API) == "true"
+}

@@ -4,8 +4,10 @@ import org.apache.commons.math3.special.Beta
 import org.apache.commons.math3.special.Gamma
 import org.apache.commons.math3.stat.StatUtils
 import org.apache.commons.math3.util.FastMath
+import org.junit.After
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
@@ -19,6 +21,16 @@ import kotlin.test.assertTrue
 
 @RunWith(Parameterized::class)
 class F64BasicArrayOperationTest(private val v: F64Array) {
+    @Before
+    fun setup() {
+        System.setProperty(FORCE_VECTOR_API, "true")
+    }
+
+    @After()
+    fun tearDown() {
+        System.clearProperty(FORCE_VECTOR_API)
+    }
+
     @Test fun contains() {
         v.asSequence().forEach {
             assertTrue(it in v)
@@ -54,6 +66,16 @@ class F64BasicArrayOperationTest(private val v: F64Array) {
 
 @RunWith(Parameterized::class)
 class F64ArrayOperationTest(private val v: F64Array) {
+
+    @Before
+    fun setup() {
+        System.setProperty(FORCE_VECTOR_API, "true")
+    }
+
+    @After()
+    fun tearDown() {
+        System.clearProperty(FORCE_VECTOR_API)
+    }
 
     /* Unary array operations */
 
@@ -259,6 +281,16 @@ class F64ArrayOperationTest(private val v: F64Array) {
 
 @RunWith(Parameterized::class)
 class F64FlatArrayOperationTest(private val v: F64FlatArray) {
+    @Before
+    fun setup() {
+        System.setProperty(FORCE_VECTOR_API, "true")
+    }
+
+    @After()
+    fun tearDown() {
+        System.clearProperty(FORCE_VECTOR_API)
+    }
+
     /* Flat array operations */
 
     @Test fun argMax() = assertEquals(v.max(), v[v.checkConstant { argMax() }], EXACT_DELTA)

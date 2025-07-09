@@ -1,12 +1,24 @@
 package org.jetbrains.bio.viktor
 
 import org.apache.commons.math3.util.Precision
+import org.junit.After
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
+import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertTrue
 
 class F64ArrayCreationTest {
+    @Before
+    fun setup() {
+        System.setProperty(FORCE_VECTOR_API, "true")
+    }
+
+    @After()
+    fun tearDown() {
+        System.clearProperty(FORCE_VECTOR_API)
+    }
+
     @Test fun specialization() {
         assertTrue(F64FlatArray.create(doubleArrayOf(1.0), stride = 10) !is F64DenseFlatArray)
         assertTrue(F64FlatArray.create(doubleArrayOf(1.0)) is F64DenseFlatArray)

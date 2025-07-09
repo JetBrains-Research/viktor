@@ -3,7 +3,9 @@ package org.jetbrains.bio.viktor
 import org.apache.commons.math3.stat.StatUtils
 import org.apache.commons.math3.util.CombinatoricsUtils
 import org.apache.commons.math3.util.Precision
+import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
@@ -11,6 +13,17 @@ import org.junit.runners.Parameterized.Parameters
 import java.util.*
 
 class QuickSelectTest {
+
+    @Before
+    fun setup() {
+        System.setProperty(FORCE_VECTOR_API, "true")
+    }
+
+    @After()
+    fun tearDown() {
+        System.clearProperty(FORCE_VECTOR_API)
+    }
+
     @Test fun quantileRandom() {
         val values = Random().doubles(1024).toArray().asF64Array()
         for (i in 0 until values.length) {

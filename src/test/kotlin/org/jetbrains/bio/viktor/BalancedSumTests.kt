@@ -1,6 +1,8 @@
 package org.jetbrains.bio.viktor
 
+import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
@@ -9,7 +11,19 @@ import java.util.*
 
 @RunWith(Parameterized::class)
 class BalancedSumTest(private val size: Int) {
-    @Test fun accuracy() {
+
+    @Before
+    fun setup() {
+        System.setProperty(FORCE_VECTOR_API, "true")
+    }
+
+    @After()
+    fun tearDown() {
+        System.clearProperty(FORCE_VECTOR_API)
+    }
+
+    @Test
+    fun accuracy() {
         val v = Random().doubles(size.toLong()).toArray().asF64Array()
 
         val expected = KahanSum()
@@ -22,13 +36,25 @@ class BalancedSumTest(private val size: Int) {
 
     companion object {
         @Parameters(name = "{0}")
-        @JvmStatic fun `data`() = listOf(32, 64, 100, 500)
+        @JvmStatic
+        fun `data`() = listOf(32, 64, 100, 500)
     }
 }
 
 @RunWith(Parameterized::class)
 class BalancedDotTest(private val size: Int) {
-    @Test fun accuracy() {
+    @Before
+    fun setup() {
+        System.setProperty(FORCE_VECTOR_API, "true")
+    }
+
+    @After()
+    fun tearDown() {
+        System.clearProperty(FORCE_VECTOR_API)
+    }
+
+    @Test
+    fun accuracy() {
         val r = Random()
         val v = r.doubles(size.toLong()).toArray().asF64Array()
         val w = r.doubles(size.toLong()).toArray().asF64Array()
@@ -41,7 +67,8 @@ class BalancedDotTest(private val size: Int) {
         assertEquals(expected.result(), v.dot(w), 1e-8)
     }
 
-    @Test fun intAccuracy() {
+    @Test
+    fun intAccuracy() {
         val r = Random()
         val v = r.doubles(size.toLong()).toArray().asF64Array()
         val w = r.ints(-1000, 1000).limit(size.toLong()).toArray()
@@ -54,7 +81,8 @@ class BalancedDotTest(private val size: Int) {
         assertEquals(expected.result(), v.dot(w), 1e-8)
     }
 
-    @Test fun shortAccuracy() {
+    @Test
+    fun shortAccuracy() {
         val r = Random()
         val v = r.doubles(size.toLong()).toArray().asF64Array()
         // there are no short streams
@@ -72,6 +100,7 @@ class BalancedDotTest(private val size: Int) {
 
     companion object {
         @Parameters(name = "{0}")
-        @JvmStatic fun `data`() = listOf(32, 64, 100, 500)
+        @JvmStatic
+        fun `data`() = listOf(32, 64, 100, 500)
     }
 }

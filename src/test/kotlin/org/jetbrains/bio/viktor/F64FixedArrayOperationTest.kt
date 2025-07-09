@@ -1,10 +1,22 @@
 package org.jetbrains.bio.viktor
 
+import org.junit.After
 import org.junit.Assert
+import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertNotEquals
 
 class F64FixedArrayOperationTest {
+
+    @Before
+    fun setup() {
+        System.setProperty(FORCE_VECTOR_API, "true")
+    }
+
+    @After()
+    fun tearDown() {
+        System.clearProperty(FORCE_VECTOR_API)
+    }
 
     @Test fun equals() {
         val m = F64Array(2, 3, 4) { i, j, k -> 1.0 * i + 2 * j + 3 * k }

@@ -1,9 +1,21 @@
 package org.jetbrains.bio.viktor
 
+import org.junit.After
 import org.junit.Assert
+import org.junit.Before
 import org.junit.Test
 
 class F64ArrayAgainstRTest {
+    @Before
+    fun setup() {
+        System.setProperty(FORCE_VECTOR_API, "true")
+    }
+
+    @After()
+    fun tearDown() {
+        System.clearProperty(FORCE_VECTOR_API)
+    }
+
     @Test
     fun whole() {
         val v = VALUES.asF64Array()
