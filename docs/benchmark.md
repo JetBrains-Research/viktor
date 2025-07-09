@@ -10,6 +10,13 @@ the following commands from `viktor`'s root folder:
 $ ./gradlew jmh
 ```
 
+This will create a file `build/jmh/results.txt`, please move it into `amd64.txt` or `aarch64.txt` for visualization.
+Next, launch the command line:
+
+```bash
+$ python plot_benchmarks.py
+```
+
 ## Benchmark Environment
 
 We conducted the benchmarking on two machines:
@@ -19,9 +26,9 @@ The following table summarizes the main features of both:
 
  machine           | laptop                                              | desktop                                                           
 -------------------|-----------------------------------------------------|-------------------------------------------------------------------
+ architecture      | `aarch64`                                           | `amd64`                                                           
  CPU               | Apple M4 Max                                        | Intel Core i7-7700K                                               
  cores<sup>1</sup> | 16                                                  | 8                                                                 
- architecture      | `aarch64`                                           | `amd64`                                                           
  OS                | Sequoia 15.5                                        | Ubuntu 22.04 LTS                                                  
  JVM               | OpenJDK Runtime Environment Homebrew (build 21.0.7) | OpenJDK Runtime Environment (build 21.0.7+6-Ubuntu-0ubuntu122.04) 
 
@@ -35,10 +42,6 @@ We investigate two metrics:
 
 * `Array ops/s` is the number of times the operation was performed on the entire array
   per second. Shown on a logarithmic scale.
-* `FLOPS` is the number of equivalent scalar operations performed per second. It is equal
-  to `Array ops/s` multiplied by `Array size`. Shown on a linear scale.
-
-*Benchmark results coming soon...*
 
 ### Math Benchmarks
 
@@ -54,15 +57,11 @@ We also measured the performance of `logAddExp` method for adding
 two logarithmically stored arrays. It was compared with the scalar `logAddExp`
 defined in `viktor`.
 
-#### Laptop
-
- Array ops/s | FLOPS 
--------------|-------
-
-#### Desktop
-
- Array ops/s | FLOPS 
--------------|-------
+![DotBenchmark.png](benchmark_plots/DotBenchmark.png)
+![ExpBenchmark.png](benchmark_plots/ExpBenchmark.png)
+![Expm1Benchmark.png](benchmark_plots/Expm1Benchmark.png)
+![LogBenchmark.png](benchmark_plots/LogBenchmark.png)
+![Log1pBenchmark.png](benchmark_plots/Log1pBenchmark.png)
 
 ### Statistics Benchmarks
 
@@ -71,16 +70,10 @@ the throughput of a dot product of two arrays (`dot()` method). All these benchm
 (except for `logSumExp`) don't have a loop-based `FastMath` version since they only
 use arithmetic operations in the loop.
 
-#### Laptop
-
- Array ops/s | FLOPS 
--------------|-------
-
-#### Desktop
-
- Array ops/s | FLOPS 
--------------|-------
+![SumBenchmark.png](benchmark_plots/SumBenchmark.png)
+![SDBenchmark.png](benchmark_plots/SDBenchmark.png)
+![LogSumExpBenchmark.png](benchmark_plots/LogSumExpBenchmark.png)
 
 ## Conclusions
-
-`viktor` seems to perform better than the regular scalar computation approach. 
+* On `amd64` architecture vectorized realisation provides a visible boost in performance in almost all benchmarks.
+* On `aarch64`, only `SumBenchmark` and `SDBenchmark` benefit from vectorization. 
