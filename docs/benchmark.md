@@ -10,11 +10,11 @@ the following commands from `viktor`'s root folder:
 $ ./gradlew jmh
 ```
 
-This will create a file `build/jmh/results.txt`, please move it into `amd64.txt` or `aarch64.txt` for visualization.
+This will create a file `build/jmh/results.csv`, copy it into `amd64.csv` or `aarch64.csv` for visualization.
 Next, launch the command line:
 
 ```bash
-$ python plot_benchmarks.py
+$ python plot_benchmarks.py amd64.csv aarch64.csv
 ```
 
 ## Benchmark Environment

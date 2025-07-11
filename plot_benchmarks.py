@@ -1,62 +1,64 @@
+import argparse
 import os
-import json
-import matplotlib.pyplot as plt
-import numpy as np
-import seaborn as sns
-import pandas as pd
+import sys
+from pathlib import Path
 
-# File paths
-amd64_file = 'build/results/jmh/amd64.txt'
-aarch64_file = 'build/results/jmh/aarch64.txt'
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
+
+"""
+Plot benchmark results from multiple files.
+
+Usage:
+    python plot_benchmarks.py file1.csv file2.csv ...
+
+The filename (without extension) will be used as the system name in the plots.
+For example, 'amd64.csv' will be labeled as 'amd64' in the plots.
+
+Output:
+    - PNG charts in the 'docs/benchmark_plots' directory
+    - Text summary of benchmark results
+"""
+
+# Parse command line arguments
+parser = argparse.ArgumentParser(description='Plot benchmark results from multiple files.')
+parser.add_argument('benchmark_files', nargs='+', help='Benchmark files to process (*.csv)')
+args = parser.parse_args()
 
 # Function to parse benchmark file
 def parse_benchmark_file(file_path, system_name):
-    with open(file_path, 'r') as f:
-        lines = f.readlines()
+    bench_df = pd.read_csv(file_path)
+    bench_df['System'] = system_name
+    return bench_df
 
-    # Skip header line
-    data_lines = lines[1:]
+# Parse all benchmark files
+dfs = []
+for benchmark_file in args.benchmark_files:
+    # Check if file exists
+    if not os.path.isfile(benchmark_file):
+        print(f"Error: File '{benchmark_file}' does not exist. Skipping.", file=sys.stderr)
+        continue
 
-    # Parse data
-    data = []
-    for line in data_lines:
-        if not line.strip():
-            continue
+    # Extract system name from filename (without extension)
+    system_name = Path(benchmark_file).stem
+    print(f"Processing {benchmark_file} as system '{system_name}'")
 
-        parts = line.split()
-        benchmark_full = parts[0]
-        array_size = int(parts[1])
-        score = float(parts[4].replace(',', '.'))  # Handle comma as decimal separator
+    try:
+        # Parse the file
+        dfs.append(parse_benchmark_file(benchmark_file, system_name))
+    except Exception as e:
+        print(f"Error processing file '{benchmark_file}': {e}", file=sys.stderr)
 
-        # Split benchmark name into benchmark type and implementation
-        benchmark_parts = benchmark_full.split('.')
-        benchmark_type = benchmark_parts[0]
-        implementation = benchmark_parts[1]
+# Check if we have any data to process
+if not dfs:
+    print("No valid benchmark data found. Exiting.", file=sys.stderr)
+    sys.exit(1)
 
-        data.append({
-            'benchmark_type': benchmark_type,
-            'implementation': implementation,
-            'array_size': array_size,
-            'score': score,
-            'system': system_name
-        })
-
-    return data
-
-# Parse both files
-amd64_data = parse_benchmark_file(amd64_file, 'amd64')
-aarch64_data = parse_benchmark_file(aarch64_file, 'aarch64')
-
-# Combine data
-combined_data = amd64_data + aarch64_data
-
-# Organize data by benchmark type
-benchmark_data = {}
-for entry in combined_data:
-    benchmark_type = entry['benchmark_type']
-    if benchmark_type not in benchmark_data:
-        benchmark_data[benchmark_type] = []
-    benchmark_data[benchmark_type].append(entry)
+df = pd.concat(dfs).reset_index(drop=True)
+df['BenchmarkType'] = df['Benchmark'].str.split('.').str[-2]
+df['Implementation'] = df['Benchmark'].str.split('.').str[-1]
+print(df.columns)
 
 # Create output directory for PNG files
 os.makedirs('docs/benchmark_plots', exist_ok=True)
@@ -64,33 +66,26 @@ os.makedirs('docs/benchmark_plots', exist_ok=True)
 print("\nGenerating benchmark plots...")
 
 # Process each benchmark type
-for benchmark_type, data in benchmark_data.items():
-    # Convert data to pandas DataFrame
-    df = pd.DataFrame(data)
-
+for benchmark_type, data in df.groupby('BenchmarkType'):
     # Get unique array sizes
-    array_sizes = sorted(df['array_size'].unique())
+    array_sizes = sorted(data['Param: arraySize'].unique())
 
     # Create a new figure for each benchmark
-    # Adjust figure width based on number of array sizes
     num_sizes = len(array_sizes)
-    fig_width = max(12, num_sizes * 3)  # Ensure minimum width of 15, but scale with number of plots
+    fig_width = max(12, num_sizes * 3)
     plt.figure(figsize=(fig_width, 4), dpi=300)
 
     # Create subplots for each array size in a single row
     for i, array_size in enumerate(array_sizes):
-        # Filter data for this array size
-        size_df = df[df['array_size'] == array_size]
-
         # Create subplot in a single row
         plt.subplot(1, num_sizes, i + 1)
 
         # Create barplot with system as hue
         sns.barplot(
-            x='implementation',
-            y='score',
-            hue='system',
-            data=size_df,
+            data=(data[data['Param: arraySize'] == array_size]),
+            x='Implementation',
+            y='Score',
+            hue='System',
         )
 
         # Set up the subplot
@@ -100,30 +95,15 @@ for benchmark_type, data in benchmark_data.items():
         plt.xticks(rotation=45)
         plt.legend(title='System')
         plt.grid(True, which="both", ls="-", alpha=0.2)
-
-    # Set up the overall plot
-    plt.suptitle(benchmark_type, fontsize=16)
-    plt.tight_layout(rect=[0, 0, 1, 0.96])  # Adjust for suptitle
+        # Fix y-axis orientation (ensure lowest at bottom, highest at top)
+        plt.gca().invert_yaxis()
 
     # Save the plot as PNG
-    output_file = f"docs/benchmark_plots/{benchmark_type}.png"
-    plt.savefig(output_file)
+    plt.tight_layout()
+    plt.savefig(f"docs/benchmark_plots/{benchmark_type}.png")
     plt.close()
 
-    print(f"Created: {output_file}")
+    print(f"Created: docs/benchmark_plots/{benchmark_type}.png")
 
-    # Also output data in text format
-    print(f"\n=== {benchmark_type} ===")
-    print("Implementation, System, Array Size, Score (ops/s)")
-
-    # Sort data by implementation, system, and array size
-    sorted_data = sorted(data, key=lambda x: (
-        x['implementation'], 
-        x['system'], 
-        x['array_size']
-    ))
-
-    for entry in sorted_data:
-        print(f"{entry['implementation']}, {entry['system']}, {entry['array_size']}, {entry['score']}")
 
 print("\nPNG charts have been created in the 'docs/benchmark_plots' directory.")

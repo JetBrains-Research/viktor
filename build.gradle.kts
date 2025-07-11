@@ -180,7 +180,7 @@ jmh {
     includes = listOf(".*Benchmark.*")
 
     // Output format: text, csv, scsv, json, latex
-    resultFormat = "text"
+    resultFormat = "csv"
 }
 
 // Create benchmark JAR task
