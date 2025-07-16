@@ -1,10 +1,11 @@
+import org.gradle.internal.classpath.Instrumented.systemProperty
+
 plugins {
     kotlin("jvm") version "2.2.0"
-
-    id("maven-publish")
-    id("signing")
-    id("idea")
+    `maven-publish`
+    signing
     id("me.champeau.jmh") version "0.7.2"
+    id("de.undercouch.download") version "4.1.2"
 }
 
 val kotlinVersion = "2.2.0"
@@ -17,6 +18,7 @@ java {
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
     compilerOptions {
+        languageVersion = org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0
         jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21
         javaParameters = true
         freeCompilerArgs.addAll("-Xjvm-default=all", "-Xadd-modules=java.base,jdk.incubator.vector")
@@ -52,23 +54,18 @@ dependencies {
 }
 
 tasks.test {
-    systemProperty("java.library.path", "$buildDir/libs")
+    systemProperty("java.library.path", "${layout.buildDirectory.get().asFile}/libs")
     jvmArgs("--add-modules", "jdk.incubator.vector")
 }
 
 tasks.withType<JavaCompile>().configureEach {
+    systemProperty("java.library.path", "${layout.buildDirectory.get().asFile}/libs")
     options.compilerArgs.addAll(listOf("--add-modules", "jdk.incubator.vector"))
-}
-
-configure<org.gradle.plugins.ide.idea.model.IdeaModel> {
-    module {
-        name = "viktor"
-    }
 }
 
 tasks.jar {
     archiveBaseName = "viktor"
-    from("$buildDir/libs")
+    from("${layout.buildDirectory.get().asFile}/libs")
     exclude("*.jar")
 }
 
@@ -76,6 +73,11 @@ val sourcesJar by tasks.creating(Jar::class) {
     archiveClassifier = "sources"
     from(sourceSets.main.get().allSource)
 }
+
+
+// ---------------------------------------------------------------------------------------------------------------------
+// ---------- Publisher tool -------------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------------------------------------
 
 configure<PublishingExtension> {
     publications {
@@ -153,6 +155,11 @@ tasks.wrapper {
     gradleVersion = "8.5"
 }
 
+
+// ---------------------------------------------------------------------------------------------------------------------
+// ---------- Benchmarking ---------------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------------------------------------
+
 // Configure JMH
 jmh {
     // Set JMH version
@@ -195,3 +202,4 @@ tasks.register<Jar>("benchmarkJar") {
     }
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
+
