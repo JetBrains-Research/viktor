@@ -7,6 +7,7 @@ plugins {
     signing
     id("me.champeau.jmh") version "0.7.2"
     id("de.undercouch.download") version "4.1.2"
+    id("org.jetbrains.dokka") version "1.9.10"
 }
 
 val kotlinVersion = "2.2.0"
@@ -64,15 +65,19 @@ tasks.withType<JavaCompile>().configureEach {
     options.compilerArgs.addAll(listOf("--add-modules", "jdk.incubator.vector"))
 }
 
-tasks.jar {
-    archiveBaseName = "viktor"
-    from("${layout.buildDirectory.get().asFile}/libs")
-    exclude("*.jar")
-}
-
 val sourcesJar by tasks.creating(Jar::class) {
     archiveClassifier = "sources"
     from(sourceSets.main.get().allSource)
+}
+
+val dokkaJavadocJar by tasks.creating(Jar::class) {
+    dependsOn(tasks.dokkaJavadoc)
+    from(tasks.dokkaJavadoc.flatMap { it.outputDirectory })
+    archiveClassifier = "javadoc"
+}
+
+tasks.dokkaJavadoc {
+    outputDirectory.set(layout.buildDirectory.dir("dokka/javadoc"))
 }
 
 
@@ -87,6 +92,8 @@ configure<PublishingExtension> {
             artifactId = "viktor"
             from(components["java"])
             artifact(sourcesJar)
+            artifact(dokkaJavadocJar)
+            artifact(buildFile)
 
             pom {
                 name = "viktor"
@@ -203,4 +210,3 @@ tasks.register<Jar>("benchmarkJar") {
     }
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
-
