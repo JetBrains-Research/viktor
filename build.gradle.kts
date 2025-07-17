@@ -1,5 +1,7 @@
 import org.gradle.internal.classpath.Instrumented.systemProperty
 import java.util.Base64
+import java.net.URL
+import java.net.HttpURLConnection
 
 plugins {
     kotlin("jvm") version "2.2.0"
@@ -144,6 +146,49 @@ configure<PublishingExtension> {
                 username = findProperty("ossrhToken") as String?
                 password = findProperty("ossrhTokenPassword") as String?
             }
+        }
+    }
+}
+
+tasks.named("publish") {
+    doLast {
+        val username = findProperty("ossrhToken") as String?
+        val password = findProperty("ossrhTokenPassword") as String?
+
+        if (username != null && password != null) {
+            val url = "https://ossrh-staging-api.central.sonatype.com/manual/upload/defaultRepository/org.jetbrains"
+            val connection = URL(url).openConnection() as HttpURLConnection
+            connection.requestMethod = "POST"
+            connection.doOutput = true
+
+            // Set basic authentication
+            val auth = "$username:$password"
+            val encodedAuth = Base64.getEncoder().encodeToString(auth.toByteArray())
+            connection.setRequestProperty("Authorization", "Basic $encodedAuth")
+
+            // Set content type
+            connection.setRequestProperty("Content-Type", "application/json")
+
+            // Send empty body for POST request
+            connection.outputStream.use { it.write("{}".toByteArray()) }
+
+            // Get response
+            val responseCode = connection.responseCode
+            println("POST request to $url completed with response code: $responseCode")
+
+            if (responseCode >= 400) {
+                val errorStream = connection.errorStream
+                val response = errorStream?.bufferedReader()?.use { it.readText() } ?: "No error details available"
+                println("Error response: $response")
+                throw GradleException("Failed to complete publishing. Response code: $responseCode")
+            } else {
+                val inputStream = connection.inputStream
+                val response = inputStream.bufferedReader().use { it.readText() }
+                println("Success response: $response")
+                println("Publishing completed successfully!")
+            }
+        } else {
+            println("Warning: ossrhToken and ossrhTokenPassword properties are required to finish publishing")
         }
     }
 }
