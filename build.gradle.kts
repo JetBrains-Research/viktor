@@ -1,4 +1,5 @@
 import org.gradle.internal.classpath.Instrumented.systemProperty
+import java.util.Base64
 
 plugins {
     kotlin("jvm") version "2.2.0"
@@ -134,8 +135,8 @@ configure<PublishingExtension> {
             url = uri(if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl)
 
             credentials {
-                username = findProperty("ossrhUsername") as String?
-                password = findProperty("ossrhPassword") as String?
+                username = findProperty("ossrhToken") as String?
+                password = findProperty("ossrhTokenPassword") as String?
             }
         }
     }
