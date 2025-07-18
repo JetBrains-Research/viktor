@@ -50,8 +50,9 @@ Versions
 
 * Viktor `2.0.0` relies fully on [Java Vector API](https://openjdk.org/jeps/448) and requires at least Java 21.
   - Supports Vector API acceleration on all Java compatible platforms.
+  - `--add-modules jdk.incubator.vector` is required since the API is still in incubator.
 
-* Viktor `1.2.0` supports Java 8, and fully relies on the [boost.simd](https://github.com/JetBrains-Research/boost.simd) for SIMD acceleration.
+* Viktor `1.2.0` supports Java 8, and relies on the [boost.simd](https://github.com/JetBrains-Research/boost.simd) for SIMD acceleration.
   - SSE2 and AVX,
   - amd64 / x86-64,
   - Linux, Windows and MacOS.
