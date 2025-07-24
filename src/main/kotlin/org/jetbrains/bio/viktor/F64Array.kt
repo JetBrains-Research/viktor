@@ -106,7 +106,7 @@ open class F64Array protected constructor(
 
     operator fun get(d: Int, r: Int, c: Int): Double {
         check(nDim == 3) { "broadcasting get is not supported" }
-        checkIndex("depth", r, shape[0])
+        checkIndex("depth", d, shape[0])
         checkIndex("row", r, shape[1])
         checkIndex("column", c, shape[2])
         return data[unsafeIndex(d, r, c)]
